@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>邪恶铭刻 · 联机版</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- ambient background embers -->
+  <div class="bg-embers" aria-hidden="true"></div>
+
+  <div id="app">
+
+    <!-- ===================== LOGIN ===================== -->
+    <section id="login" class="screen">
+      <div class="login-box">
+        <div class="sigil-ring" aria-hidden="true">✦</div>
+        <h1 class="title glow">邪 恶 铭 刻</h1>
+        <p class="subtitle">— 进入牌桌之前，报上你的名号 —</p>
+        <div class="login-form">
+          <button id="loginAvatar" class="avatar-btn" title="点击选择头像" type="button">🦇</button>
+          <div id="avatarPicker" class="avatar-picker"></div>
+          <input id="loginName" class="name-input" maxlength="12" placeholder="输入昵称…" autocomplete="off" />
+          <button class="btn big primary" data-lact="enter">▶ 进 入</button>
+        </div>
+        <p id="loginReturning" class="hint hidden"></p>
+        <p class="hint">档案与头像保存在本机浏览器。开局赠送初始卡牌与金币，通过对战与开包解锁更多卡牌。</p>
+      </div>
+    </section>
+
+    <!-- ===================== MENU ===================== -->
+    <section id="menu" class="screen hidden">
+      <div class="topchip" id="topchip"></div>
+      <div class="menu-box">
+        <h1 class="title glow">邪 恶 铭 刻</h1>
+        <p class="subtitle">— 联机版 · 像素风卡牌对战 —</p>
+
+        <div class="ai-diff" id="aiDiff">
+          <span class="ai-diff-label">🤖 单机 AI 难度</span>
+          <button class="dbtn on" data-diff="easy">简单</button>
+          <button class="dbtn" data-diff="normal">普通</button>
+          <button class="dbtn" data-diff="hard">困难</button>
+        </div>
+
+        <div class="menu-btns">
+          <button class="btn big" data-act="single">⚔ 单机模式（对战 AI）</button>
+          <button class="btn big" data-act="tutorial">📖 新手教程</button>
+          <button class="btn big" data-act="howto">📜 玩法说明</button>
+          <button class="btn big" data-act="collection">🗃 我的收藏</button>
+          <button class="btn big" data-act="sound" id="soundToggle">🔊 音效：开</button>
+          <div class="menu-divider">— 线下同屏（同一台电脑）—</div>
+          <button class="btn big" data-act="hotseat">🖥 本地双人（同屏轮流）</button>
+          <div class="menu-divider">— 联机对战 —</div>
+          <button class="btn big" data-act="host" data-lan="1">🏠 创建房间（本地联机）</button>
+          <button class="btn big" data-act="onlineHost">🌍 创建房间（线上联机）</button>
+          <div class="join-row">
+            <input id="joinRoom" class="room-input" maxlength="6" placeholder="房间号" />
+            <button class="btn" data-act="join" data-lan="1">本地加入</button>
+            <button class="btn" data-act="onlineJoin">线上加入</button>
+          </div>
+          <button class="btn small ghost" data-act="logout">切换账号</button>
+          <div id="hostInfo" class="host-info hidden"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== COLLECTION (图鉴 + 抽卡分支) ===================== -->
+    <section id="collection" class="screen hidden">
+      <div class="pane-box wide">
+        <div class="pane-head">
+          <h2 class="title-sm">我 的 收 藏</h2>
+          <span id="collProgress" class="pane-sub"></span>
+          <button class="btn small" data-cact="back">← 返回</button>
+        </div>
+
+        <div class="coll-subtabs">
+          <button class="cstab on" data-csub="grid">🗃 图鉴</button>
+          <button class="cstab" data-csub="gacha">🎴 抽卡 · 卡牌包</button>
+        </div>
+
+        <!-- 图鉴视图：展示全部卡牌，未解锁以 🔒 灰显 -->
+        <div id="collGridView">
+          <div class="faction-tabs" id="collTabs"></div>
+          <div class="card-grid" id="collGrid"></div>
+          <div class="rarity-legend" id="rarityLegend"></div>
+        </div>
+
+        <!-- 抽卡视图（「我的收藏」的分支） -->
+        <div id="collGachaView" class="hidden">
+          <div class="gacha-coins">金币：<span id="shopCoins"></span></div>
+          <div class="pack-stage">
+            <div id="pack" class="pack" data-sact="open">
+              <div class="pack-face">
+                <div class="pack-glyph">✦</div>
+                <div class="pack-name">神秘卡牌包</div>
+                <div class="pack-cost" id="packCost"></div>
+              </div>
+            </div>
+            <div id="packResult" class="pack-result hidden"></div>
+          </div>
+          <div class="odds" id="odds"></div>
+          <div class="shop-actions">
+            <button class="btn big primary" data-sact="open" id="drawBtn">✦ 开 一 包</button>
+          </div>
+          <div class="gacha-back"><button class="btn small ghost" data-csub="grid">← 返回图鉴</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== DECK BUILDER ===================== -->
+    <section id="deckBuilder" class="screen hidden">
+      <div class="builder-box">
+        <h2 class="title-sm">组 卡 组 · <span id="builderFactionName"></span></h2>
+        <p class="subtitle" id="builderDesc"></p>
+
+        <!-- Custom room/match rules (visible when hosting or single-player) -->
+        <div id="rulesPanel" class="rules-panel hidden"></div>
+
+        <div class="faction-tabs" id="factionTabs"></div>
+
+        <div class="card-grid" id="builderGrid"></div>
+
+        <div class="builder-footer">
+          <span id="builderCount" class="builder-count"></span>
+          <button class="btn" data-bact="builderCancel">← 返回菜单</button>
+          <button class="btn primary" data-bact="builderConfirm">确定并开始 ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TUTORIAL SETUP ===================== -->
+    <section id="tutorialSetup" class="screen hidden">
+      <div class="pane-box wide tut-setup">
+        <div class="pane-head">
+          <h2 class="title-sm">📖 新 手 教 程</h2>
+          <span class="pane-sub">选择想学的阵营与内容</span>
+          <button class="btn small" data-tact="tutBack">← 返回</button>
+        </div>
+
+        <div class="tut-block">
+          <div class="tut-label">① 选阵营（教程会用该阵营卡组，四大卡组都能学）</div>
+          <div class="faction-tabs" id="tutFactions"></div>
+        </div>
+
+        <div class="tut-block">
+          <div class="tut-label">② 选内容（★ 为必学基础，可自由增减）</div>
+          <div class="tut-modules" id="tutModules"></div>
+        </div>
+
+        <div class="tut-actions">
+          <button class="btn big primary" data-tact="tutStart">▶ 开始教程</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HOW TO ===================== -->
+    <section id="howto" class="screen hidden">
+      <div class="pane-box wide howto-box">
+        <div class="pane-head">
+          <h2 class="title-sm">📜 玩 法 说 明</h2>
+          <button class="btn small" data-hact="howtoBack">← 返回</button>
+        </div>
+        <div class="howto-body" id="howtoBody"></div>
+      </div>
+    </section>
+
+    <!-- ===================== GAME ===================== -->
+    <section id="game" class="screen hidden">
+      <div id="topbar">
+        <div class="tb-left">
+          <span id="modeLabel" class="mode-label">单机模式</span>
+          <span id="turnLabel" class="turn-label">轮到：玩家A</span>
+        </div>
+        <div class="tb-center">
+          <div id="scaleWrap" class="scale-wrap" title="天平：把指针压到「你胜」一端即获胜">
+            <div class="scale-track">
+              <div class="scale-fill"></div>
+              <div id="scaleNeedle" class="scale-needle"></div>
+            </div>
+            <div class="scale-ends"><span>◀ 敌胜 <b id="wEnemy">0</b></span><span><b id="wMe">0</b> 你胜 ▶</span></div>
+          </div>
+        </div>
+        <div class="tb-right">
+          <button class="btn small" data-act="menu">≡ 菜单</button>
+        </div>
+      </div>
+
+      <div id="resources" class="resources"></div>
+
+      <div id="board" class="board"></div>
+
+      <div id="hand" class="hand"></div>
+
+      <div id="controls" class="controls">
+        <button class="btn primary" data-act="endTurn">结束回合 / 攻击</button>
+        <span id="statusMsg" class="status-msg"></span>
+      </div>
+
+      <div id="log" class="log"></div>
+
+      <!-- Tutorial / message overlay -->
+      <div id="overlay" class="overlay hidden">
+        <div class="overlay-box">
+          <div id="overlayText" class="overlay-text"></div>
+          <button id="overlayNext" class="btn hidden" data-act="tutNext">下一步 ▶</button>
+          <button id="overlayContinue" class="btn primary hidden" data-act="hotseatContinue">继续 ▶</button>
+        </div>
+      </div>
+
+      <!-- Game over banner -->
+      <div id="gameover" class="overlay hidden">
+        <div class="overlay-box">
+          <div id="gameoverText" class="overlay-text"></div>
+          <div id="gameoverReward" class="overlay-text reward"></div>
+          <button class="btn primary" data-act="menu">返回菜单</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== ONLINE LOBBY ===================== -->
+  <section id="onlineLobby" class="screen overlay-screen hidden">
+    <div class="lobby-box">
+      <h2 class="title-sm">🌍 线上联机</h2>
+      <div id="lobbyStatus" class="lobby-status">正在建立连接…</div>
+      <div id="lobbyBody" class="lobby-body"></div>
+      <div class="lobby-actions">
+        <button class="btn small ghost" data-ol="lobbyCancel">取消</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Transient visual-effects layer (particles, damage numbers, slashes) -->
+  <div id="fx" class="fx-layer" aria-hidden="true"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

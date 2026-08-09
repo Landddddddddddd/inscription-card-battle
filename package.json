@@ -1,0 +1,12 @@
+{
+  "name": "inscryption-local",
+  "version": "0.1.0",
+  "description": "Local-LAN co-op/versus Inscryption-style card battler (pixel art, faithful cards, tutorial + single player). Online mode deferred.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

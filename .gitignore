@@ -1,0 +1,14 @@
+# Project-local memory (private notes / working memory — not part of the game)
+.workbuddy/
+
+# Dependencies (the game is zero-dependency; future-proofing)
+node_modules/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.log
+
+# Local env / secrets
+.env
+.env.*
