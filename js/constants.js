@@ -208,6 +208,9 @@ export const CARDS = {
   // 新增：印记演示卡（通用级）
   bone_warden: { name: '白骨守卫', atk: 2, hp: 4, cost: 3, costType: 'bone', sigils: ['armored'],        bloodValue: 1, color: '#d8d8d0', glyph: '卫' },
 
+  // [daily 2026-08-09] 墓苔尸
+  grave_moss:  { name: '墓苔尸',   atk: 1, hp: 3, cost: 2, costType: 'bone', sigils: ['regen'],          bloodValue: 1, color: '#6a8a5a', glyph: '苔' },
+
   // ===================== ENERGY（能量 · 机械科技主题）=====================
   black_cat:   { name: '电池机偶', atk: 0, hp: 1, cost: 0, costType: 'energy', sigils: [],               bloodValue: 1, color: '#2b3b4b', glyph: '电' },
   magpie:      { name: '磁窃鸟',   atk: 2, hp: 1, cost: 1, costType: 'energy', sigils: [],               bloodValue: 1, color: '#3a3a4a', glyph: '磁' },
@@ -234,6 +237,8 @@ export const CARDS = {
 
   // [daily 2026-08-09] 尖刺甲虫
   spike_beetle: { name: '尖刺甲虫', atk: 3, hp: 2, cost: 2, costType: 'energy', sigils: ['sharp_quills'],  bloodValue: 1, color: '#6a8a4a', glyph: '刺' },
+  // [daily 2026-08-09] 自修机甲
+  repair_mech: { name: '自修机甲', atk: 3, hp: 3, cost: 3, costType: 'energy', sigils: ['regen'],          bloodValue: 1, color: '#5a8a9a', glyph: '修' },
 
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
@@ -262,6 +267,8 @@ export const CARDS = {
   soul_reaper: { name: '噬魂死神', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange','green'],     sigils: ['death_touch'],   bloodValue: 1, color: '#7a2a4a', glyph: '死' },
   // [daily 2026-08-09] 冰晶刺客
   frost_assassin: { name: '冰晶刺客', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['blue'],              sigils: ['sharp_quills'], bloodValue: 1, color: '#4a8ad0', glyph: '冰' },
+  // [daily 2026-08-09] 石鳞卫
+  stone_scale: { name: '石鳞卫',   atk: 1, hp: 3, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: ['armored'],       bloodValue: 1, color: '#5a7a4a', glyph: '岩' },
 };
 
 // Faction metadata + the card pool the deck builder offers for each faction.
@@ -274,17 +281,17 @@ export const FACTIONS = {
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物死亡时积累骸骨，用骸骨召唤亡灵。用 0 费「枯骨幼犬」免费铺场、送死换取骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale'],
   },
 };
 
@@ -381,6 +388,7 @@ export const CHANGELOG = [
       '产品正式更名为「邪刻」。',
       '上线「每日新增卡牌」：现已加入 重甲獾 / 尖刺甲虫 / 冰晶刺客 三张新卡，之后每天持续扩充。',
       '新增本更新日志，记录每次重要改动。',
+      '2026-08-09 每日新增：墓苔尸 / 自修机甲 / 石鳞卫',
     ],
   },
   {
