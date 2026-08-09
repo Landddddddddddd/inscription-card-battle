@@ -178,6 +178,9 @@ export const CARDS = {
   rat_king:    { name: '鼠王',   atk: 1, hp: 4, cost: 2, costType: 'blood', sigils: ['regen'],         bloodValue: 2, color: '#8a7a6a', glyph: '王' },
   berserker:   { name: '狂战士', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['frenzy','double_strike'], bloodValue: 2, color: '#b5241f', glyph: '狂' },
 
+  // [daily 2026-08-09] 重甲獾
+  armored_badger: { name: '重甲獾', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['armored'],        bloodValue: 2, color: '#6b5a4a', glyph: '獾' },
+
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
   bone_pup:    { name: '枯骨幼犬', atk: 1, hp: 1, cost: 0, costType: 'bone', sigils: ['brittle'],        bloodValue: 1, color: '#cfcabc', glyph: '骨' },
@@ -229,6 +232,9 @@ export const CARDS = {
   // 新增：印记演示卡（通用级）
   armor_tank:  { name: '装甲战车', atk: 3, hp: 4, cost: 3, costType: 'energy', sigils: ['armored'],     bloodValue: 1, color: '#6a7a86', glyph: '车' },
 
+  // [daily 2026-08-09] 尖刺甲虫
+  spike_beetle: { name: '尖刺甲虫', atk: 3, hp: 2, cost: 2, costType: 'energy', sigils: ['sharp_quills'],  bloodValue: 1, color: '#6a8a4a', glyph: '刺' },
+
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
   // 其余法术卡 costType='gem'，需场上存在对应颜色的魔石才能召唤（召唤不消耗魔石，
@@ -254,6 +260,8 @@ export const CARDS = {
 
   // 新增：印记演示卡（通用级）
   soul_reaper: { name: '噬魂死神', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange','green'],     sigils: ['death_touch'],   bloodValue: 1, color: '#7a2a4a', glyph: '死' },
+  // [daily 2026-08-09] 冰晶刺客
+  frost_assassin: { name: '冰晶刺客', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['blue'],              sigils: ['sharp_quills'], bloodValue: 1, color: '#4a8ad0', glyph: '冰' },
 };
 
 // Faction metadata + the card pool the deck builder offers for each faction.
@@ -261,7 +269,7 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
@@ -271,12 +279,12 @@ export const FACTIONS = {
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin'],
   },
 };
 
