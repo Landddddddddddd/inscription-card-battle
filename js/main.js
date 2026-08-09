@@ -233,7 +233,7 @@ function buildTutSteps(fac, mods) {
   const mk = (key) => {
     switch (key) {
       case 'goal':
-        return { text: `欢迎来到《邪恶铭刻》！\n\n【目标】把对方天平的指针压到己方一端即获胜。本局采用「${winModeName(App.rules.winMode)}」胜利方式，目标 ${App.rules.winScale} 分——顶部天平实时显示你与对手的分数。`, need: null };
+        return { text: `欢迎来到《邪刻》！\n\n【目标】把对方天平的指针压到己方一端即获胜。本局采用「${winModeName(App.rules.winMode)}」胜利方式，目标 ${App.rules.winScale} 分——顶部天平实时显示你与对手的分数。`, need: null };
       case 'play':
         return fac === 'blood'
           ? { text: '【出牌 · 血肉】点手牌选中一张牌→点空列即可召唤。\n血肉阵营没有任何无偿投放的血肉：所有费用都靠献祭场上已召唤的单位来支付。先把小怪（如「白鼬」免费 0 费或场上已有的单位）召唤/铺到场上，选中要打的牌时，点场上单位把它献祭补足费用，再点空列召唤。', need: 'play' }
