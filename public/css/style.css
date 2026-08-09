@@ -455,6 +455,17 @@ html, body {
 
 .howto-box { max-height: 90vh; display: flex; flex-direction: column; }
 .howto-body { overflow-y: auto; text-align: left; padding-right: 8px; }
+
+/* ---- 更新日志 ---- */
+.changelog-body { overflow-y: auto; text-align: left; padding-right: 8px; }
+.cl-entry { border-left: 3px solid var(--gold); padding: 4px 0 14px 14px; margin: 6px 0 10px; }
+.cl-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.cl-ver { font-family: 'Georgia', serif; font-weight: 700; color: var(--gold); font-size: 16px; text-shadow: 0 0 10px rgba(224,176,58,.3); }
+.cl-date { color: var(--text-dim); font-size: 12px; letter-spacing: 1px; }
+.cl-title { color: #f3e6c8; font-size: 15px; font-weight: 600; }
+.cl-items { margin: 0; padding-left: 18px; }
+.cl-items li { color: var(--text-dim); font-size: 13px; line-height: 1.7; }
+.cl-items li::marker { color: var(--gold); }
 .ht-section { text-align: left; margin: 4px 0 12px; }
 .ht-h { color: var(--gold); font-size: 18px; letter-spacing: 2px; border-left: 4px solid var(--gold); padding-left: 10px; margin: 14px 0 10px; }
 .ht-p { color: var(--text); line-height: 1.8; font-size: 14px; margin: 6px 0; }

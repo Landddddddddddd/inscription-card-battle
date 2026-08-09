@@ -3,7 +3,7 @@ import { createGame, playCard, endTurn, applyAction, instantiate } from './engin
 import { DECKS, CONFIG, FACTIONS, defaultDeck, DEFAULT_RULES, normalizeRules, SCOPE_NAMES, CARDS, defaultWinScaleFor, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard } from './constants.js';
 import { aiTakeTurn } from './ai.js';
 import * as UI from './ui.js';
-import { canPlayCard, renderTutSetup, TUT_MODULES, renderHowTo } from './ui.js';
+import { canPlayCard, renderTutSetup, TUT_MODULES, renderHowTo, changelogHTML } from './ui.js';
 import { NetClient } from './network.js';
 import { OnlineNet } from './net.js';
 import { loadProfile, createProfile, saveProfile, drawPack, recordResult, saveDeck, AVATARS, randomAvatar } from './profile.js';
@@ -24,7 +24,7 @@ const App = {
 };
 
 const $ = (id) => document.getElementById(id);
-const SCREENS = ['login', 'menu', 'collection', 'deckBuilder', 'game', 'tutorialSetup', 'howto'];
+const SCREENS = ['login', 'menu', 'collection', 'deckBuilder', 'game', 'tutorialSetup', 'howto', 'changelog'];
 
 // Resume the AudioContext on the very first user gesture (browsers block audio
 // until then). unlockAudio is idempotent and safe if Web Audio is unavailable.
@@ -301,6 +301,7 @@ function beginTutorial() {
 }
 
 function openHowTo() { UI.renderHowTo(UI.howToHTML()); show('howto'); }
+function openChangelog() { UI.renderChangelog(changelogHTML()); show('changelog'); }
 
 // ---------- Modes ----------
 function startSingle() {
@@ -683,6 +684,7 @@ $('menu').addEventListener('click', (e) => {
   if (a === 'single') openBuilder('single');
   else if (a === 'tutorial') openTutorial();
   else if (a === 'howto') openHowTo();
+  else if (a === 'changelog') openChangelog();
   else if (a === 'collection') openCollection();
   else if (a === 'hotseat') { App.deckA = null; App.deckB = null; App._hotseatStep = 'A'; openBuilder('hotseat'); }
   else if (a === 'host') openBuilder('host');
@@ -768,6 +770,10 @@ $('tutorialSetup').addEventListener('click', (e) => {
 // ---------- How-to screen ----------
 $('howto').addEventListener('click', (e) => {
   const b = e.target.closest('[data-hact="howtoBack"]'); if (b) toMenu();
+});
+
+$('changelog').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-clact="back"]'); if (b) toMenu();
 });
 
 $('game').addEventListener('click', (e) => {
