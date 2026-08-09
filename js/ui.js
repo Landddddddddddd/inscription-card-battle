@@ -1,6 +1,6 @@
 // Pure rendering + visual effects. Reads `ctx` and paints the DOM.
 // Interaction is handled by main.js via event delegation on data-* attributes.
-import { CONFIG, SIGILS, CARDS, FACTIONS, GEMS, RARITY, RARITY_ORDER, rarityOf, allCardIds, PACK, RULE_OPTIONS, SCOPE_NAMES, normalizeRules, rulesSummary, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard } from './constants.js';
+import { CONFIG, SIGILS, CARDS, FACTIONS, GEMS, RARITY, RARITY_ORDER, rarityOf, allCardIds, PACK, RULE_OPTIONS, SCOPE_NAMES, normalizeRules, rulesSummary, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, CHANGELOG } from './constants.js';
 import { getAttack, availableGems } from './engine.js';
 import { cardArt } from './art.js';
 import { playSfx } from './audio.js';
@@ -772,6 +772,25 @@ export function renderTutSetup(ctx) {
 
 export function renderHowTo(html) {
   const b = el('howtoBody'); if (b) b.innerHTML = html;
+}
+
+// 更新日志（产品内可见）。数据来自 constants.js 的 CHANGELOG（最新在前）。
+export function renderChangelog(html) {
+  const b = el('changelogBody'); if (b) b.innerHTML = html;
+}
+export function changelogHTML() {
+  const entries = (Array.isArray(CHANGELOG) ? CHANGELOG : []).map((e) => {
+    const items = (e.items || []).map((it) => `<li>${it}</li>`).join('');
+    return `<div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">${e.version || ''}</span>
+        <span class="cl-date">${e.date || ''}</span>
+        <span class="cl-title">${e.title || ''}</span>
+      </div>
+      <ul class="cl-items">${items}</ul>
+    </div>`;
+  }).join('');
+  return `<div class="changelog-body">${entries}</div>`;
 }
 
 // Full "玩法说明" page: four play modes + two victory conditions + four factions.
