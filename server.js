@@ -206,7 +206,7 @@ server.listen(PORT, () => {
     .filter((i) => i.family === 'IPv4' && !i.internal)
     .map((i) => i.address);
   console.log('=============================================');
-  console.log('  邪恶铭刻 · 本地联机版  已启动');
+  console.log('  邪刻 · 本地联机版  已启动');
   console.log('=============================================');
   console.log(`  本机访问 : http://localhost:${PORT}`);
   for (const ip of ips) console.log(`  局域网访问: http://${ip}:${PORT}`);
