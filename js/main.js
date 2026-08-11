@@ -1,12 +1,12 @@
 // App controller: login, screen routing, single/AI, LAN, ONLINE(P2P), tutorial, collection, gacha.
 import { createGame, playCard, endTurn, applyAction, instantiate } from './engine.js';
-import { DECKS, CONFIG, FACTIONS, defaultDeck, DEFAULT_RULES, normalizeRules, SCOPE_NAMES, CARDS, defaultWinScaleFor, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard } from './constants.js';
+import { DECKS, CONFIG, FACTIONS, defaultDeck, DEFAULT_RULES, normalizeRules, SCOPE_NAMES, CARDS, defaultWinScaleFor, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, RECHARGE_PACKAGES, GEM_EXCHANGE } from './constants.js';
 import { aiTakeTurn } from './ai.js';
 import * as UI from './ui.js';
 import { canPlayCard, renderTutSetup, TUT_MODULES, renderHowTo, changelogHTML } from './ui.js';
 import { NetClient } from './network.js';
 import { OnlineNet } from './net.js';
-import { loadProfile, createProfile, saveProfile, drawPack, recordResult, saveDeck, AVATARS, randomAvatar } from './profile.js';
+import { loadProfile, createProfile, saveProfile, drawPack, drawGemPack, buyCardDirect, recharge, exchangeGemsForCoins, recordResult, saveDeck, AVATARS, randomAvatar } from './profile.js';
 import { unlockAudio, setMuted, isMuted, loadMute, playSfx } from './audio.js';
 
 const App = {
@@ -63,7 +63,7 @@ function bootLogin() {
     App.profile = p;
     loadMute(p.muted);
     $('loginName').value = p.name;
-    $('loginReturning').textContent = `欢迎回来，${p.name}。金币 ✦${p.coins}，直接进入即可。`;
+    $('loginReturning').textContent = `欢迎回来，${p.name}。金币 ✦${p.coins} · 魂晶 💎${p.gems || 0}，直接进入即可。`;
     $('loginReturning').classList.remove('hidden');
   }
   renderAvatarPicker();
@@ -178,7 +178,7 @@ function checkGameOver() {
   if (!App.rewardGiven && App.profile && (App.mode === 'single' || App.mode === 'host' || App.mode === 'join' || App.mode === 'onlineHost' || App.mode === 'onlineJoin')) {
     App.rewardGiven = true;
     const gained = recordResult(App.profile, win);
-    reward = `金币 +${gained}（当前 ✦${App.profile.coins}）`;
+    reward = `金币 +${gained}（当前 ✦${App.profile.coins} · 💎${App.profile.gems || 0}）`;
     UI.renderTopChip(App.profile);
   }
   const txt = win ? '🏆 你赢了！天平被你压垮了。' : '💀 你输了……对手压垮了天平。';
@@ -622,11 +622,11 @@ function builderConfirm() {
 function builderCancel() { App.builder = null; toMenu(); }
 
 // ---------- Collection (图鉴 + 抽卡分支) ----------
-function openCollection() { App.coll.faction = 'blood'; showCollSub('grid'); }
+function openCollection() { App.coll.faction = 'blood'; App.coll.shopTab = 'packs'; showCollSub('grid'); }
 function collSetFaction(k) { App.coll.faction = k; UI.renderCollection({ profile: App.profile, faction: k }); }
-// 在「我的收藏」内切换子视图：grid=图鉴，gacha=抽卡。
+// 在「我的收藏」内切换子视图：grid=图鉴，gacha=抽卡/商店。
 function showCollSub(sub) {
-  if (sub === 'gacha') UI.renderShop({ profile: App.profile });
+  if (sub === 'gacha') UI.renderShop({ profile: App.profile, tab: App.coll.shopTab || 'packs' });
   else UI.renderCollection({ profile: App.profile, faction: App.coll.faction });
   const grid = $('collGridView'), gacha = $('collGachaView');
   if (grid) grid.classList.toggle('hidden', sub !== 'grid');
@@ -643,8 +643,65 @@ function doDraw() {
   if (!r.ok) { alert(r.reason); return; }
   shopBusy = true;
   playSfx('pack');
-  UI.renderShop({ profile: App.profile });
+  UI.renderShop({ profile: App.profile, tab: 'packs' });
   UI.playPackOpen(r, () => { UI.renderTopChip(App.profile); shopBusy = false; });
+}
+
+// 暗夜包开包
+function doDrawGem() {
+  if (shopBusy) return;
+  const r = drawGemPack(App.profile);
+  if (!r.ok) { alert(r.reason); return; }
+  shopBusy = true;
+  playSfx('pack');
+  UI.renderShop({ profile: App.profile, tab: 'packs' });
+  UI.playPackOpen(r, () => { UI.renderTopChip(App.profile); shopBusy = false; });
+}
+
+// 切换商店标签页
+function shopSetTab(tab) {
+  App.coll.shopTab = tab;
+  UI.renderShop({ profile: App.profile, tab });
+}
+
+// 直购卡牌
+function doBuyCard(id) {
+  const r = buyCardDirect(App.profile, id);
+  if (!r.ok) { alert(r.reason); return; }
+  playSfx('click');
+  UI.renderShop({ profile: App.profile, tab: 'direct' });
+  UI.renderTopChip(App.profile);
+  // 简单购买反馈
+  const c = CARDS[id];
+  alert(`购买成功！「${c.name}」已加入收藏。`);
+}
+
+// 充值
+function doRecharge(pkgId) {
+  const pkg = RECHARGE_PACKAGES.find((p) => p.id === pkgId);
+  if (!pkg) return;
+  const total = pkg.gems + (pkg.bonus || 0);
+  if (!confirm(`确认充值 ¥${pkg.price} 获得 ${total} 魂晶？（模拟支付，不会产生真实交易）`)) return;
+  const r = recharge(App.profile, pkg);
+  if (r.ok) {
+    playSfx('click');
+    UI.renderShop({ profile: App.profile, tab: 'recharge' });
+    UI.renderTopChip(App.profile);
+    alert(`充值成功！获得 ${r.gems} 魂晶，当前共 ${r.total} 💎`);
+  }
+}
+
+// 魂晶兑换金币
+function doExchange() {
+  const input = $('exAmount');
+  const gems = parseInt(input?.value, 10);
+  if (!gems || gems < 1) { alert('请输入有效的魂晶数量'); return; }
+  const r = exchangeGemsForCoins(App.profile, gems);
+  if (!r.ok) { alert(r.reason); return; }
+  playSfx('click');
+  UI.renderShop({ profile: App.profile, tab: 'recharge' });
+  UI.renderTopChip(App.profile);
+  alert(`兑换成功！${r.gems} 💎 → ${r.coins} ✦ 金币`);
 }
 
 // ---------- Login avatar picker ----------
@@ -711,7 +768,21 @@ $('collection').addEventListener('click', (e) => {
   const tab = e.target.closest('[data-ctab]'); if (tab) { collSetFaction(tab.dataset.ctab); return; }
   const sub = e.target.closest('[data-csub]'); if (sub) { showCollSub(sub.dataset.csub); return; }
   const open = e.target.closest('[data-sact="open"]'); if (open) { doDraw(); return; }
+  const openGem = e.target.closest('[data-sact="openGem"]'); if (openGem) { doDrawGem(); return; }
+  const stab = e.target.closest('[data-stab]'); if (stab) { shopSetTab(stab.dataset.stab); return; }
+  const buy = e.target.closest('[data-buy]'); if (buy) { doBuyCard(buy.dataset.buy); return; }
+  const rc = e.target.closest('[data-recharge]'); if (rc) { doRecharge(rc.dataset.recharge); return; }
+  const ex = e.target.closest('[data-act="exchange"]'); if (ex) { doExchange(); return; }
   const back = e.target.closest('[data-cact="back"]'); if (back) toMenu();
+});
+
+// 兑换输入实时更新结果
+$('collection').addEventListener('input', (e) => {
+  if (e.target.id === 'exAmount') {
+    const gems = parseInt(e.target.value, 10) || 0;
+    const result = $('exResult');
+    if (result) result.textContent = `${gems * GEM_EXCHANGE.rate} ✦`;
+  }
 });
 
 $('deckBuilder').addEventListener('click', (e) => {
