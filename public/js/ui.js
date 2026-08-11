@@ -1,6 +1,6 @@
 // Pure rendering + visual effects. Reads `ctx` and paints the DOM.
 // Interaction is handled by main.js via event delegation on data-* attributes.
-import { CONFIG, SIGILS, CARDS, FACTIONS, GEMS, RARITY, RARITY_ORDER, rarityOf, allCardIds, PACK, RULE_OPTIONS, SCOPE_NAMES, normalizeRules, rulesSummary, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, CHANGELOG } from './constants.js';
+import { CONFIG, SIGILS, CARDS, FACTIONS, GEMS, RARITY, RARITY_ORDER, rarityOf, allCardIds, PACK, GEM_PACK, CARD_SHOP_PRICES, RECHARGE_PACKAGES, GEM_EXCHANGE, RULE_OPTIONS, SCOPE_NAMES, normalizeRules, rulesSummary, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, CHANGELOG } from './constants.js';
 import { getAttack, availableGems } from './engine.js';
 import { cardArt } from './art.js';
 import { playSfx } from './audio.js';
@@ -554,7 +554,7 @@ export function renderCollection(ctx) {
   const { profile, faction } = ctx;
   const unlocked = new Set(profile.unlocked);
   const have = allCardIds().filter((id) => unlocked.has(id)).length;
-  el('collProgress').textContent = `已解锁 ${have} / ${allCardIds().length} · 金币 ${profile.coins}`;
+  el('collProgress').innerHTML = `已解锁 ${have} / ${allCardIds().length} · <span class="cur-coins">✦ ${profile.coins}</span> <span class="cur-gems">💎 ${profile.gems || 0}</span>`;
   el('collTabs').innerHTML = FACTION_ORDER.map((k) => {
     const f = FACTIONS[k];
     return `<button class="ftab ${k === faction ? 'active' : ''}" data-ctab="${k}" style="--fc:${f.color}">${f.name}</button>`;
@@ -580,32 +580,121 @@ export function renderCollection(ctx) {
 }
 
 // ============================================================================
-// SHOP / GACHA
+// SHOP / GACHA — 三标签页：卡牌包 / 直购 / 充值
 // ============================================================================
 export function renderShop(ctx) {
-  const { profile } = ctx;
-  el('shopCoins').textContent = `金币：${profile.coins}`;
+  const { profile, tab } = ctx;
+  // 更新货币显示
+  el('shopCoins').innerHTML = `<span class="cur-coins">✦ ${profile.coins}</span> <span class="cur-gems">💎 ${profile.gems || 0}</span>`;
+
+  // 标签高亮
+  document.querySelectorAll('#collGachaView .shop-tab').forEach((b) => {
+    b.classList.toggle('on', b.dataset.stab === (tab || 'packs'));
+  });
+
+  // 切换面板
+  el('shopPacksPanel').classList.toggle('hidden', (tab || 'packs') !== 'packs');
+  el('shopDirectPanel').classList.toggle('hidden', tab !== 'direct');
+  el('shopRechargePanel').classList.toggle('hidden', tab !== 'recharge');
+
+  if (!tab || tab === 'packs') renderShopPacks(profile);
+  else if (tab === 'direct') renderShopDirect(profile);
+  else if (tab === 'recharge') renderShopRecharge(profile);
+
+  el('packResult')?.classList.add('hidden');
+}
+
+// --- 标签 1: 卡牌包（普通包 + 暗夜包） ---
+function renderShopPacks(profile) {
+  // 普通包
   el('packCost').textContent = `✦ ${PACK.cost}`;
   const drawBtn = el('drawBtn');
   if (drawBtn) { drawBtn.disabled = profile.coins < PACK.cost; drawBtn.textContent = profile.coins < PACK.cost ? '金币不足' : `✦ 开一包（-${PACK.cost}）`; }
-  el('odds').innerHTML = '掉率：' + RARITY_ORDER.map((k) => `<span class="rl" style="--rc:${RARITY[k].color}"><i></i>${RARITY[k].name} ${RARITY[k].weight}%</span>`).join(' ')
+  el('odds').innerHTML = '<div class="pack-title-row"><span class="ptag gold">普通包</span></div>掉率：' + RARITY_ORDER.map((k) => `<span class="rl" style="--rc:${RARITY[k].color}"><i></i>${RARITY[k].name} ${RARITY[k].weight}%</span>`).join(' ')
     + '<div class="shop-hint">图鉴未集齐前抽取的必定是新卡；集齐后重复将按稀有度返还金币。</div>';
-  el('packResult').classList.add('hidden');
+
+  // 暗夜包
+  el('gemPackCost').textContent = `💎 ${GEM_PACK.cost}`;
+  const gemDrawBtn = el('gemDrawBtn');
+  if (gemDrawBtn) { gemDrawBtn.disabled = (profile.gems || 0) < GEM_PACK.cost; gemDrawBtn.textContent = (profile.gems || 0) < GEM_PACK.cost ? '魂晶不足' : `💎 开暗夜包（-${GEM_PACK.cost}）`; }
+  el('gemOdds').innerHTML = '<div class="pack-title-row"><span class="ptag purple">暗夜包</span></div>掉率：' + RARITY_ORDER.map((k) => {
+    const w = GEM_PACK.weights[k] || 0;
+    if (w === 0) return '';
+    return `<span class="rl" style="--rc:${RARITY[k].color}"><i></i>${RARITY[k].name} ${w}%</span>`;
+  }).filter(Boolean).join(' ')
+    + '<div class="shop-hint">保底稀有以上！史诗/传说概率大幅提升。图鉴未集齐前不重复。</div>';
+}
+
+// --- 标签 2: 直购商店 ---
+function renderShopDirect(profile) {
+  const owned = new Set(profile.unlocked);
+  el('shopDirectInfo').innerHTML = `用 💎 魂晶直接购买指定卡牌（跳过随机）。<span class="cur-gems">当前 💎 ${profile.gems || 0}</span>`;
+  el('shopDirectGrid').innerHTML = allCardIds().map((id) => {
+    const c = CARDS[id];
+    const rk = rarityOf(id);
+    const price = CARD_SHOP_PRICES[rk];
+    const isOwned = owned.has(id);
+    const canBuy = !isOwned && (profile.gems || 0) >= price;
+    const sig = (c.sigils || []).map((s) => `<span class="sig" title="${SIGILS[s] ? SIGILS[s].desc : ''}">${SIGILS[s] ? SIGILS[s].name : s}</span>`).join(' ');
+    return `
+      <div class="bcard coll rar-${rk} ${isOwned ? 'owned' : ''}" data-rarity="${rk}">
+        <div class="rar-tag" style="--rc:${RARITY[rk].color}">${RARITY[rk].name}</div>
+        ${isOwned ? '<div class="lock owned-mark">✓</div>' : ''}
+        ${portraitHTML(id)}
+        <div class="cname">${c.name}</div>
+        ${miniCostHTML(c)}
+        <div class="stats mini"><span class="atk">⚔${c.atk}</span><span class="hp">♥${c.hp}</span></div>
+        <div class="sigils">${sig}</div>
+        ${isOwned ? '' : `<button class="btn small ${canBuy ? 'primary' : 'disabled'} buy-card-btn" data-buy="${id}" data-price="${price}" ${canBuy ? '' : 'disabled'}>💎 ${price}</button>`}
+      </div>`;
+  }).join('');
+}
+
+// --- 标签 3: 充值 ---
+function renderShopRecharge(profile) {
+  el('shopRechargeInfo').innerHTML = `魂晶是充值获得的付费货币，可用于暗夜卡包、直购卡牌、兑换金币。<br><span class="cur-gems">当前 💎 ${profile.gems || 0}</span>`;
+
+  el('rechargeGrid').innerHTML = RECHARGE_PACKAGES.map((pkg) => {
+    const total = pkg.gems + (pkg.bonus || 0);
+    const bonusTag = pkg.bonus > 0 ? `<span class="rc-bonus">+${pkg.bonus} 赠送</span>` : '';
+    return `
+      <div class="rc-card" data-rc="${pkg.id}">
+        <div class="rc-label">${pkg.label}</div>
+        <div class="rc-amount">💎 ${total}</div>
+        ${bonusTag}
+        <div class="rc-price">¥${pkg.price}</div>
+        <button class="btn small primary rc-btn" data-recharge="${pkg.id}">充值</button>
+      </div>`;
+  }).join('');
+
+  // 兑换区
+  el('exchangeArea').innerHTML = `
+    <div class="exchange-box">
+      <div class="ex-title">魂晶 → 金币</div>
+      <div class="ex-rate">汇率：1 💎 = ${GEM_EXCHANGE.rate} ✦</div>
+      <div class="ex-input-row">
+        <input type="number" id="exAmount" min="${GEM_EXCHANGE.minGems}" value="1" class="ex-input" />
+        <span class="ex-arrow">→</span>
+        <span class="ex-result" id="exResult">${GEM_EXCHANGE.rate} ✦</span>
+      </div>
+      <button class="btn small" data-act="exchange">兑换</button>
+    </div>`;
 }
 
 // Play the pack-open animation and reveal a card.
 export function playPackOpen(result, onDone) {
-  const pack = el('pack');
+  const isGem = !!result.premium;
+  const pack = isGem ? el('gemPack') : el('pack');
   const res = el('packResult');
-  pack.classList.add('shake');
+  if (pack) pack.classList.add('shake');
   setTimeout(() => {
-    pack.classList.remove('shake');
+    if (pack) pack.classList.remove('shake');
     const c = CARDS[result.id];
     const rk = result.rarity;
     const sig = (c.sigils || []).map((s) => `<span class="sig">${SIGILS[s] ? SIGILS[s].name : s}</span>`).join(' ');
-    res.className = `pack-result reveal rar-${rk}`;
+    res.className = `pack-result reveal rar-${rk} ${isGem ? 'gem-reveal' : ''}`;
     res.innerHTML = `
-      <div class="reveal-rarity" style="color:${RARITY[rk].color}">${RARITY[rk].name}${result.dup ? ' · 重复' : ' · 新卡!'}</div>
+      <div class="reveal-rarity" style="color:${RARITY[rk].color}">${isGem ? '💎 ' : ''}${RARITY[rk].name}${result.dup ? ' · 重复' : ' · 新卡!'}</div>
       <div class="bcard big rar-${rk}" data-rarity="${rk}">
         ${portraitHTML(result.id)}
         <div class="cname">${c.name}</div>
@@ -739,7 +828,7 @@ export function showLobbyAnswer(answer) {
 export function renderTopChip(profile) {
   const chip = el('topchip');
   if (!chip) return;
-  chip.innerHTML = `<span class="tc-avatar">${profile.avatar || '🜁'}</span><span class="tc-name">${profile.name}</span><span class="tc-coin">✦ ${profile.coins}</span><span class="tc-stat">胜 ${profile.stats.wins} · 负 ${profile.stats.losses}</span>`;
+  chip.innerHTML = `<span class="tc-avatar">${profile.avatar || '🜁'}</span><span class="tc-name">${profile.name}</span><span class="tc-coin">✦ ${profile.coins}</span><span class="tc-gem">💎 ${profile.gems || 0}</span><span class="tc-stat">胜 ${profile.stats.wins} · 负 ${profile.stats.losses}</span>`;
 }
 
 // ============================================================================

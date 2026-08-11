@@ -89,21 +89,60 @@
 
         <!-- 抽卡视图（「我的收藏」的分支） -->
         <div id="collGachaView" class="hidden">
-          <div class="gacha-coins">金币：<span id="shopCoins"></span></div>
-          <div class="pack-stage">
-            <div id="pack" class="pack" data-sact="open">
-              <div class="pack-face">
-                <div class="pack-glyph">✦</div>
-                <div class="pack-name">神秘卡牌包</div>
-                <div class="pack-cost" id="packCost"></div>
+          <div class="gacha-currency" id="shopCoins"></div>
+
+          <!-- 商店标签页 -->
+          <div class="shop-tabs">
+            <button class="shop-tab on" data-stab="packs">🎴 卡牌包</button>
+            <button class="shop-tab" data-stab="direct">🛒 直购</button>
+            <button class="shop-tab" data-stab="recharge">💎 充值</button>
+          </div>
+
+          <!-- 面板 1: 卡牌包（普通 + 暗夜） -->
+          <div id="shopPacksPanel">
+            <div class="pack-stage">
+              <!-- 普通包 -->
+              <div class="pack-col">
+                <div id="pack" class="pack gold-pack" data-sact="open">
+                  <div class="pack-face">
+                    <div class="pack-glyph">✦</div>
+                    <div class="pack-name">神秘卡牌包</div>
+                    <div class="pack-cost" id="packCost"></div>
+                  </div>
+                </div>
+                <button class="btn big primary pack-btn" data-sact="open" id="drawBtn">✦ 开 一 包</button>
               </div>
+              <!-- 暗夜包 -->
+              <div class="pack-col">
+                <div id="gemPack" class="pack dark-pack" data-sact="openGem">
+                  <div class="pack-face">
+                    <div class="pack-glyph dark">💎</div>
+                    <div class="pack-name dark">暗夜卡牌包</div>
+                    <div class="pack-cost gem" id="gemPackCost"></div>
+                  </div>
+                </div>
+                <button class="btn big primary dark-btn" data-sact="openGem" id="gemDrawBtn">💎 开暗夜包</button>
+              </div>
+              <!-- 开包结果 -->
+              <div id="packResult" class="pack-result hidden"></div>
             </div>
-            <div id="packResult" class="pack-result hidden"></div>
+            <div class="odds" id="odds"></div>
+            <div class="odds" id="gemOdds"></div>
           </div>
-          <div class="odds" id="odds"></div>
-          <div class="shop-actions">
-            <button class="btn big primary" data-sact="open" id="drawBtn">✦ 开 一 包</button>
+
+          <!-- 面板 2: 直购 -->
+          <div id="shopDirectPanel" class="hidden">
+            <div class="shop-direct-info" id="shopDirectInfo"></div>
+            <div class="card-grid shop-direct-grid" id="shopDirectGrid"></div>
           </div>
+
+          <!-- 面板 3: 充值 -->
+          <div id="shopRechargePanel" class="hidden">
+            <div class="shop-recharge-info" id="shopRechargeInfo"></div>
+            <div class="recharge-grid" id="rechargeGrid"></div>
+            <div id="exchangeArea"></div>
+          </div>
+
           <div class="gacha-back"><button class="btn small ghost" data-csub="grid">← 返回图鉴</button></div>
         </div>
       </div>

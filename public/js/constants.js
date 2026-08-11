@@ -374,7 +374,47 @@ export const PACK = {
   startCoins: 800,    // coins a new profile begins with
   winReward: 120,     // coins for winning a match
   loseReward: 40,     // consolation coins
-  residualDupChance: 0,    // 0 = 图鉴未集齐前绝不重复（始终从“未拥有”卡池抽取）；集齐后才会必然重复并按稀有度返还金币
+  residualDupChance: 0,    // 0 = 图鉴未集齐前绝不重复（始终从"未拥有"卡池抽取）；集齐后才会必然重复并按稀有度返还金币
+};
+
+// ============================================================================
+// PREMIUM CURRENCY: 魂晶 (Soul Crystals 💎)
+// ============================================================================
+// 魂晶是充值获得的付费货币。金币是免费游戏货币（对战获取）。
+// 魂晶用途：① 暗夜卡包（保底稀有+，更高史诗/传说概率）
+//           ② 直购指定卡牌（跳过随机，按稀有度定价）
+//           ③ 兑换金币（1 魂晶 = 25 金币）
+
+// 暗夜卡包：魂晶购买，掉率大幅优于普通包（保底 rare+）
+export const GEM_PACK = {
+  cost: 30,           // 魂晶 per pack
+  // 掉率权重：common 被压制，epic/legend 大幅提升
+  weights: { common: 20, rare: 40, epic: 28, legend: 12 },
+  // 保底机制：最低稀有度 = rare（不会出 common）
+  minRarity: 'rare',
+  residualDupChance: 0,   // 同普通包：图鉴未集齐前不重复
+};
+
+// 直购商店：按稀有度定价（魂晶）
+export const CARD_SHOP_PRICES = {
+  common: 5,
+  rare: 15,
+  epic: 40,
+  legend: 100,
+};
+
+// 充值档位（模拟支付，无真实交易）
+export const RECHARGE_PACKAGES = [
+  { id: 'r6',   price: 6,   gems: 60,   bonus: 0,   label: '入门' },
+  { id: 'r30',  price: 30,  gems: 300,  bonus: 30,  label: '日常' },
+  { id: 'r98',  price: 98,  gems: 980,  bonus: 150, label: '超值' },
+  { id: 'r328', price: 328, gems: 3280, bonus: 600, label: '豪礼' },
+];
+
+// 魂晶兑换金币
+export const GEM_EXCHANGE = {
+  rate: 25,           // 1 魂晶 = 25 金币
+  minGems: 1,         // 最低兑换 1 魂晶
 };
 
 // ===================== 更新日志（产品内可见，最新在前）=====================

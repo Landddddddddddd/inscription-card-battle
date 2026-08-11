@@ -1,6 +1,6 @@
 // Local player profile: name, coins, unlocked-card collection, stats.
 // Persisted in localStorage (no server auth — this is a local "login").
-import { starterUnlocked, allCardIds, rarityOf, RARITY, PACK } from './constants.js';
+import { starterUnlocked, allCardIds, rarityOf, RARITY, PACK, GEM_PACK, CARD_SHOP_PRICES, GEM_EXCHANGE } from './constants.js';
 
 const KEY = 'inscryption_profile_v1';
 
@@ -18,6 +18,7 @@ function normalize(p) {
   p.name = p.name || '玩家';
   p.avatar = (typeof p.avatar === 'string' && p.avatar) ? p.avatar : randomAvatar();
   p.coins = Number.isFinite(p.coins) ? p.coins : 0;
+  p.gems = Number.isFinite(p.gems) ? p.gems : 0;
   p.muted = !!p.muted;
   p.aiLevel = ['easy', 'normal', 'hard'].includes(p.aiLevel) ? p.aiLevel : 'normal';
   p.unlocked = Array.from(new Set(p.unlocked || []));
@@ -53,6 +54,7 @@ export function createProfile(name) {
     name: (name || '玩家').slice(0, 12),
     avatar: randomAvatar(),
     coins: PACK.startCoins,
+    gems: 0,
     unlocked: starterUnlocked(),
     stats: { wins: 0, losses: 0, packs: 0 },
   });
@@ -71,6 +73,94 @@ export function saveDeck(p, deck) {
 }
 
 export function addCoins(p, n) { p.coins = Math.max(0, p.coins + n); saveProfile(p); }
+
+// ---------- 魂晶 (premium currency) ----------
+export function addGems(p, n) { p.gems = Math.max(0, p.gems + n); saveProfile(p); }
+
+export function spendGems(p, n) {
+  if (p.gems < n) return false;
+  p.gems -= n; saveProfile(p); return true;
+}
+
+// 充值：模拟支付，直接到账魂晶（含首充奖励等可在此扩展）
+export function recharge(p, pkg) {
+  p.gems += pkg.gems + (pkg.bonus || 0);
+  saveProfile(p);
+  return { ok: true, gems: pkg.gems + (pkg.bonus || 0), total: p.gems };
+}
+
+// 魂晶兑换金币
+export function exchangeGemsForCoins(p, gems) {
+  if (!Number.isFinite(gems) || gems < GEM_EXCHANGE.minGems) return { ok: false, reason: `最少兑换 ${GEM_EXCHANGE.minGems} 魂晶` };
+  if (p.gems < gems) return { ok: false, reason: '魂晶不足' };
+  p.gems -= gems;
+  const coins = gems * GEM_EXCHANGE.rate;
+  p.coins += coins;
+  saveProfile(p);
+  return { ok: true, coins, gems };
+}
+
+// 暗夜卡包：魂晶购买，使用 GEM_PACK 权重，保底 rare+
+function weightedRandomCardGem(exclude) {
+  const ids = allCardIds();
+  const w = ids.map((id) => {
+    if (exclude && exclude.has(id)) return 0;
+    const rk = rarityOf(id);
+    // 保底 rare+：common 权重归零
+    if (rk === 'common') return 0;
+    return GEM_PACK.weights[rk] || 0;
+  });
+  const total = w.reduce((a, b) => a + b, 0);
+  if (total <= 0) {
+    // 安全兜底：从 rare+ 中随机
+    const pool = ids.filter((id) => ['rare', 'epic', 'legend'].includes(rarityOf(id)));
+    return pool[Math.floor(Math.random() * pool.length)] || ids[0];
+  }
+  let r = Math.random() * total;
+  for (let i = 0; i < ids.length; i++) { r -= w[i]; if (r <= 0) return ids[i]; }
+  return ids[ids.length - 1];
+}
+
+export function drawGemPack(p) {
+  if (p.gems < GEM_PACK.cost) return { ok: false, reason: `魂晶不足，需要 ${GEM_PACK.cost} 💎` };
+  p.gems -= GEM_PACK.cost;
+  p.stats.packs++;
+
+  const owned = new Set(p.unlocked.filter((id) => allCardIds().includes(id)));
+  const collectionFull = owned.size >= allCardIds().length;
+
+  let id;
+  if (collectionFull) {
+    id = weightedRandomCardGem(null);
+  } else if (Math.random() < (GEM_PACK.residualDupChance || 0)) {
+    id = weightedRandomCardGem(null);
+  } else {
+    id = weightedRandomCardGem(owned);
+  }
+
+  const rarity = rarityOf(id);
+  let dup = false, dust = 0;
+  if (owned.has(id)) {
+    dup = true; dust = RARITY[rarity].dust; p.coins += dust;   // 重复 → 返还金币（同普通包）
+  } else {
+    p.unlocked.push(id);
+  }
+  saveProfile(p);
+  return { ok: true, id, rarity, dup, dust, premium: true };
+}
+
+// 直购：用魂晶直接购买指定卡牌（跳过随机）
+export function buyCardDirect(p, id) {
+  if (!allCardIds().includes(id)) return { ok: false, reason: '卡牌不存在' };
+  if (p.unlocked.includes(id)) return { ok: false, reason: '已拥有该卡牌' };
+  const rk = rarityOf(id);
+  const price = CARD_SHOP_PRICES[rk];
+  if (p.gems < price) return { ok: false, reason: `魂晶不足，需要 ${price} 💎`, price };
+  p.gems -= price;
+  p.unlocked.push(id);
+  saveProfile(p);
+  return { ok: true, id, rarity: rk, price };
+}
 
 export function recordResult(p, won) {
   if (won) { p.stats.wins++; p.coins += PACK.winReward; }
