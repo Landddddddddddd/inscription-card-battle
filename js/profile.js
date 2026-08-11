@@ -112,8 +112,8 @@ function weightedRandomCardGem(exclude) {
   });
   const total = w.reduce((a, b) => a + b, 0);
   if (total <= 0) {
-    // 安全兜底：从 rare+ 中随机
-    const pool = ids.filter((id) => ['rare', 'epic', 'legend'].includes(rarityOf(id)));
+    // 安全兜底：从 rare+ 中随机（含 mythic）
+    const pool = ids.filter((id) => ['rare', 'epic', 'legend', 'mythic'].includes(rarityOf(id)));
     return pool[Math.floor(Math.random() * pool.length)] || ids[0];
   }
   let r = Math.random() * total;

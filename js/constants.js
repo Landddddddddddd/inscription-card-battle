@@ -269,6 +269,27 @@ export const CARDS = {
   frost_assassin: { name: '冰晶刺客', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['blue'],              sigils: ['sharp_quills'], bloodValue: 1, color: '#4a8ad0', glyph: '冰' },
   // [daily 2026-08-09] 石鳞卫
   stone_scale: { name: '石鳞卫',   atk: 1, hp: 3, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: ['armored'],       bloodValue: 1, color: '#5a7a4a', glyph: '岩' },
+
+  // ===================== 神话卡（premium / mythic）=====================
+  // 仅可通过魂晶（付费货币）获取：暗夜卡包极低概率掉落 或 直购商店高价购买。
+  // 设计原则：比同费用普通卡略强（+1 stat 或多一个印记），但有明确弱点（脆皮/高费/多宝石需求）。
+  // 视觉特色：专属宇宙星云背景 + 金色光环 + 动画边框。
+  // blood_titan: 比bear(5/4/4)多1攻1血+frenzy，但4费血肉需献祭2只单位。
+  blood_titan:    { name: '血肉巨人', atk: 6, hp: 5, cost: 4, costType: 'blood', sigils: ['frenzy'],                bloodValue: 2, color: '#8a0a1a', glyph: '巨', premium: true },
+  // vampire_queen: 比dire_wolf(3/3/3)多1血+双印记(回复+致死)，3费需1.5只献祭。
+  vampire_queen:  { name: '吸血女王', atk: 3, hp: 4, cost: 3, costType: 'blood', sigils: ['regen','death_touch'],     bloodValue: 2, color: '#6a0a2a', glyph: '吸', premium: true },
+  // lich_king: 4费骸骨（需4回合滴流），不死+回复极难杀，但攻击力偏低。
+  lich_king:      { name: '巫妖之王', atk: 3, hp: 5, cost: 4, costType: 'bone',  sigils: ['regen','undying'],        bloodValue: 1, color: '#2a1a4a', glyph: '巫', premium: true },
+  // bone_dragon: 4费骸骨，飞行+连击=8点直击天平，但3血很脆。
+  bone_dragon:    { name: '骨龙',     atk: 4, hp: 3, cost: 4, costType: 'bone',  sigils: ['airborne','double_strike'],bloodValue: 1, color: '#d8d0c0', glyph: '龙', premium: true },
+  // omega_core: 5费能量（满能才可出），铁桶+回复，终局终结者。
+  omega_core:     { name: '欧米伽核心', atk: 5, hp: 5, cost: 5, costType: 'energy', sigils: ['armored','regen'],      bloodValue: 1, color: '#0a3a5a', glyph: 'Ω',  premium: true },
+  // storm_harrier: 3费能量，飞行+连击=8点空袭，但2血极易被远程/法术清除。
+  storm_harrier:  { name: '风暴鹞',   atk: 4, hp: 2, cost: 3, costType: 'energy', sigils: ['airborne','double_strike'],bloodValue: 1, color: '#2a6aaa', glyph: '风', premium: true },
+  // archmage: 需三色全宝石，双印记(连击+回复)，终极魔石回报。
+  archmage:       { name: '大法师',   atk: 4, hp: 4, cost: 0, costType: 'gem', gemCost: ['orange','green','blue'], sigils: ['double_strike','regen'], bloodValue: 1, color: '#6a2a8a', glyph: '法', premium: true },
+  // void_phantom: 需2色宝石，飞行+致死，极难被地面单位处理。
+  void_phantom:   { name: '虚空幻影', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange','blue'],        sigils: ['airborne','death_touch'], bloodValue: 1, color: '#3a0a3a', glyph: '虚', premium: true },
 };
 
 // Faction metadata + the card pool the deck builder offers for each faction.
@@ -276,33 +297,35 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','blood_titan','vampire_queen'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物死亡时积累骸骨，用骸骨召唤亡灵。用 0 费「枯骨幼犬」免费铺场、送死换取骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','lich_king','bone_dragon'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','omega_core','storm_harrier'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','archmage','void_phantom'],
   },
 };
 
 // Ready-made decks (arrays of card ids), kept for quick-start / AI opponents.
 // 规则：有费卡（含需特定魔石的魔石法术卡）每张限 1 张，0 费免费卡可重复（2 份）。
 function deckCopies(id) { return isCostedCard(id) ? 1 : 2; }
+// 神话卡不进入默认卡组（AI 和玩家初始牌组都不含 premium 卡）
+const _nonPremium = (id) => !CARDS[id] || !CARDS[id].premium;
 export const DECKS = {
-  blood:  FACTIONS.blood.cards.flatMap((id) => Array(deckCopies(id)).fill(id)),
-  bone:   FACTIONS.bone.cards.flatMap((id) => Array(deckCopies(id)).fill(id)),
-  energy: FACTIONS.energy.cards.flatMap((id) => Array(deckCopies(id)).fill(id)),
-  mox:    FACTIONS.mox.cards.flatMap((id) => Array(deckCopies(id)).fill(id)),
+  blood:  FACTIONS.blood.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
+  bone:   FACTIONS.bone.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
+  energy: FACTIONS.energy.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
+  mox:    FACTIONS.mox.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
 };
 
 // Build a default deck for a faction (each card x2, padded to a sane size).
@@ -311,6 +334,7 @@ export function defaultDeck(factionKey) {
   if (!f) return DECKS.blood.slice();
   const out = [];
   for (const id of f.cards) {
+    if (CARDS[id] && CARDS[id].premium) continue;   // 神话卡不进入默认卡组
     const n = isCostedCard(id) ? 1 : 2;   // 有费的卡（含需魔石的法术卡）每张限 1 张
     for (let i = 0; i < n; i++) out.push(id);
   }
@@ -329,8 +353,10 @@ export const RARITY = {
   rare:   { key: 'rare',   name: '稀有', color: '#3a9ad0', glow: 'rgba(58,154,208,.65)', weight: 27, dust: 35 },
   epic:   { key: 'epic',   name: '史诗', color: '#a95ad0', glow: 'rgba(169,90,208,.7)',  weight: 9,  dust: 90 },
   legend: { key: 'legend', name: '传说', color: '#e0b03a', glow: 'rgba(224,176,58,.8)',  weight: 2,  dust: 220 },
+  mythic: { key: 'mythic', name: '神话', color: '#ff3366', glow: 'rgba(255,51,102,.9)',  weight: 0,  dust: 500 },
+  // mythic: weight=0 → 永不出现在普通包；仅暗夜包有极低概率；直购价格极高。
 };
-export const RARITY_ORDER = ['common', 'rare', 'epic', 'legend'];
+export const RARITY_ORDER = ['common', 'rare', 'epic', 'legend', 'mythic'];
 
 // A few explicit rarity overrides for signature cards; everything else is
 // derived from cost / gem complexity below.
@@ -344,6 +370,11 @@ const RARITY_OVERRIDE = {
   // New sigil demo cards are common so they're immediately playable & testable:
   viper_king: 'common', bone_warden: 'common', armor_tank: 'common', soul_reaper: 'common',
   warg: 'common', rat_king: 'common', berserker: 'common',
+  // Mythic (premium) cards — only obtainable via Soul Crystals (魂晶)
+  blood_titan: 'mythic', vampire_queen: 'mythic',
+  lich_king: 'mythic', bone_dragon: 'mythic',
+  omega_core: 'mythic', storm_harrier: 'mythic',
+  archmage: 'mythic', void_phantom: 'mythic',
 };
 
 export function rarityOf(id) {
@@ -386,10 +417,11 @@ export const PACK = {
 //           ③ 兑换金币（1 魂晶 = 25 金币）
 
 // 暗夜卡包：魂晶购买，掉率大幅优于普通包（保底 rare+）
+// mythic 卡仅通过暗夜包极低概率掉落或直购获得，普通包永不出。
 export const GEM_PACK = {
   cost: 30,           // 魂晶 per pack
-  // 掉率权重：common 被压制，epic/legend 大幅提升
-  weights: { common: 20, rare: 40, epic: 28, legend: 12 },
+  // 掉率权重：common 被压制，epic/legend 大幅提升，mythic 极低概率
+  weights: { common: 20, rare: 38, epic: 26, legend: 12, mythic: 4 },
   // 保底机制：最低稀有度 = rare（不会出 common）
   minRarity: 'rare',
   residualDupChance: 0,   // 同普通包：图鉴未集齐前不重复
@@ -401,6 +433,7 @@ export const CARD_SHOP_PRICES = {
   rare: 15,
   epic: 40,
   legend: 100,
+  mythic: 200,   // 神话卡直购价格极高
 };
 
 // 充值档位（模拟支付，无真实交易）
@@ -420,6 +453,18 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.4.0',
+    date: '2026-08-11',
+    title: '神话卡牌与付费货币',
+    items: [
+      '新增付费货币「魂晶」(💎)：充值获取，用于暗夜卡包、直购卡牌、兑换金币。',
+      '新增「神话」稀有度——8 张高级卡牌（血肉巨人 / 吸血女王 / 巫妖之王 / 骨龙 / 欧米伽核心 / 风暴鹞 / 大法师 / 虚空幻影），仅可通过魂晶获取。',
+      '神话卡牌拥有专属宇宙星云背景、金色光环与动画边框，强度略高于同费普通卡但有明确弱点。',
+      '暗夜卡包新增 4% 神话掉率；直购商店神话卡定价 200 💎。',
+      '手机端全面适配：5 个响应式断点 + 触屏优化。',
+    ],
+  },
   {
     version: 'v0.3.0',
     date: '2026-08-09',
