@@ -35,7 +35,10 @@ html, body {
   font-family: var(--ui);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 #app { height: 100%; position: relative; z-index: 1; }
@@ -390,12 +393,193 @@ html, body {
 .rules-note { margin-top: 8px; font-size: 12px; color: var(--gold); opacity: .85; letter-spacing: 1px; }
 
 /* ---------------- RESPONSIVE ---------------- */
-@media (max-width: 620px) {
-  .lane { width: 78px; height: 112px; }
-  .card { width: 74px; height: 104px; }
-  .card .portrait { height: 40px; } .card .portrait .glyph { font-size: 24px; }
-  .title { font-size: 30px; }
-  .pack-stage { gap: 16px; }
+
+/* ---- Tablet / small laptop (≤768px) ---- */
+@media (max-width: 768px) {
+  .menu-box, .login-box, .builder-box, .pane-box { padding: 26px 24px; }
+  .title { font-size: 36px; letter-spacing: 6px; }
+  .title-sm { font-size: 22px; letter-spacing: 4px; }
+  .tb-left { min-width: 120px; }
+  .tb-right { min-width: 70px; }
+  .lane { width: 96px; height: 134px; }
+  .card { width: 90px; height: 126px; }
+  .log { height: 64px; }
+}
+
+/* ---- Phone (≤480px) ---- */
+@media (max-width: 480px) {
+  /* prevent iOS tap highlight */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* panels */
+  .menu-box, .login-box, .builder-box, .pane-box {
+    padding: 18px 14px; border-radius: 10px;
+  }
+  .menu-box::before, .login-box::before, .pane-box::before { inset: 4px; }
+  .title { font-size: 28px; letter-spacing: 4px; }
+  .title-sm { font-size: 18px; letter-spacing: 3px; }
+  .subtitle { font-size: 12px; margin-bottom: 16px; letter-spacing: 1px; }
+
+  /* buttons — bigger touch target, less padding */
+  .btn { font-size: 14px; padding: 11px 12px; }
+  .btn.big { font-size: 15px; padding: 12px 10px; }
+  .btn.small { font-size: 12px; padding: 7px 10px; }
+
+  /* login */
+  .login-box { width: 94%; }
+  .name-input { font-size: 17px; padding: 10px; }       /* ≥16px stops iOS zoom */
+  .avatar-btn { width: 56px; height: 56px; font-size: 28px; }
+
+  /* menu */
+  .menu-box { width: 94%; max-width: none; }
+  .menu-btns { gap: 8px; }
+  .join-row { flex-direction: column; gap: 6px; }
+  .room-input { font-size: 17px; }                        /* ≥16px stops iOS zoom */
+  .topchip { font-size: 11px; padding: 5px 10px; top: 8px; right: 8px; gap: 6px; }
+  .menu-divider { font-size: 11px; letter-spacing: 2px; }
+
+  /* game topbar — stack into two rows */
+  #topbar { flex-wrap: wrap; gap: 4px 8px; padding: 6px 10px; }
+  .tb-left { min-width: 0; flex-direction: row; gap: 8px; align-items: center; flex: 1; }
+  .mode-label { font-size: 10px; letter-spacing: 1px; }
+  .turn-label { font-size: 13px; }
+  .tb-center { flex-basis: 100%; order: 3; }
+  .tb-right { min-width: 0; order: 2; }
+
+  /* resources — compact + horizontal scroll if needed */
+  .resources { gap: 6px; padding: 5px 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .res { font-size: 13px; padding: 2px 8px; gap: 4px; flex-shrink: 0; }
+  .res .dot { width: 11px; height: 11px; }
+  .res .cap { font-size: 11px; }
+
+  /* board */
+  .board { padding: 6px; gap: 4px; }
+  .lanes { gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+  .lane { width: 72px; height: 100px; border-radius: 6px; flex-shrink: 0; }
+  .card { width: 68px; height: 96px; border-radius: 6px; padding: 3px; }
+  .card .portrait { height: 36px; border-radius: 4px; }
+  .card .portrait .glyph { font-size: 20px; }
+  .card .cname { font-size: 10px; letter-spacing: 0; margin: 0; }
+  .card .stats { font-size: 11px; padding: 0 2px; }
+  .card .sigils { gap: 1px; margin-top: 1px; }
+  .card .sig { font-size: 8px; padding: 0 2px; }
+  .card .cost { width: 20px; height: 20px; font-size: 10px; top: -7px; right: -7px; }
+  .lane.playable::after { font-size: 9px; }
+
+  /* 5–7 lanes: shrink further */
+  .lanes[data-n="5"] .lane, .lanes[data-n="6"] .lane, .lanes[data-n="7"] .lane { width: 64px; height: 92px; }
+  .lanes[data-n="5"] .card, .lanes[data-n="6"] .card, .lanes[data-n="7"] .card { width: 60px; height: 88px; }
+  .lanes[data-n="5"] .card .portrait, .lanes[data-n="6"] .card .portrait, .lanes[data-n="7"] .card .portrait { height: 30px; }
+  .lanes[data-n="5"] .card .portrait .glyph, .lanes[data-n="6"] .card .portrait .glyph, .lanes[data-n="7"] .card .portrait .glyph { font-size: 16px; }
+
+  /* hand — horizontal scroll, no wrap */
+  .hand {
+    min-height: 114px; padding: 10px 6px 6px; gap: 6px;
+    overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch; justify-content: flex-start;
+  }
+  .hand .card { flex-shrink: 0; width: 68px; height: 96px; }
+
+  /* controls + log — compress */
+  .controls { padding: 6px 10px; gap: 8px; }
+  .status-msg { font-size: 11px; min-width: 0; }
+  .log { height: 48px; padding: 4px 10px; font-size: 11px; line-height: 1.4; }
+
+  /* overlay */
+  .overlay-box { padding: 18px 16px; max-width: 90vw; }
+  .overlay-text { font-size: 14px; line-height: 1.6; }
+  #gameoverText { font-size: 18px; }
+
+  /* collection / builder */
+  .card-grid { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; padding: 8px; max-height: 48vh; }
+  .bcard .portrait { height: 42px; }
+  .bcard .portrait .glyph { font-size: 24px; }
+  .bcard .cname { font-size: 11px; }
+  .bcard .bcost { font-size: 11px; padding: 1px 5px; }
+  .bcard .stats.mini { font-size: 11px; gap: 8px; }
+  .pane-head { flex-wrap: wrap; gap: 6px; }
+  .builder-footer { gap: 8px; flex-direction: column; }
+  .builder-footer .btn { width: 100%; }
+
+  /* faction tabs */
+  .ftab { padding: 6px 10px; font-size: 12px; letter-spacing: 1px; }
+  .cstab { padding: 6px 12px; font-size: 12px; }
+  .coll-subtabs { gap: 6px; }
+
+  /* pack / shop */
+  .pack { width: 130px; height: 180px; }
+  .pack-glyph { font-size: 48px; }
+  .pack-name { font-size: 13px; letter-spacing: 2px; }
+  .pack-cost { font-size: 16px; }
+  .pack-stage { gap: 16px; min-height: 200px; }
+  .bcard.big { width: 120px; }
+  .bcard.big .portrait { height: 70px; }
+  .bcard.big .portrait .glyph { font-size: 42px; }
+
+  /* how-to / changelog */
+  .ht-h { font-size: 15px; }
+  .ht-p { font-size: 13px; }
+  .cl-ver { font-size: 14px; }
+  .cl-title { font-size: 13px; }
+
+  /* rules panel */
+  .rules-panel { padding: 8px 10px; }
+  .rule-row { gap: 6px; }
+  .rule-name { min-width: 80px; font-size: 11px; }
+  .rbtn { padding: 4px 8px; font-size: 11px; }
+  .rinput { width: 52px; font-size: 11px; }
+
+  /* lobby */
+  .lobby-box { padding: 16px 14px; }
+  .lobby-room { font-size: 26px; letter-spacing: 6px; padding: 8px; }
+
+  /* tutorial */
+  .tut-label { font-size: 12px; }
+  .tchip { font-size: 12px; padding: 6px 12px; }
+  .tut-modules { gap: 6px; }
+}
+
+/* ---- Very small phone (≤360px) ---- */
+@media (max-width: 360px) {
+  .title { font-size: 22px; letter-spacing: 2px; }
+  .subtitle { font-size: 11px; }
+  .lane { width: 62px; height: 88px; }
+  .card { width: 58px; height: 84px; }
+  .card .portrait { height: 30px; }
+  .card .portrait .glyph { font-size: 16px; }
+  .card .cname { font-size: 9px; }
+  .card .stats { font-size: 10px; }
+  .card .cost { width: 18px; height: 18px; font-size: 9px; top: -6px; right: -6px; }
+  .hand .card { width: 58px; height: 84px; }
+  .lanes { gap: 4px; }
+  .btn.big { font-size: 13px; padding: 10px 6px; }
+  .menu-box, .login-box, .builder-box, .pane-box { padding: 14px 10px; }
+}
+
+/* ---- Landscape phone (short height) ---- */
+@media (max-height: 500px) and (orientation: landscape) {
+  #topbar { padding: 4px 10px; }
+  .tb-left { flex-direction: row; }
+  .resources { padding: 3px 8px; }
+  .res { font-size: 12px; padding: 1px 8px; }
+  .board { padding: 4px; gap: 2px; }
+  .lane { height: 80px; }
+  .card { height: 76px; }
+  .card .portrait { height: 28px; }
+  .card .portrait .glyph { font-size: 16px; }
+  .hand { min-height: 84px; padding: 4px; }
+  .hand .card { height: 76px; width: 58px; }
+  .log { height: 36px; }
+  .controls { padding: 4px 10px; }
+}
+
+/* ---- Touch devices: disable hover-only lift to prevent sticky states ---- */
+@media (hover: none) {
+  .card.in-hand:hover { transform: none; }
+  .hand .card:hover { transform: translateY(-2px); box-shadow: none; filter: none; }
+  .bcard:hover { transform: none; }
+  .btn:hover:not(:disabled) { transform: none; }
+  .pack:hover { transform: none; }
 }
 
 /* ---------------- AVATAR PICKER (login) ---------------- */
