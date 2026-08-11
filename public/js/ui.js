@@ -610,8 +610,8 @@ function renderShopPacks(profile) {
   el('packCost').textContent = `✦ ${PACK.cost}`;
   const drawBtn = el('drawBtn');
   if (drawBtn) { drawBtn.disabled = profile.coins < PACK.cost; drawBtn.textContent = profile.coins < PACK.cost ? '金币不足' : `✦ 开一包（-${PACK.cost}）`; }
-  el('odds').innerHTML = '<div class="pack-title-row"><span class="ptag gold">普通包</span></div>掉率：' + RARITY_ORDER.map((k) => `<span class="rl" style="--rc:${RARITY[k].color}"><i></i>${RARITY[k].name} ${RARITY[k].weight}%</span>`).join(' ')
-    + '<div class="shop-hint">图鉴未集齐前抽取的必定是新卡；集齐后重复将按稀有度返还金币。</div>';
+  el('odds').innerHTML = '<div class="pack-title-row"><span class="ptag gold">普通包</span></div>掉率：' + RARITY_ORDER.filter((k) => RARITY[k].weight > 0).map((k) => `<span class="rl" style="--rc:${RARITY[k].color}"><i></i>${RARITY[k].name} ${RARITY[k].weight}%</span>`).join(' ')
+    + '<div class="shop-hint">图鉴未集齐前抽取的必定是新卡；集齐后重复将按稀有度返还金币。神话卡仅限暗夜包/直购获取。</div>';
 
   // 暗夜包
   el('gemPackCost').textContent = `💎 ${GEM_PACK.cost}`;
@@ -622,7 +622,7 @@ function renderShopPacks(profile) {
     if (w === 0) return '';
     return `<span class="rl" style="--rc:${RARITY[k].color}"><i></i>${RARITY[k].name} ${w}%</span>`;
   }).filter(Boolean).join(' ')
-    + '<div class="shop-hint">保底稀有以上！史诗/传说概率大幅提升。图鉴未集齐前不重复。</div>';
+    + '<div class="shop-hint">保底稀有以上！史诗/传说概率大幅提升，更有 4% 概率掉落神话卡。图鉴未集齐前不重复。</div>';
 }
 
 // --- 标签 2: 直购商店 ---
@@ -706,9 +706,10 @@ export function playPackOpen(result, onDone) {
     res.classList.remove('hidden');
     // celebratory burst colored by rarity
     const r = res.getBoundingClientRect();
+    const burstCount = rk === 'mythic' ? 44 : rk === 'legend' ? 34 : rk === 'epic' ? 24 : 16;
+    const burstColors = rk === 'mythic' ? ['#ff3366', '#ffd15a', '#ffffff', '#a95ad0'] : [RARITY[rk].color, '#ffffff'];
     burst(r.left + r.width / 2, r.top + r.height / 2, {
-      count: rk === 'legend' ? 34 : rk === 'epic' ? 24 : 16,
-      color: [RARITY[rk].color, '#ffffff'], glyph: '✦', size: 13, spread: 130, grav: 20, life: 1000, glow: 10,
+      count: burstCount, color: burstColors, glyph: '✦', size: 13, spread: 130, grav: 20, life: 1100, glow: 12,
     });
     if (onDone) onDone();
   }, 620);

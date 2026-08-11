@@ -21,6 +21,7 @@
   --r-rare: #3a9ad0;
   --r-epic: #a95ad0;
   --r-legend: #e0b03a;
+  --r-mythic: #ff3366;
 }
 
 * { box-sizing: border-box; }
@@ -239,6 +240,8 @@ html, body {
 .bcard .sigils { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; margin: 2px 0; }
 .bcard .sig { font-size: 9px; background: #000; color: var(--bone); padding: 0 3px; border: 1px solid var(--line); border-radius: 3px; }
 .bcard .rar-tag { position: absolute; top: 4px; left: 4px; font-size: 9px; padding: 1px 5px; border-radius: 4px; color: #0d0b09; background: var(--rc); font-weight: 700; z-index: 2; }
+.bcard.rar-mythic .rar-tag { color: #fff; background: var(--r-mythic); box-shadow: 0 0 8px rgba(255,51,102,.6); animation: mythicTagPulse 2s ease-in-out infinite; }
+@keyframes mythicTagPulse { 0%,100% { box-shadow: 0 0 6px rgba(255,51,102,.5); } 50% { box-shadow: 0 0 12px rgba(255,51,102,.8), 0 0 18px rgba(255,180,58,.3); } }
 .bcard .lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; background: rgba(0,0,0,.55); border-radius: 8px; z-index: 3; }
 .bcard.locked { filter: grayscale(.85) brightness(.55); }
 .bctrl { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
@@ -253,12 +256,26 @@ html, body {
 .rar-rare   { --rc: var(--r-rare); }
 .rar-epic   { --rc: var(--r-epic); }
 .rar-legend { --rc: var(--r-legend); }
+.rar-mythic { --rc: var(--r-mythic); }
 .bcard.rar-rare, .card.rar-rare { border-color: var(--r-rare); box-shadow: 0 3px 0 rgba(0,0,0,.6), 0 0 10px rgba(58,154,208,.35); }
 .bcard.rar-epic, .card.rar-epic { border-color: var(--r-epic); box-shadow: 0 3px 0 rgba(0,0,0,.6), 0 0 12px rgba(169,90,208,.45); }
 .bcard.rar-legend, .card.rar-legend { border-color: var(--r-legend); box-shadow: 0 3px 0 rgba(0,0,0,.6), 0 0 16px rgba(224,176,58,.55); }
 .bcard.rar-legend::before, .card.rar-legend::before { content: ''; position: absolute; inset: -2px; border-radius: 9px; pointer-events: none;
   background: linear-gradient(120deg, transparent 30%, rgba(255,230,150,.35) 50%, transparent 70%); background-size: 250% 100%; animation: shine 3s linear infinite; }
 @keyframes shine { to { background-position: -250% 0; } }
+
+/* mythic (premium) — animated crimson-gold border with strong glow */
+.bcard.rar-mythic, .card.rar-mythic { border-color: var(--r-mythic); border-width: 2px;
+  box-shadow: 0 3px 0 rgba(0,0,0,.6), 0 0 18px rgba(255,51,102,.6), 0 0 32px rgba(255,180,58,.2); }
+.bcard.rar-mythic::before, .card.rar-mythic::before { content: ''; position: absolute; inset: -2px; border-radius: 9px; pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,51,102,.5), transparent 30%, rgba(255,180,58,.35) 50%, transparent 70%, rgba(255,51,102,.3));
+  background-size: 200% 200%; animation: mythicShimmer 3s linear infinite; z-index: 0; }
+.bcard.rar-mythic::after, .card.rar-mythic::after { content: ''; position: absolute; inset: 0; border-radius: 7px; pointer-events: none;
+  box-shadow: inset 0 0 12px rgba(255,51,102,.12); z-index: 0; }
+@keyframes mythicShimmer {
+  0% { background-position: 0% 0%; } 100% { background-position: 200% 200%; }
+}
+.premium-art { filter: saturate(1.15) contrast(1.05); }
 
 /* ---------------- SHOP ---------------- */
 .pack-stage { display: flex; align-items: center; justify-content: center; gap: 30px; min-height: 240px; margin: 10px 0; flex-wrap: wrap; }

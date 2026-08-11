@@ -42,6 +42,15 @@ const MAP = {
   demon: { s: 'demon', gem: 1 }, basilisk: { s: 'serpent', gem: 1 }, chimera: { s: 'demon', gem: 1 },
   golem: { s: 'golem', gem: 1 }, manticore: { s: 'beast', gem: 1 }, griffin: { s: 'bird', gem: 1 },
   phoenix: { s: 'bird', gem: 1, fire: 1 },
+  // MYTHIC (premium) cards — use existing archetypes but with premium visual treatment
+  blood_titan:   { s: 'beast',   premium: 1 },
+  vampire_queen: { s: 'demon',   premium: 1 },
+  lich_king:     { s: 'skull',   premium: 1 },
+  bone_dragon:   { s: 'bird',    premium: 1 },
+  omega_core:    { s: 'golem',   premium: 1 },
+  storm_harrier: { s: 'bird',    premium: 1 },
+  archmage:      { s: 'demon',   premium: 1 },
+  void_phantom:  { s: 'critter', premium: 1 },
 };
 const FALLBACK = { blood: 'beast', bone: 'skull', energy: 'critter', gem: 'demon' };
 function facOf(card) { return card.costType === 'gem' ? 'gem' : card.costType; }
@@ -110,6 +119,45 @@ function sceneGem(id, r) {
     <ellipse cx="50" cy="97" rx="46" ry="8" fill="#1a1030"/>`;
 }
 const SCENE = { blood: sceneBlood, bone: sceneBone, energy: sceneEnergy, gem: sceneGem };
+
+/* =============================== premium scene & overlay =============================== */
+// Mythic cards get a cosmic nebula background with swirling energy, replacing
+// the faction-specific scene. This makes them instantly recognizable.
+function scenePremium(id, r) {
+  const stars = [];
+  for (let i = 0; i < 18; i++) {
+    const x = r() * 100, y = r() * 100, sz = 0.5 + r() * 1.5;
+    stars.push(`<circle cx="${x}" cy="${y}" r="${sz}" fill="#fff" opacity="${0.3 + r() * 0.6}"/>`);
+  }
+  const rays = [];
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI * 2 * i) / 6 + r() * 0.4;
+    const x1 = 50 + Math.cos(a) * 20, y1 = 50 + Math.sin(a) * 20;
+    const x2 = 50 + Math.cos(a) * 60, y2 = 50 + Math.sin(a) * 60;
+    rays.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ffd15a" stroke-width="0.6" opacity="${0.1 + r() * 0.15}"/>`);
+  }
+  return `
+    <defs>
+      <radialGradient id="psky${id}" cx="50%" cy="45%" r="85%">
+        <stop offset="0%" stop-color="#5a1a3a"/><stop offset="30%" stop-color="#2a0a2a"/><stop offset="65%" stop-color="#1a0518"/><stop offset="100%" stop-color="#0a020e"/>
+      </radialGradient>
+      <radialGradient id="paur${id}" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="rgba(255,51,102,.4)"/><stop offset="50%" stop-color="rgba(255,180,58,.15)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+      </radialGradient>
+    </defs>
+    <rect width="100" height="100" fill="url(#psky${id})"/>
+    ${stars.join('')}
+    ${rays.join('')}
+    <circle cx="50" cy="48" r="30" fill="url(#paur${id})"/>
+    <ellipse cx="50" cy="96" rx="44" ry="8" fill="#0a020e"/>`;
+}
+function overlayPremium() {
+  return `<g opacity=".95">
+    <path d="M8,12 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 l5,-2z" fill="#ffd15a" opacity=".9"/>
+    <path d="M88,14 l1.5,3.5 l3.5,1.5 l-3.5,1.5 l-1.5,3.5 l-1.5,-3.5 l-3.5,-1.5 l3.5,-1.5z" fill="#ff3366" opacity=".85"/>
+    <circle cx="92" cy="80" r="1.8" fill="#ffd15a"/><circle cx="10" cy="70" r="1.2" fill="#ff3366" opacity=".7"/>
+  </g>`;
+}
 
 /* =============================== shared defs =============================== */
 function bodyDefs(id, pal) {
@@ -291,6 +339,7 @@ export function cardArt(card) {
   if (!card) return '';
   const fac = facOf(card);
   const conf = MAP[card.cardId] || { s: FALLBACK[fac] || 'critter' };
+  const isPremium = !!(conf.premium || card.premium);
   const s = seed(card.cardId || 'x');
   const r = rng(s);
   const id = (card.cardId || 'c') + '_' + (s % 9999);
@@ -305,10 +354,11 @@ export function cardArt(card) {
     body = drawer(id, pal, conf.fire ? 1 : 0);
   }
 
-  const scene = (SCENE[fac] || sceneBlood)(id, rng(s ^ 0x9e3779b9));
-  const overlay = (OVERLAY[fac] || overlayBlood)();
+  // Premium cards: use cosmic scene + golden overlay instead of faction-specific ones.
+  const scene = isPremium ? scenePremium(id, rng(s ^ 0x9e3779b9)) : (SCENE[fac] || sceneBlood)(id, rng(s ^ 0x9e3779b9));
+  const overlay = isPremium ? overlayPremium() : (OVERLAY[fac] || overlayBlood)();
 
-  return `<svg class="cardart" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  return `<svg class="cardart${isPremium ? ' premium-art' : ''}" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     ${bodyDefs(id, pal)}
     ${scene}
     ${ground(pal)}
