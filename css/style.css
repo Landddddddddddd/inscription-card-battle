@@ -119,6 +119,9 @@ html, body {
 .topchip .tc-name { color: var(--gold); font-weight: 700; }
 .topchip .tc-coin { color: #ffd66a; }
 .topchip .tc-stat { color: var(--text-dim); }
+.topchip .tc-rank { --tier: #9aa0a8; color: var(--tier); font-weight: 700; font-size: 12px;
+  padding: 1px 9px; border-radius: 10px; border: 1px solid var(--tier); background: rgba(255,255,255,.04);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--tier) 60%, transparent); }
 
 /* ---------------- BUTTONS ---------------- */
 .btn {
@@ -465,6 +468,28 @@ html, body {
 .rule-divider { color: var(--text-dim); font-size: 12px; padding: 0 4px; }
 .rules-note { margin-top: 8px; font-size: 12px; color: var(--gold); opacity: .85; letter-spacing: 1px; }
 
+/* ---------------- RANKED (排位赛) ---------------- */
+.ranked-box { max-width: 560px; }
+.ranked-body { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 10px 8px; }
+.rank-badge {
+  --tier: #9aa0a8;
+  width: 150px; height: 150px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 4px solid var(--tier);
+  box-shadow: 0 0 30px -4px var(--tier), inset 0 0 26px -10px var(--tier);
+  background: radial-gradient(circle at 50% 32%, rgba(255,255,255,.07), transparent 62%);
+}
+.rank-badge .rb-tier { font-size: 32px; font-weight: 800; color: var(--tier); letter-spacing: 5px; text-shadow: 0 0 14px color-mix(in srgb, var(--tier) 55%, transparent); }
+.rank-badge .rb-div { font-size: 22px; color: #f3e9d2; margin-top: 2px; opacity: .92; }
+.rank-progress { width: 100%; max-width: 420px; }
+.rank-bar-track { height: 14px; border-radius: 8px; background: rgba(255,255,255,.08); overflow: hidden; border: 1px solid rgba(255,255,255,.12); }
+.rank-bar-fill { height: 100%; width: 0; border-radius: 8px; transition: width .45s ease; box-shadow: 0 0 10px -2px currentColor; }
+.rank-bar-label { text-align: center; font-size: 13px; color: #cbb98f; margin-top: 6px; }
+.ranked-stats { font-size: 14px; color: #d8c79a; }
+.ranked-note { font-size: 13px; color: #9a8f78; line-height: 1.7; max-width: 440px; text-align: center; margin: 0; }
+.ranked-note b { color: #d8c79a; }
+.ranked-box .btn.primary { min-width: 210px; }
+
 /* ---------------- RESPONSIVE ---------------- */
 
 /* ---- Tablet / small laptop (≤768px) ---- */
@@ -472,6 +497,9 @@ html, body {
   .menu-box, .login-box, .builder-box, .pane-box { padding: 26px 24px; }
   .title { font-size: 36px; letter-spacing: 6px; }
   .title-sm { font-size: 22px; letter-spacing: 4px; }
+  .rank-badge { width: 122px; height: 122px; }
+  .rank-badge .rb-tier { font-size: 26px; letter-spacing: 3px; }
+  .ranked-box .btn.primary { min-width: 0; width: 100%; }
   .tb-left { min-width: 120px; }
   .tb-right { min-width: 70px; }
   .lane { width: 96px; height: 134px; }

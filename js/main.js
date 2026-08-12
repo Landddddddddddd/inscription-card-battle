@@ -1,12 +1,12 @@
 // App controller: login, screen routing, single/AI, LAN, ONLINE(P2P), tutorial, collection, gacha.
 import { createGame, playCard, endTurn, applyAction, instantiate } from './engine.js';
-import { DECKS, CONFIG, FACTIONS, defaultDeck, DEFAULT_RULES, normalizeRules, SCOPE_NAMES, CARDS, defaultWinScaleFor, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, RECHARGE_PACKAGES, GEM_EXCHANGE } from './constants.js';
+import { DECKS, CONFIG, FACTIONS, defaultDeck, DEFAULT_RULES, normalizeRules, SCOPE_NAMES, CARDS, defaultWinScaleFor, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, RECHARGE_PACKAGES, GEM_EXCHANGE, RANK, rankLabel, isTopRank } from './constants.js';
 import { aiTakeTurn } from './ai.js';
 import * as UI from './ui.js';
 import { canPlayCard, renderTutSetup, TUT_MODULES, renderHowTo, changelogHTML } from './ui.js';
 import { NetClient } from './network.js';
 import { OnlineNet } from './net.js';
-import { loadProfile, createProfile, saveProfile, drawPack, drawGemPack, buyCardDirect, recharge, exchangeGemsForCoins, recordResult, saveDeck, AVATARS, randomAvatar } from './profile.js';
+import { loadProfile, createProfile, saveProfile, drawPack, drawGemPack, buyCardDirect, recharge, exchangeGemsForCoins, recordResult, recordRanked, saveDeck, AVATARS, randomAvatar } from './profile.js';
 import { unlockAudio, setMuted, isMuted, loadMute, playSfx } from './audio.js';
 
 const App = {
@@ -24,7 +24,7 @@ const App = {
 };
 
 const $ = (id) => document.getElementById(id);
-const SCREENS = ['login', 'menu', 'collection', 'deckBuilder', 'game', 'tutorialSetup', 'howto', 'changelog'];
+const SCREENS = ['login', 'menu', 'collection', 'deckBuilder', 'game', 'tutorialSetup', 'howto', 'changelog', 'ranked'];
 
 // Resume the AudioContext on the very first user gesture (browsers block audio
 // until then). unlockAudio is idempotent and safe if Web Audio is unavailable.
@@ -48,6 +48,7 @@ function modeLabel() {
     host: '本地联机 · 房主', join: '本地联机 · 挑战者',
     onlineHost: '线上联机 · 房主', onlineJoin: '线上联机 · 挑战者',
     hotseat: '本地双人 · 同屏',
+    ranked: '排位赛 · 同屏对战',
   }[App.mode] || '';
 }
 
@@ -133,8 +134,8 @@ function applyLocal(action) {
   if (App.mode === 'tutorial') tutorialCheck(action.type);
   if (!App.state.over && App.state.currentPlayer === 'B' && (App.mode === 'single' || App.mode === 'tutorial')) runAI();
   checkGameOver();
-  // 同屏双人：每次「结束回合 / 攻击」后，把设备交给下一位玩家（防止偷看手牌）。
-  if (App.mode === 'hotseat' && action.type === 'endTurn' && !App.state.over) {
+  // 同屏双人 / 排位赛：每次「结束回合 / 攻击」后，把设备交给下一位玩家（防止偷看手牌）。
+  if ((App.mode === 'hotseat' || App.mode === 'ranked') && action.type === 'endTurn' && !App.state.over) {
     const np = App.state.players[App.state.currentPlayer].name;
     UI.showHandoff('请把设备交给 ' + np + '，轮到 ' + np + ' 行动——点击继续');
   }
@@ -173,6 +174,22 @@ function runAI() {
 
 function checkGameOver() {
   if (!App.state || !App.state.over) return;
+  // 排位赛结算（仅限 PVP）：账户段位跟随玩家1「你」的胜负升降，不发放金币。
+  if (App.mode === 'ranked' && !App.rewardGiven) {
+    App.rewardGiven = true;
+    const won = App.state.winner === 'A';
+    const r = recordRanked(App.profile, won);
+    const sub = r.promoted
+      ? `🎉 晋级！当前段位：${rankLabel(r.rank)}`
+      : r.demoted
+        ? `⬇ 降级……当前段位：${rankLabel(r.rank)}`
+        : `当前段位：${rankLabel(r.rank)} · 晋级分 ${r.points}/${RANK.DIV_PROMOTE}` + (r.top ? '（已登顶六阶·上！）' : '');
+    const txt = won ? '🏆 排位胜利！天平被你压垮了。' : '💀 排位失利……对手压垮了天平。';
+    if (won) playSfx('win'); else playSfx('lose');
+    UI.renderTopChip(App.profile);
+    UI.showGameOver(txt, sub);
+    return;
+  }
   const win = App.state.winner === App.me;
   let reward = '';
   if (!App.rewardGiven && App.profile && (App.mode === 'single' || App.mode === 'host' || App.mode === 'join' || App.mode === 'onlineHost' || App.mode === 'onlineJoin')) {
@@ -343,6 +360,26 @@ function hotseatContinue() {
   render();
 }
 
+// ---------------- 排位赛（仅限 PVP：同屏双人对战） ----------------
+function openRanked() {
+  App._hotseatStep = 'A';
+  UI.renderRanked(App.profile);
+  show('ranked');
+}
+function startRanked() {
+  App.mode = 'ranked'; App.me = 'A'; App.net = null; App.online = null; App.rewardGiven = false;
+  const dA = App.deckA || { res: 'blood', cards: DECKS.blood };
+  const dB = App.deckB || { res: 'bone', cards: DECKS.bone };
+  App.state = createGame({
+    nameA: (App.profile ? App.profile.name : '玩家1') + '（你）', avatarA: App.profile ? App.profile.avatar : '🦇',
+    nameB: '对手', avatarB: '🐯',
+    deckA: dA.cards, resA: dA.res, deckB: dB.cards, resB: dB.res,
+    rules: App.rules,
+  });
+  App.ui = { selectedIid: null, sacList: [] };
+  showGame(); render();
+}
+
 // ---------------- LAN (local server) ----------------
 async function startHost() {
   const d = App.deck || { res: 'blood', cards: DECKS.blood };
@@ -506,7 +543,9 @@ async function openBuilder(mode) {
       if (added >= CONFIG.DECK_MAX) break;
     }
   }
-  const last = App.deck;
+  const last = (mode === 'ranked')
+    ? (App._hotseatStep === 'A' ? App.deckA : App.deckB)
+    : App.deck;
   if (last && Array.isArray(last.cards) && last.cards.length && FACTIONS[last.res] && mode !== 'hotseat') {
     for (const id of FACTIONS[last.res].cards) App.builder.counts[id] = 0;
     for (const id of last.cards) if (unlocked.has(id)) App.builder.counts[id] = Math.min(maxCopies(id), (App.builder.counts[id] || 0) + 1);
@@ -583,17 +622,18 @@ function builderConfirm() {
   for (const id of f.cards) { if (!unlocked.has(id)) continue; const n = Math.min(maxCopies(id), App.builder.counts[id] || 0); for (let i = 0; i < n; i++) cards.push(id); }
   if (cards.length < CONFIG.DECK_MIN) { alert('已解锁的卡不足以组成卡组，先去抽卡吧'); return; }
 
-  // 本地双人（同屏）模式：分两遍组卡，先存玩家1再存玩家2，然后开局。
-  if (App.builder.mode === 'hotseat') {
+  // 本地双人（同屏）/ 排位赛：分两遍组卡，先存玩家1再存玩家2，然后开局。
+  if (App.builder.mode === 'hotseat' || App.builder.mode === 'ranked') {
     if (App._hotseatStep === 'A') {
       App.deckA = { res: f.res, cards };
       App._hotseatStep = 'B';
-      openBuilder('hotseat');
+      openBuilder(App.builder.mode);
       return;
     }
     App.deckB = { res: f.res, cards };
-    App.builder = null;
-    startHotseat();
+    const mode = App.builder.mode; App.builder = null;
+    if (mode === 'hotseat') startHotseat();
+    else if (mode === 'ranked') startRanked();
     return;
   }
 
@@ -739,6 +779,7 @@ $('menu').addEventListener('click', (e) => {
   if (a === 'sound') { toggleSound(); return; }
   playSfx('click');
   if (a === 'single') openBuilder('single');
+  else if (a === 'ranked') openRanked();
   else if (a === 'tutorial') openTutorial();
   else if (a === 'howto') openHowTo();
   else if (a === 'changelog') openChangelog();
@@ -845,6 +886,13 @@ $('howto').addEventListener('click', (e) => {
 
 $('changelog').addEventListener('click', (e) => {
   const b = e.target.closest('[data-clact="back"]'); if (b) toMenu();
+});
+
+// ---------- Ranked (排位赛) screen ----------
+$('ranked').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-ract]'); if (!b) return;
+  if (b.dataset.ract === 'back') toMenu();
+  else if (b.dataset.ract === 'start') { App._hotseatStep = 'A'; openBuilder('ranked'); }
 });
 
 $('game').addEventListener('click', (e) => {

@@ -1,6 +1,6 @@
 // Pure rendering + visual effects. Reads `ctx` and paints the DOM.
 // Interaction is handled by main.js via event delegation on data-* attributes.
-import { CONFIG, SIGILS, CARDS, FACTIONS, GEMS, RARITY, RARITY_ORDER, rarityOf, allCardIds, PACK, GEM_PACK, CARD_SHOP_PRICES, RECHARGE_PACKAGES, GEM_EXCHANGE, RULE_OPTIONS, SCOPE_NAMES, normalizeRules, rulesSummary, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, CHANGELOG } from './constants.js';
+import { CONFIG, SIGILS, CARDS, FACTIONS, GEMS, RARITY, RARITY_ORDER, rarityOf, allCardIds, PACK, GEM_PACK, CARD_SHOP_PRICES, RECHARGE_PACKAGES, GEM_EXCHANGE, RULE_OPTIONS, SCOPE_NAMES, normalizeRules, rulesSummary, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, CHANGELOG, RANK, rankLabel, rankColor, isTopRank } from './constants.js';
 import { getAttack, availableGems } from './engine.js';
 import { cardArt } from './art.js';
 import { playSfx } from './audio.js';
@@ -829,7 +829,35 @@ export function showLobbyAnswer(answer) {
 export function renderTopChip(profile) {
   const chip = el('topchip');
   if (!chip) return;
-  chip.innerHTML = `<span class="tc-avatar">${profile.avatar || '🜁'}</span><span class="tc-name">${profile.name}</span><span class="tc-coin">✦ ${profile.coins}</span><span class="tc-gem">💎 ${profile.gems || 0}</span><span class="tc-stat">胜 ${profile.stats.wins} · 负 ${profile.stats.losses}</span>`;
+  const rk = profile.rank || { tier: 1, div: 0, points: 0 };
+  const rkColor = rankColor(rk.tier);
+  chip.innerHTML = `<span class="tc-avatar">${profile.avatar || '🜁'}</span><span class="tc-name">${profile.name}</span>`
+    + `<span class="tc-rank" style="--tier:${rkColor}">${rankLabel(rk)}</span>`
+    + `<span class="tc-coin">✦ ${profile.coins}</span><span class="tc-gem">💎 ${profile.gems || 0}</span><span class="tc-stat">胜 ${profile.stats.wins} · 负 ${profile.stats.losses}</span>`;
+}
+
+// 排位赛界面：渲染当前段位徽章、晋级进度条与战绩。
+export function renderRanked(profile) {
+  const rk = profile.rank || { tier: 1, div: 0, points: 0 };
+  const color = rankColor(rk.tier);
+  const badge = el('rankBadge');
+  if (badge) {
+    badge.style.setProperty('--tier', color);
+    badge.innerHTML = `<div class="rb-tier">${RANK.TIER_NAMES[rk.tier]}</div><div class="rb-div">${RANK.DIVISIONS[rk.div]}</div>`;
+  }
+  const bar = el('rankBar');
+  if (bar) {
+    bar.style.width = Math.min(100, (rk.points / RANK.DIV_PROMOTE) * 100) + '%';
+    bar.style.background = color;
+  }
+  const lbl = el('rankBarLabel');
+  if (lbl) lbl.textContent = `晋级分 ${rk.points} / ${RANK.DIV_PROMOTE}`;
+  const stats = el('rankedStats');
+  if (stats) {
+    const top = isTopRank(rk);
+    stats.textContent = `排位战绩：胜 ${profile.stats.rankedWins || 0} · 负 ${profile.stats.rankedLosses || 0}`
+      + (top ? ' · 已登顶六阶·上！' : '');
+  }
 }
 
 // ============================================================================

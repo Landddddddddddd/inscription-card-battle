@@ -1,6 +1,6 @@
 // Local player profile: name, coins, unlocked-card collection, stats.
 // Persisted in localStorage (no server auth — this is a local "login").
-import { starterUnlocked, allCardIds, rarityOf, RARITY, PACK, GEM_PACK, CARD_SHOP_PRICES, GEM_EXCHANGE } from './constants.js';
+import { starterUnlocked, allCardIds, rarityOf, RARITY, PACK, GEM_PACK, CARD_SHOP_PRICES, GEM_EXCHANGE, RANK, isTopRank } from './constants.js';
 
 const KEY = 'inscryption_profile_v1';
 
@@ -22,10 +22,17 @@ function normalize(p) {
   p.muted = !!p.muted;
   p.aiLevel = ['easy', 'normal', 'hard'].includes(p.aiLevel) ? p.aiLevel : 'normal';
   p.unlocked = Array.from(new Set(p.unlocked || []));
+  // 排位赛段位：默认 一阶·下，0 晋级分。
+  p.rank = p.rank || { tier: 1, div: 0, points: 0 };
+  p.rank.tier = Math.min(RANK.TIERS, Math.max(1, p.rank.tier || 1));
+  p.rank.div = Math.min(RANK.DIVS - 1, Math.max(0, p.rank.div || 0));
+  p.rank.points = Math.max(0, p.rank.points || 0);
   p.stats = p.stats || {};
   p.stats.wins = p.stats.wins || 0;
   p.stats.losses = p.stats.losses || 0;
   p.stats.packs = p.stats.packs || 0;
+  p.stats.rankedWins = p.stats.rankedWins || 0;
+  p.stats.rankedLosses = p.stats.rankedLosses || 0;
   // Last-used deck (persisted so the deck builder reopens with the previous setup).
   if (p.deck && Array.isArray(p.deck.cards)) {
     p.deck = { res: p.deck.res || 'blood', cards: p.deck.cards.slice() };
@@ -56,7 +63,8 @@ export function createProfile(name) {
     coins: PACK.startCoins,
     gems: 0,
     unlocked: starterUnlocked(),
-    stats: { wins: 0, losses: 0, packs: 0 },
+    rank: { tier: 1, div: 0, points: 0 },
+    stats: { wins: 0, losses: 0, packs: 0, rankedWins: 0, rankedLosses: 0 },
   });
   saveProfile(p);
   return p;
@@ -167,6 +175,41 @@ export function recordResult(p, won) {
   else { p.stats.losses++; p.coins += PACK.loseReward; }
   saveProfile(p);
   return won ? PACK.winReward : PACK.loseReward;
+}
+
+// 排位赛结算：仅限 PVP。玩家1（账户持有者）胜 → 升晋级分；负 → 降晋级分。
+// 满 DIV_PROMOTE 晋升上一小阶（下→中→上→下一阶），归零则降下一小阶；
+// 封顶 六阶·上（不可再升），封底 一阶·下（不可再降）。
+export function recordRanked(p, won) {
+  const r = p.rank;
+  let promoted = false, demoted = false;
+  if (won) {
+    p.stats.rankedWins++;
+    r.points += RANK.POINTS_WIN;
+    while (r.points >= RANK.DIV_PROMOTE && !(r.tier >= RANK.TIERS && r.div >= RANK.DIVS - 1)) {
+      r.points -= RANK.DIV_PROMOTE;
+      if (r.div < RANK.DIVS - 1) r.div++;
+      else { r.div = 0; r.tier++; }
+      promoted = true;
+    }
+    // 已登顶（六阶·上）时，晋级分不再累加，封顶在阈值。
+    if (r.tier >= RANK.TIERS && r.div >= RANK.DIVS - 1) r.points = Math.min(r.points, RANK.DIV_PROMOTE);
+  } else {
+    p.stats.rankedLosses++;
+    r.points -= RANK.POINTS_LOSE;
+    if (r.points < 0) {
+      if (r.tier <= 1 && r.div <= 0) {
+        r.points = 0;                       // 已是最低阶，不可再降
+      } else {
+        if (r.div > 0) r.div--;
+        else { r.div = RANK.DIVS - 1; r.tier--; }
+        r.points = 0;
+        demoted = true;
+      }
+    }
+  }
+  saveProfile(p);
+  return { ok: true, won, promoted, demoted, rank: { ...r }, points: r.points, top: isTopRank(r) };
 }
 
 // Weighted random card by rarity weight. Pass `exclude` (a Set of owned ids)
