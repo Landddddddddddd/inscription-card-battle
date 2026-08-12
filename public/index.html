@@ -45,6 +45,7 @@
 
         <div class="menu-btns">
           <button class="btn big" data-act="single">⚔ 单机模式（对战 AI）</button>
+          <button class="btn big primary" data-act="ranked">🏆 排位赛（PVP 段位）</button>
           <button class="btn big" data-act="tutorial">📖 新手教程</button>
           <button class="btn big" data-act="howto">📜 玩法说明</button>
           <button class="btn big" data-act="changelog">📋 更新日志</button>
@@ -213,6 +214,27 @@
           <button class="btn small" data-clact="back">← 返回</button>
         </div>
         <div id="changelogBody"></div>
+      </div>
+    </section>
+
+    <!-- ===================== RANKED (排位赛) ===================== -->
+    <section id="ranked" class="screen hidden">
+      <div class="pane-box wide ranked-box">
+        <div class="pane-head">
+          <h2 class="title-sm">🏆 排 位 赛</h2>
+          <span class="pane-sub">仅限 PVP（同屏双人对战）</span>
+          <button class="btn small" data-ract="back">← 返回</button>
+        </div>
+        <div class="ranked-body">
+          <div class="rank-badge" id="rankBadge"></div>
+          <div class="rank-progress">
+            <div class="rank-bar-track"><div class="rank-bar-fill" id="rankBar"></div></div>
+            <div class="rank-bar-label" id="rankBarLabel"></div>
+          </div>
+          <div class="ranked-stats" id="rankedStats"></div>
+          <p class="ranked-note">排位赛仅以玩家对玩家（同屏轮流）形式进行。你（玩家1）的胜负决定段位升降：胜 <b>+30</b> 晋级分，负 <b>−30</b> 晋级分；小阶内满 100 分晋级上一阶（下→中→上），归零则降级。共六阶，最高 <b>六阶·上</b>。</p>
+          <button class="btn big primary" data-ract="start">▶ 开始排位赛</button>
+        </div>
       </div>
     </section>
 

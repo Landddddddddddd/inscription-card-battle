@@ -50,6 +50,44 @@ export function winModeDesc(m) {
 
 export const SCOPE_NAMES = { all: '不限阵营', blood: '仅血肉', bone: '仅骸骨', energy: '仅能量', mox: '仅魔石' };
 
+// ============================================================================
+// RANKED LADDER (排位赛)
+// 6 阶（一阶最低 → 六阶最高），每阶分 下/中/上 三个小阶，共 18 个段位。
+// 最高段位 = 六阶·上。胜 +晋级分，负 −晋级分；满 DIV_PROMOTE 升上一小阶、
+// 归零则降下一小阶。仅限 PVP（同屏双人对战）。
+// ============================================================================
+export const RANK = {
+  TIERS: 6,
+  DIVS: 3,                       // 每阶 3 个小阶：下(0) / 中(1) / 上(2)
+  DIVISIONS: ['下', '中', '上'],
+  TIER_NAMES: ['', '一阶', '二阶', '三阶', '四阶', '五阶', '六阶'], // 索引 1..6
+  TIER_COLORS: ['', '#9aa0a8', '#cd7f32', '#c0c0c0', '#e7b53a', '#4fd1c5', '#5aa6ff'],
+  POINTS_WIN: 30,               // 每胜一场 +30 晋级分
+  POINTS_LOSE: 30,              // 每负一场 −30 晋级分
+  DIV_PROMOTE: 100,             // 小阶内满 100 分即晋级
+};
+export function rankLabel(rank) {
+  const tier = Math.min(RANK.TIERS, Math.max(1, (rank && rank.tier) || 1));
+  const div = Math.min(RANK.DIVS - 1, Math.max(0, (rank && rank.div) || 0));
+  return `${RANK.TIER_NAMES[tier]}·${RANK.DIVISIONS[div]}`;
+}
+export function rankColor(tier) {
+  tier = Math.min(RANK.TIERS, Math.max(1, tier || 1));
+  return RANK.TIER_COLORS[tier];
+}
+export function rankIndex(rank) {
+  const tier = Math.min(RANK.TIERS, Math.max(1, (rank && rank.tier) || 1));
+  const div = Math.min(RANK.DIVS - 1, Math.max(0, (rank && rank.div) || 0));
+  return (tier - 1) * RANK.DIVS + div; // 0 = 一阶·下 … 17 = 六阶·上
+}
+export function rankFromIndex(i) {
+  i = Math.min(RANK.TIERS * RANK.DIVS - 1, Math.max(0, i | 0));
+  return { tier: Math.floor(i / RANK.DIVS) + 1, div: i % RANK.DIVS, points: 0 };
+}
+export function isTopRank(rank) {
+  return (rank && rank.tier >= RANK.TIERS && rank.div >= RANK.DIVS - 1);
+}
+
 // Clamp/normalize an arbitrary rules object to legal values (never throws).
 export function normalizeRules(r) {
   const src = r && typeof r === 'object' ? r : {};
@@ -453,6 +491,17 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.5.0',
+    date: '2026-08-12',
+    title: '排位赛（PVP 段位）',
+    items: [
+      '新增「排位赛」模式，仅限 PVP（同屏双人对战），菜单新增入口。',
+      '段位体系：共六阶（一阶最低 → 六阶最高），每阶分下 / 中 / 上三个小阶，共 18 个段位。',
+      '胜 +30 晋级分、负 −30 晋级分；小阶内满 100 分晋级上一阶，归零则降级；封顶六阶·上、封底一阶·下。',
+      '主菜单顶栏实时显示当前段位；排位赛界面含段位徽章、晋级进度条与排位战绩。',
+    ],
+  },
   {
     version: 'v0.4.0',
     date: '2026-08-11',
