@@ -219,6 +219,9 @@ export const CARDS = {
   // [daily 2026-08-09] 重甲獾
   armored_badger: { name: '重甲獾', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['armored'],        bloodValue: 2, color: '#6b5a4a', glyph: '獾' },
 
+  // [daily 2026-08-12] 刺猬
+  hedgehog:    { name: '刺猬', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['sharp_quills'],  bloodValue: 2, color: '#7a5a3a', glyph: '猬' },
+
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
   bone_pup:    { name: '枯骨幼犬', atk: 1, hp: 1, cost: 0, costType: 'bone', sigils: ['brittle'],        bloodValue: 1, color: '#cfcabc', glyph: '骨' },
@@ -248,6 +251,9 @@ export const CARDS = {
 
   // [daily 2026-08-09] 墓苔尸
   grave_moss:  { name: '墓苔尸',   atk: 1, hp: 3, cost: 2, costType: 'bone', sigils: ['regen'],          bloodValue: 1, color: '#6a8a5a', glyph: '苔' },
+
+  // [daily 2026-08-12] 冢卫
+  tomb_guard: { name: '冢卫',     atk: 1, hp: 3, cost: 2, costType: 'bone', sigils: ['armored'],        bloodValue: 1, color: '#9aa0a8', glyph: '冢' },
 
   // ===================== ENERGY（能量 · 机械科技主题）=====================
   black_cat:   { name: '电池机偶', atk: 0, hp: 1, cost: 0, costType: 'energy', sigils: [],               bloodValue: 1, color: '#2b3b4b', glyph: '电' },
@@ -308,6 +314,9 @@ export const CARDS = {
   // [daily 2026-08-09] 石鳞卫
   stone_scale: { name: '石鳞卫',   atk: 1, hp: 3, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: ['armored'],       bloodValue: 1, color: '#5a7a4a', glyph: '岩' },
 
+  // [daily 2026-08-12] 霜灵
+  frostling:  { name: '霜灵',     atk: 1, hp: 2, cost: 0, costType: 'gem', gemCost: ['blue'],                 sigils: ['frenzy'],        bloodValue: 1, color: '#4a8ad0', glyph: '霜' },
+
   // ===================== 神话卡（premium / mythic）=====================
   // 仅可通过魂晶（付费货币）获取：暗夜卡包极低概率掉落 或 直购商店高价购买。
   // 设计原则：比同费用普通卡略强（+1 stat 或多一个印记），但有明确弱点（脆皮/高费/多宝石需求）。
@@ -335,12 +344,12 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','blood_titan','vampire_queen'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','blood_titan','vampire_queen'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物死亡时积累骸骨，用骸骨召唤亡灵。用 0 费「枯骨幼犬」免费铺场、送死换取骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','lich_king','bone_dragon'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','lich_king','bone_dragon'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
@@ -350,7 +359,7 @@ export const FACTIONS = {
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','archmage','void_phantom'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','archmage','void_phantom'],
   },
 };
 
@@ -492,6 +501,17 @@ export const GEM_EXCHANGE = {
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
   {
+    version: 'v0.5.1',
+    date: '2026-08-12',
+    title: '排位赛 · 线上 P2P',
+    items: [
+      '排位赛新增「线上 P2P 对战」：双方各用自己设备与账号，房主创建房间、对方输入房间号/邀请码加入，WebRTC 直连（无需服务器）。',
+      '双方段位各自独立结算——房主=玩家A、挑战者=玩家B，各自按胜负升降自己的段位，互不干扰。',
+      '支持两种连接方式：一键房号（PeerJS 信令）与「邀请码」模式（原始 WebRTC + 公共 STUN，摆脱对信令服务器的依赖）。',
+      '排位房主邀请链接使用 ?rjoin= 参数，对方打开即进入排位加入流程；同屏双人入口仍保留。',
+    ],
+  },
+  {
     version: 'v0.5.0',
     date: '2026-08-12',
     title: '排位赛（PVP 段位）',
@@ -523,6 +543,7 @@ export const CHANGELOG = [
       '上线「每日新增卡牌」：现已加入 重甲獾 / 尖刺甲虫 / 冰晶刺客 三张新卡，之后每天持续扩充。',
       '新增本更新日志，记录每次重要改动。',
       '2026-08-09 每日新增：墓苔尸 / 自修机甲 / 石鳞卫',
+      '2026-08-12 每日新增：刺猬 / 冢卫 / 霜灵',
     ],
   },
   {
