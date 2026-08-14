@@ -182,11 +182,11 @@ export const CARDS = {
   // 注意：骸骨阵营的 0 费卡（bone_pup）豁免——其"费用"由死亡产骸骨偿还；
   // 魔石法术卡虽 cost:0，但需场上对应魔石才能召唤，并非免费，亦不受影响。
   squirrel:    { name: '松鼠',   atk: 0, hp: 1, cost: 0, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#8a5a2b', glyph: '鼠' },
-  stoat:       { name: '白鼬',   atk: 2, hp: 3, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#d9d2c5', glyph: '鼬' },
-  raven:       { name: '乌鸦',   atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: ['airborne'],       bloodValue: 2, color: '#2b2b3a', glyph: '鸦' },
-  mole:        { name: '鼹鼠',   atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#5b4636', glyph: '鼹' },
+  stoat:       { name: '白鼬',   atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#d9d2c5', glyph: '鼬' },
+  raven:       { name: '乌鸦',   atk: 1, hp: 1, cost: 1, costType: 'blood', sigils: ['airborne'],       bloodValue: 2, color: '#2b2b3a', glyph: '鸦' },
+  mole:        { name: '鼹鼠',   atk: 1, hp: 1, cost: 1, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#5b4636', glyph: '鼹' },
   beaver:      { name: '河狸',   atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#6b4f2a', glyph: '狸' },
-  adder:       { name: '蝰蛇',   atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: ['poison_touch'],  bloodValue: 2, color: '#3b6b3b', glyph: '蛇' },
+  adder:       { name: '蝰蛇',   atk: 1, hp: 2, cost: 1, costType: 'blood', sigils: ['poison_touch'],  bloodValue: 2, color: '#3b6b3b', glyph: '蛇' },
   raccoon:     { name: '浣熊',   atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: ['loose_tail'],    bloodValue: 2, color: '#7a6a55', glyph: '浣' },
   opossum:     { name: '负鼠',   atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#7a6a55', glyph: '负' },
   wolf:        { name: '狼',     atk: 3, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#6e6e6e', glyph: '狼' },
@@ -207,8 +207,8 @@ export const CARDS = {
   // 新增普通卡（丰富卡池，配合"有费卡不可重复"规则提供更多可选单位）
   field_mouse: { name: '田鼠', atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#9a8a6a', glyph: '田' },
   toad:        { name: '蟾蜍', atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#4a7a3a', glyph: '蟾' },
-  shrew:       { name: '鼩鼱', atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#7a6a55', glyph: '鼩' },
-  hawk:        { name: '苍鹰', atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: ['airborne'],       bloodValue: 2, color: '#5a6a7a', glyph: '鹰' },
+  shrew:       { name: '鼩鼱', atk: 1, hp: 1, cost: 1, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#7a6a55', glyph: '鼩' },
+  hawk:        { name: '苍鹰', atk: 1, hp: 2, cost: 1, costType: 'blood', sigils: ['airborne'],       bloodValue: 2, color: '#5a6a7a', glyph: '鹰' },
   ferret:      { name: '雪貂', atk: 3, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#b8a890', glyph: '貂' },
 
   // 新增：印记演示卡（狂热 / 回复）
@@ -217,7 +217,7 @@ export const CARDS = {
   berserker:   { name: '狂战士', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['frenzy','double_strike'], bloodValue: 2, color: '#b5241f', glyph: '狂' },
 
   // [daily 2026-08-09] 重甲獾
-  armored_badger: { name: '重甲獾', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['armored'],        bloodValue: 2, color: '#6b5a4a', glyph: '獾' },
+  armored_badger: { name: '重甲獾', atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: ['armored'],        bloodValue: 2, color: '#6b5a4a', glyph: '獾' },
 
   // [daily 2026-08-12] 刺猬
   hedgehog:    { name: '刺猬', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['sharp_quills'],  bloodValue: 2, color: '#7a5a3a', glyph: '猬' },
