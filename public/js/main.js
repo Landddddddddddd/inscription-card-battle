@@ -21,6 +21,7 @@ const App = {
   coll: { faction: 'blood' },
   rewardGiven: false,
   aiLevel: 'normal',
+  kb: { handIdx: -1, laneIdx: 0 },
 };
 
 const $ = (id) => document.getElementById(id);
@@ -55,7 +56,7 @@ function modeLabel() {
 
 function render() {
   if (!App.state) return;
-  UI.renderGame({ state: App.state, me: App.me, isMyTurn: canAct(), ui: App.ui, statusMsg: App.status, modeLabel: modeLabel() });
+  UI.renderGame({ state: App.state, me: App.me, isMyTurn: canAct(), ui: App.ui, statusMsg: App.status, modeLabel: modeLabel(), kb: App.kb, kbArmed: !!App.ui.selectedIid && canAct() });
 }
 
 // ---------- Login / Menu ----------
@@ -998,63 +999,82 @@ $('ranked').addEventListener('click', (e) => {
   }
 });
 
+// ---------- 战斗交互（点击与键盘共用）----------
+// 选中 / 取消手牌；血肉牌会进入“选祭品”状态并给出提示。
+function selectHand(iid) {
+  if (!canAct()) return;
+  if (App.ui.selectedIid === iid) { App.ui.selectedIid = null; App.ui.sacList = []; App.status = ''; }
+  else {
+    App.ui.selectedIid = iid; App.ui.sacList = [];
+    const card = App.state.players[App.me].hand.find((c) => c.iid === iid);
+    if (card && card.costType === 'blood' && card.cost > 0) {
+      // 血肉规则：当回合血肉(pool) 恒为 0，完全靠献祭场上已召唤单位来支付。
+      const pool = App.state.players[App.me].blood || 0;
+      let boardAvail = 0; for (const u of App.state.board[App.me]) if (u) boardAvail += u.bloodValue;
+      const needFromBoard = Math.max(0, card.cost - pool);
+      App.status = (pool + boardAvail) >= card.cost
+        ? `「${card.name}」需 ${card.cost} 血肉（本回合血肉 ${pool}，差额点场上单位献祭）：已选 0/${needFromBoard}`
+        : `血肉不足：本回合 ${pool} + 场上 ${boardAvail} = ${pool + boardAvail} < ${card.cost}，先把单位召唤上场`;
+    } else App.status = '';
+  }
+  App.kb.handIdx = -1;
+  render();
+}
+// 切换献祭某张己方场上单位（仅当选中的是需献祭的血肉牌）。
+function toggleSac(iid) {
+  if (!canAct() || !App.ui.selectedIid) return;
+  const sel = App.state.players[App.me].hand.find((c) => c.iid === App.ui.selectedIid);
+  if (!sel || sel.costType !== 'blood' || sel.cost <= 0) return;
+  const idx = (App.ui.sacList || []).indexOf(iid);
+  if (idx >= 0) App.ui.sacList.splice(idx, 1); else App.ui.sacList.push(iid);
+  const pool = App.state.players[App.me].blood || 0;
+  let have = 0; for (const s of App.ui.sacList) { const u = App.state.board[App.me].find((c) => c && c.iid === s); if (u) have += u.bloodValue; }
+  const ready = (pool + have) >= sel.cost;
+  App.status = `「${sel.name}」需 ${sel.cost} 血肉（本回合血肉 ${pool}，已献祭 ${have}）` + (ready ? '（可召唤）' : '：继续点场上单位献祭');
+  render();
+}
+// 在指定空列打出当前选中的牌（血肉牌带走已选祭品）。
+function playOnLane(lane) {
+  if (!canAct() || !App.ui.selectedIid) return;
+  const card = App.state.players[App.me].hand.find((c) => c.iid === App.ui.selectedIid);
+  if (!card) return;
+  const a = { type: 'play', iid: card.iid, lane };
+  if (card.costType === 'blood' && card.cost > 0) {
+    const pool = App.state.players[App.me].blood || 0;
+    let sacTotal = 0; for (const s of (App.ui.sacList || [])) { const u = App.state.board[App.me].find((c) => c && c.iid === s); if (u) sacTotal += u.bloodValue; }
+    if (pool + sacTotal < card.cost) { App.status = `还需献祭 ${card.cost - pool - sacTotal} 血肉：点你场上的单位献祭`; render(); return; }
+    a.sacrifices = App.ui.sacList.slice();
+  }
+  App.ui.selectedIid = null; App.ui.sacList = []; App.kb.laneIdx = 0;
+  act(a);
+}
+// 选牌后按列键（1-4 / QWER）：空列→打牌；己方单位列且需献祭→切换献祭；己方单位列但无需献祭→提示。
+function laneKey(lane) {
+  if (!canAct() || !App.ui.selectedIid) return;
+  const me = App.me;
+  const unit = App.state.board[me][lane];
+  const sel = App.state.players[me].hand.find((c) => c.iid === App.ui.selectedIid);
+  if (unit) {
+    if (sel && sel.costType === 'blood' && sel.cost > 0) toggleSac(unit.iid);
+    else { App.status = '该列已有单位，请选空列出牌'; render(); }
+  } else {
+    playOnLane(lane);
+  }
+}
+// 控制按钮（结束回合 / 菜单 / 教程下一步 / 同屏交接）。
+function ctrlAct(name) {
+  if (name === 'endTurn') act({ type: 'endTurn' });
+  else if (name === 'menu') toMenu();
+  else if (name === 'tutNext') tutNext();
+  else if (name === 'hotseatContinue') hotseatContinue();
+}
+
 $('game').addEventListener('click', (e) => {
   const t = e.target.closest('[data-hand],[data-playlane],[data-saccard],[data-act]'); if (!t) return;
-  // 1) 手牌：选中/取消（血肉牌进入“选祭品”状态）
-  if (t.dataset.hand) {
-    const iid = t.dataset.hand;
-    if (App.ui.selectedIid === iid) { App.ui.selectedIid = null; App.ui.sacList = []; App.status = ''; }
-    else {
-      App.ui.selectedIid = iid; App.ui.sacList = [];
-      const card = App.state.players[App.me].hand.find((c) => c.iid === iid);
-      if (card && card.costType === 'blood' && card.cost > 0) {
-        // 血肉规则：当回合血肉(pool) 先付，献祭只补差额。可召唤的判据是 pool + 场上可献祭 >= cost。
-        const pool = App.state.players[App.me].blood || 0;
-        let boardAvail = 0; for (const u of App.state.board[App.me]) if (u) boardAvail += u.bloodValue;
-        const needFromBoard = Math.max(0, card.cost - pool);
-        App.status = (pool + boardAvail) >= card.cost
-          ? `「${card.name}」需 ${card.cost} 血肉（本回合血肉 ${pool}，差额点场上单位献祭）：已选 0/${needFromBoard}`
-          : `血肉不足：本回合 ${pool} + 场上 ${boardAvail} = ${pool + boardAvail} < ${card.cost}，先把单位召唤上场`;
-      } else App.status = '';
-    }
-    render(); return;
-  }
-  // 2) 场上单位：当做祭品（仅当选中的是需献祭的血肉牌时）
-  if (t.dataset.saccard) {
-    if (!canAct() || !App.ui.selectedIid) return;
-    const sel = App.state.players[App.me].hand.find((c) => c.iid === App.ui.selectedIid);
-    if (!sel || sel.costType !== 'blood' || sel.cost <= 0) return;
-    const iid = t.dataset.saccard;
-    const idx = (App.ui.sacList || []).indexOf(iid);
-    if (idx >= 0) App.ui.sacList.splice(idx, 1); else App.ui.sacList.push(iid);
-    const pool = App.state.players[App.me].blood || 0;
-    let have = 0; for (const s of App.ui.sacList) { const u = App.state.board[App.me].find((c) => c && c.iid === s); if (u) have += u.bloodValue; }
-    const ready = (pool + have) >= sel.cost;
-    App.status = `「${sel.name}」需 ${sel.cost} 血肉（本回合血肉 ${pool}，已献祭 ${have}）` + (ready ? '（可召唤）' : '：继续点场上单位献祭');
-    render(); return;
-  }
-  // 3) 空列：打出选中的牌（血肉牌带上已选祭品）
-  if (t.dataset.playlane) {
-    if (!canAct() || !App.ui.selectedIid) return;
-    const card = App.state.players[App.me].hand.find((c) => c.iid === App.ui.selectedIid);
-    if (!card) return;
-    const a = { type: 'play', iid: card.iid, lane: parseInt(t.dataset.playlane, 10) };
-    if (card.costType === 'blood' && card.cost > 0) {
-      // pool 先付，献祭只补差额：可召唤判据 = pool + 已选献祭 >= cost
-      const pool = App.state.players[App.me].blood || 0;
-      let sacTotal = 0; for (const s of (App.ui.sacList || [])) { const u = App.state.board[App.me].find((c) => c && c.iid === s); if (u) sacTotal += u.bloodValue; }
-      if (pool + sacTotal < card.cost) { App.status = `还需献祭 ${card.cost - pool - sacTotal} 血肉：点你场上的单位献祭`; render(); return; }
-      a.sacrifices = App.ui.sacList.slice();
-    }
-    App.ui.selectedIid = null; App.ui.sacList = [];
-    act(a); return;
-  }
-  // 4) 控制按钮
-  const actName = t.dataset.act;
-  if (actName === 'endTurn') act({ type: 'endTurn' });
-  else if (actName === 'menu') toMenu();
-  else if (actName === 'tutNext') tutNext();
-  else if (actName === 'hotseatContinue') hotseatContinue();
+  if (t.dataset.hand) { selectHand(t.dataset.hand); return; }
+  if (t.dataset.saccard) { toggleSac(t.dataset.saccard); return; }
+  if (t.dataset.playlane) { playOnLane(parseInt(t.dataset.playlane, 10)); return; }
+  if (t.dataset.act) { ctrlAct(t.dataset.act); return; }
 });
 
 // ---------- Online lobby (overlay) wiring ----------
@@ -1095,17 +1115,60 @@ function startOnlineManualRegenerate() {
 }
 function copyText(t) { if (!t) return; if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {}); else { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (_) {} ta.remove(); } }
 
+// ---------- 键盘交互（战斗界面）----------
+// 完整键盘操作：1-9 选牌 · 选牌后 1-4/QWER 在该列出牌或献祭 · ←→ 移动光标 ·
+// 空格/Enter 结束回合（无选牌时）或在列光标打出（有选牌时）· Esc 取消。
 document.addEventListener('keydown', (e) => {
   if (!App.state || $('game').classList.contains('hidden')) return;
   const overlayOpen = !$('overlay').classList.contains('hidden');
   const tutStep = App.tut && App.tut.steps ? App.tut.steps[App.tut.step] : null;
   const onInfoStep = overlayOpen && App.mode === 'tutorial' && tutStep && tutStep.need == null;
-  if (e.key === 'Enter') {
-    if (onInfoStep && !(e.target && e.target.closest && e.target.closest('[data-act="tutNext"]'))) { e.preventDefault(); tutNext(); return; }
-    if (canAct() && !App.state.over) { e.preventDefault(); act({ type: 'endTurn' }); }
-  } else if (e.key === 'Escape') {
-    if (onInfoStep) { e.preventDefault(); tutNext(); return; }
-    if (App.ui.selectedIid || (App.ui.sacList && App.ui.sacList.length)) { e.preventDefault(); App.ui.selectedIid = null; App.ui.sacList = []; render(); }
+  // 覆盖层（教程信息 / 同屏交接）：Enter / Esc → 继续
+  if (onInfoStep) { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); tutNext(); } return; }
+  if (overlayOpen && App.mode === 'hotseat') { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); hotseatContinue(); } return; }
+  if (App.state.over) return;
+
+  const hand = App.state.players[App.me].hand;
+  const LANES = (App.state.rules && App.state.rules.lanes) || CONFIG.LANES;
+  const k = e.key;
+
+  // 1) 选牌：数字 1-9（未选中任何牌时）
+  if (/^[1-9]$/.test(k) && !App.ui.selectedIid) {
+    const idx = parseInt(k, 10) - 1;
+    if (idx < hand.length) { e.preventDefault(); App.kb.handIdx = idx; selectHand(hand[idx].iid); }
+    return;
+  }
+  // 2) 选牌后：数字 1-4 / QWER = 在该列打牌或献祭
+  if (App.ui.selectedIid && /^[1-4qwerQWER]$/.test(k)) {
+    let lane;
+    if (/^[1-4]$/.test(k)) lane = parseInt(k, 10) - 1;
+    else lane = 'qwer'.indexOf(k.toLowerCase());
+    if (lane >= 0 && lane < LANES) { e.preventDefault(); App.kb.laneIdx = lane; laneKey(lane); }
+    return;
+  }
+  // 3) 方向键：未选牌→移动手牌光标（仅高亮预览）；已选牌→移动列光标
+  if (k === 'ArrowLeft' || k === 'ArrowRight') {
+    e.preventDefault();
+    if (!App.ui.selectedIid) {
+      if (hand.length) App.kb.handIdx = Math.max(0, Math.min(hand.length - 1, (App.kb.handIdx < 0 ? 0 : App.kb.handIdx) + (k === 'ArrowRight' ? 1 : -1)));
+    } else {
+      App.kb.laneIdx = (App.kb.laneIdx + (k === 'ArrowRight' ? 1 : LANES - 1)) % LANES;
+    }
+    render();
+    return;
+  }
+  // 4) Enter / 空格：未选牌→结束回合；已选牌→在当前列光标打牌 / 献祭
+  if (k === 'Enter' || k === ' ') {
+    e.preventDefault();
+    if (!App.ui.selectedIid) { if (canAct()) act({ type: 'endTurn' }); }
+    else laneKey(Math.max(0, Math.min(LANES - 1, App.kb.laneIdx)));
+    return;
+  }
+  // 5) Esc：取消选牌 / 献祭
+  if (k === 'Escape') {
+    if (App.ui.selectedIid || (App.ui.sacList && App.ui.sacList.length)) {
+      e.preventDefault(); App.ui.selectedIid = null; App.ui.sacList = []; App.kb.laneIdx = 0; App.status = ''; render();
+    }
   }
 });
 

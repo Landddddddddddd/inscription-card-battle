@@ -259,6 +259,7 @@ function cardHTML(card, opts = {}) {
   if (opts.sacChosen) cls.push('sac-chosen');
   if (opts.dim) cls.push('unaffordable');
   if (opts.anim) cls.push(opts.anim);
+  if (opts.kbCursor) cls.push('kb-cursor');
 
   const sig = card.sigils
     .map((s) => `<span class="sig" title="${SIGILS[s] ? SIGILS[s].desc : ''}">${SIGILS[s] ? SIGILS[s].name : s}</span>`)
@@ -269,6 +270,7 @@ function cardHTML(card, opts = {}) {
   const ds = opts.dataAttr || '';
   return `
     <div class="${cls.join(' ')}" data-rarity="${rk}" data-cardiid="${card.iid}" ${ds}>
+      ${opts.kbIndex != null ? `<span class="kb-idx">${opts.kbIndex}</span>` : ''}
       ${costBadgeHTML(card)}
       ${portraitHTML(card)}
       <div class="cname">${card.name}</div>
@@ -402,6 +404,12 @@ export function renderGame(ctx) {
         cls += ' playable';
         ds += ` data-playlane="${l}"`;
       }
+      // 键盘目标提示：选牌后高亮可出牌（空列）/ 可献祭（己方单位列）的列号，以及当前列光标。
+      if (isMine && ctx.kbArmed) {
+        if (!c && cls.indexOf('playable') >= 0) cls += ' kb-lane';
+        else if (c && needSac && isMyTurn && !state.over) cls += ' kb-sac';
+      }
+      if (isMine && ctx.kb && ctx.kb.laneIdx === l && ui.selectedIid) cls += ' kb-cursor';
       cells += `<div class="${cls}" ${ds}><span class="lane-no">${l + 1}</span>${inner}</div>`;
     }
     return `<div class="lanes" data-n="${LANES}">${cells}</div>`;
@@ -425,10 +433,13 @@ export function renderGame(ctx) {
 
   // ---- Hand ----
   let handHTML = '';
-  for (const c of state.players[me].hand) {
+  const handArr = state.players[me].hand;
+  for (let hi = 0; hi < handArr.length; hi++) {
+    const c = handArr[hi];
     const isNew = !_prev.hand.has(c.iid);
     const dim = !canPlayCard(state, me, c);
-    handHTML += cardHTML(c, { inHand: true, selected: ui.selectedIid === c.iid, dim, anim: isNew ? 'appear' : '', dataAttr: `data-hand="${c.iid}"` });
+    const kbCursor = !!(ctx.kb && ctx.kb.handIdx === hi && !ui.selectedIid);
+    handHTML += cardHTML(c, { inHand: true, selected: ui.selectedIid === c.iid, dim, anim: isNew ? 'appear' : '', dataAttr: `data-hand="${c.iid}"`, kbIndex: hi + 1, kbCursor });
   }
   el('hand').innerHTML = handHTML || '<span style="color:var(--text-dim)">（手牌为空）</span>';
 
