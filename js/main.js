@@ -47,6 +47,7 @@ function modeLabel() {
     single: '单机模式 · 对战 AI', tutorial: '新手教程',
     host: '本地联机 · 房主', join: '本地联机 · 挑战者',
     onlineHost: '线上联机 · 房主', onlineJoin: '线上联机 · 挑战者',
+    rankedHost: '排位赛 · 线上房主', rankedJoin: '排位赛 · 线上挑战者',
     hotseat: '本地双人 · 同屏',
     ranked: '排位赛 · 同屏对战',
   }[App.mode] || '';
@@ -76,6 +77,7 @@ function doLogin() {
   else if (App.profile) { App.profile.name = name.slice(0, 12); saveProfile(App.profile); }
   else { App.profile = createProfile(name); }
   App.aiLevel = App.profile.aiLevel || 'normal';
+  applyLayout();
   // Restore the last-used deck from the profile (persisted across sessions).
   if (App.profile.deck && Array.isArray(App.profile.deck.cards) && App.profile.deck.cards.length) {
     App.deck = { res: App.profile.deck.res, cards: App.profile.deck.cards.slice() };
@@ -89,6 +91,12 @@ function doLogin() {
     App._onlineManual = !!aj.m;
     if (aj.join) $('joinRoom').value = aj.join;
     openBuilder('onlineJoin');
+  }
+  // Ranked P2P invite link (?rjoin=CODE) → straight into the ranked join flow.
+  if (window.__autoRankedJoin) {
+    const code = window.__autoRankedJoin; window.__autoRankedJoin = null;
+    App.rules = { ...DEFAULT_RULES }; App._pendingRankedCode = code;
+    openBuilder('rankedJoin');
   }
 }
 function logout() { toMenu(); bootLogin(); }
@@ -113,6 +121,7 @@ function toMenu() {
   $('hostInfo').classList.add('hidden');
   if (App.profile) UI.renderTopChip(App.profile);
   updateSoundBtn();
+  applyLayout();
   document.querySelectorAll('#aiDiff .dbtn').forEach((b) => b.classList.toggle('on', b.dataset.diff === App.aiLevel));
   applyEnvMode();
   show('menu');
@@ -134,7 +143,8 @@ function applyLocal(action) {
   if (App.mode === 'tutorial') tutorialCheck(action.type);
   if (!App.state.over && App.state.currentPlayer === 'B' && (App.mode === 'single' || App.mode === 'tutorial')) runAI();
   checkGameOver();
-  // 同屏双人 / 排位赛：每次「结束回合 / 攻击」后，把设备交给下一位玩家（防止偷看手牌）。
+  // 同屏双人 / 排位赛（同屏）：每次「结束回合 / 攻击」后，把设备交给下一位玩家（防止偷看手牌）。
+  // 线上 P2P 排位各自用自己设备，无需交接。
   if ((App.mode === 'hotseat' || App.mode === 'ranked') && action.type === 'endTurn' && !App.state.over) {
     const np = App.state.players[App.state.currentPlayer].name;
     UI.showHandoff('请把设备交给 ' + np + '，轮到 ' + np + ' 行动——点击继续');
@@ -144,7 +154,7 @@ function applyLocal(action) {
 // Send an action. In online mode the host is authoritative (applies + broadcasts);
 // the guest simply forwards the action to the host.
 function act(action) {
-  if (App.mode === 'onlineHost') {
+  if (App.mode === 'onlineHost' || App.mode === 'rankedHost') {
     action.player = 'A';
     const r = applyAction(App.state, action);
     if (!r.ok) { App.status = r.reason; render(); return; }
@@ -154,7 +164,7 @@ function act(action) {
     checkGameOver();
     return;
   }
-  if (App.mode === 'onlineJoin') {
+  if (App.mode === 'onlineJoin' || App.mode === 'rankedJoin') {
     App.ui.selectedIid = null; App.ui.sacList = []; App.status = '同步中…'; render();
     if (App.online) App.online.send({ type: 'action', action });
     return;
@@ -174,10 +184,11 @@ function runAI() {
 
 function checkGameOver() {
   if (!App.state || !App.state.over) return;
-  // 排位赛结算（仅限 PVP）：账户段位跟随玩家1「你」的胜负升降，不发放金币。
-  if (App.mode === 'ranked' && !App.rewardGiven) {
+  // 排位赛结算（仅限 PVP）：账户段位跟随本账号「你」的胜负升降，不发放金币。
+  // 同屏：固定玩家A；线上 P2P：房主=A、挑战者=B，各自结算自己的段位。
+  if ((App.mode === 'ranked' || App.mode === 'rankedHost' || App.mode === 'rankedJoin') && !App.rewardGiven) {
     App.rewardGiven = true;
-    const won = App.state.winner === 'A';
+    const won = (App.mode === 'ranked') ? (App.state.winner === 'A') : (App.state.winner === App.me);
     const r = recordRanked(App.profile, won);
     const sub = r.promoted
       ? `🎉 晋级！当前段位：${rankLabel(r.rank)}`
@@ -187,7 +198,8 @@ function checkGameOver() {
     const txt = won ? '🏆 排位胜利！天平被你压垮了。' : '💀 排位失利……对手压垮了天平。';
     if (won) playSfx('win'); else playSfx('lose');
     UI.renderTopChip(App.profile);
-    UI.showGameOver(txt, sub);
+    const tag = (App.mode === 'rankedHost' || App.mode === 'rankedJoin') ? '（线上排位 P2P）' : '';
+    UI.showGameOver(txt + tag, sub);
     return;
   }
   const win = App.state.winner === App.me;
@@ -414,8 +426,8 @@ async function startJoin() {
 
 // ---------------- ONLINE (P2P) ----------------
 function onlineMsgHandler(msg) {
-  // Host side
-  if (App.mode === 'onlineHost') {
+  // Host side (authoritative): both casual and ranked hosts run identical logic.
+  if (App.mode === 'onlineHost' || App.mode === 'rankedHost') {
     if (msg.type === 'hello') {
       App._guestProfile = msg.profile;
       if (App.online) App.online.send({ type: 'roomInfo', rules: App.rules, host: { name: App.profile.name, avatar: App.profile.avatar } });
@@ -448,7 +460,7 @@ function onlineMsgHandler(msg) {
     return;
   }
   // Guest side
-  if (App.mode === 'onlineJoin') {
+  if (App.mode === 'onlineJoin' || App.mode === 'rankedJoin') {
     if (msg.type === 'roomInfo') {
       App.onlineJoinInfo = { rules: normalizeRules(msg.rules), host: msg.host };
       App.joinRules = normalizeRules(msg.rules);
@@ -473,15 +485,17 @@ function onlineMsgHandler(msg) {
   }
 }
 
-function startOnline(mode) {
+function startOnline(mode, codeOverride) {
   App.mode = mode;
   const manual = App._onlineManual;
-  const roomCode = mode === 'onlineHost' ? genRoom() : (($('joinRoom').value || '').trim().toUpperCase());
+  const isHost = mode.endsWith('Host');
+  const isRanked = mode === 'rankedHost' || mode === 'rankedJoin';
+  const roomCode = isHost ? genRoom() : ((codeOverride || '').trim().toUpperCase() || ($('joinRoom').value || '').trim().toUpperCase());
   App.online = new OnlineNet({
-    isHost: mode === 'onlineHost', roomCode, manual,
+    isHost, roomCode, manual,
     onMessage: onlineMsgHandler,
     onOpen: () => {
-      if (mode === 'onlineHost') {
+      if (isHost) {
         UI.setLobbyStatus('已连接，等待对手加入…');
       } else {
         // Guest: announce presence so host can send room info.
@@ -494,30 +508,32 @@ function startOnline(mode) {
       UI.setLobbyStatus('连接出错：' + (e && e.message ? e.message : e) + '（可改用「邀请码」模式）');
     },
     onStatus: (kind, payload) => {
-      if (kind === 'wait') UI.showLobbyOffer({ manual: false, roomCode: payload.roomCode, link: payload.link });
-      else if (kind === 'offer') UI.showLobbyOffer({ manual: true, offer: payload.offer, link: payload.link });
+      if (kind === 'wait') {
+        // Ranked rooms use ?rjoin= so the invite link opens the ranked flow.
+        if (isRanked) App.online.inviteLink = location.origin + location.pathname + '?rjoin=' + payload.roomCode;
+        UI.showLobbyOffer({ manual: false, roomCode: payload.roomCode, link: App.online.inviteLink });
+      } else if (kind === 'offer') UI.showLobbyOffer({ manual: true, offer: payload.offer, link: payload.link });
       else if (kind === 'answer') UI.showLobbyAnswer(payload.answer);
       else if (kind === 'connecting') UI.setLobbyStatus('正在建立连接…');
     },
   });
   App.online.connect();
-  if (mode === 'onlineHost') {
+  if (isHost) {
     UI.showOnlineLobby({ role: 'host', manual });
     if (manual) UI.setLobbyStatus('正在生成邀请码…');
   } else {
     UI.showOnlineLobby({ role: 'join', manual });
-    if (manual) {
-      // Guest in manual mode needs the offer string (from ?m= link or paste).
-      const m = new URLSearchParams(location.search).get('m');
-      if (m) { App.online.connectWithOffer(m); UI.setLobbyStatus('已载入邀请码，生成回执中…'); }
-      else {
-        $('lobbyBody').innerHTML = `<div class="lobby-step">粘贴房主发来的「邀请码」：</div><textarea id="lobbyOfferIn" class="lobby-code" placeholder="在此粘贴邀请码"></textarea><div class="lobby-actions"><button class="btn small primary" data-ol="pasteOffer">生成回执码</button><button class="btn small ghost" data-ol="lobbyCancel">取消</button></div>`;
-        UI.setLobbyStatus('请粘贴房主发来的邀请码');
-      }
-    } else {
-      UI.setLobbyStatus('正在通过房号连接…');
-    }
+    if (manual) renderManualGuestPrompt();
+    else UI.setLobbyStatus('正在通过房号连接…');
   }
+}
+
+// Guest manual-mode prompt: paste the host's offer (from ?m= link or clipboard).
+function renderManualGuestPrompt() {
+  const m = new URLSearchParams(location.search).get('m');
+  if (m) { if (App.online) App.online.connectWithOffer(m); UI.setLobbyStatus('已载入邀请码，生成回执中…'); return; }
+  $('lobbyBody').innerHTML = `<div class="lobby-step">粘贴房主发来的「邀请码」：</div><textarea id="lobbyOfferIn" class="lobby-code" placeholder="在此粘贴邀请码"></textarea><div class="lobby-actions"><button class="btn small primary" data-ol="pasteOffer">生成回执码</button><button class="btn small ghost" data-ol="lobbyCancel">取消</button></div>`;
+  UI.setLobbyStatus('请粘贴房主发来的邀请码');
 }
 
 function genRoom() {
@@ -532,6 +548,7 @@ async function openBuilder(mode) {
   App.builder = { mode, faction: 'blood', counts: {} };
   App.joinRules = null;
   App.onlineJoinInfo = null;
+  App._pendingRankedCode = null;
   const unlocked = unlockedSet();
   for (const k of ['blood', 'bone', 'energy', 'mox']) {
     let added = 0;
@@ -570,13 +587,14 @@ async function openBuilder(mode) {
       panel.classList.remove('hidden');
       if (App.joinRules.deckScope !== 'all') App.builder.faction = App.joinRules.deckScope;
     } catch (e) { /* join attempt will surface the error */ }
-  } else if (mode === 'onlineJoin') {
-    // Connect immediately so the host can send the (read-only) room rules over
-    // the channel. The builder's confirm button stays disabled until roomInfo.
-    UI.hideRulesPanel();
-    App.mode = 'onlineJoin';
-    startOnline('onlineJoin');
-  } else {
+    } else if (mode === 'onlineJoin' || mode === 'rankedJoin') {
+      // Connect immediately so the host can send the (read-only) room rules over
+      // the channel. The builder's confirm button stays disabled until roomInfo.
+      UI.hideRulesPanel();
+      App.mode = mode;
+      startOnline(mode, App._pendingRankedCode);
+      App._pendingRankedCode = null;
+    } else {
     UI.hideRulesPanel();
   }
   // 同屏双人·玩家2：若房间限定了单一阵营，直接锁定其阵营，避免组错被驳回。
@@ -592,7 +610,7 @@ function renderBuilder() {
   UI.renderDeckBuilder({ faction: f, counts: App.builder.counts, min: CONFIG.DECK_MIN, max: CONFIG.DECK_MAX, total, unlocked: unlockedSet(), who });
   // Online guest may not confirm until the host's rules have arrived.
   const confirm = document.querySelector('[data-bact="builderConfirm"]');
-  if (confirm && App.builder.mode === 'onlineJoin' && !App.onlineJoinInfo) confirm.disabled = true;
+  if (confirm && (App.builder.mode === 'onlineJoin' || App.builder.mode === 'rankedJoin') && !App.onlineJoinInfo) confirm.disabled = true;
 }
 function builderSetFaction(k) { App.builder.faction = k; renderBuilder(); }
 function builderAdjust(id, d) {
@@ -614,7 +632,7 @@ function builderConfirm() {
   if (total < CONFIG.DECK_MIN || total > CONFIG.DECK_MAX) { alert(`卡组数量需在 ${CONFIG.DECK_MIN} ~ ${CONFIG.DECK_MAX} 之间`); return; }
   const scope = App.builder.mode === 'join'
     ? (App.joinRules ? App.joinRules.deckScope : 'all')
-    : App.builder.mode === 'onlineJoin'
+    : (App.builder.mode === 'onlineJoin' || App.builder.mode === 'rankedJoin')
       ? (App.onlineJoinInfo ? App.onlineJoinInfo.rules.deckScope : 'all')
       : App.rules.deckScope;
   if (scope !== 'all' && f.res !== scope) { alert(`规则限定「${SCOPE_NAMES[scope]}」，请切换到对应阵营组卡`); return; }
@@ -648,6 +666,7 @@ function builderConfirm() {
   else if (mode === 'host') startHost();
   else if (mode === 'join') startJoin();
   else if (mode === 'onlineHost') startOnline('onlineHost');
+  else if (mode === 'rankedHost') startOnline('rankedHost');
   else if (mode === 'onlineJoin') {
     // Connection already established in openBuilder; just send the deck and wait.
     if (App.online) {
@@ -656,6 +675,14 @@ function builderConfirm() {
       showGame(); App.status = '已加入，等待房主开始…'; UI.showOverlay('已发送组卡，等待房主开始对局…', false);
     } else {
       startOnline('onlineJoin');
+    }
+  } else if (mode === 'rankedJoin') {
+    if (App.online) {
+      App.online.send({ type: 'join', profile: { name: App.profile.name, avatar: App.profile.avatar }, deck: App.deck.cards, res: App.deck.res });
+      UI.hideOnlineLobby();
+      showGame(); App.status = '已加入，等待房主开始…'; UI.showOverlay('已发送组卡，等待房主开始对局…', false);
+    } else {
+      startOnline('rankedJoin', App._pendingRankedCode);
     }
   }
 }
@@ -777,6 +804,7 @@ $('menu').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-act]'); if (!btn) return;
   const a = btn.dataset.act;
   if (a === 'sound') { toggleSound(); return; }
+  if (a === 'layout') { cycleLayout(); return; }
   playSfx('click');
   if (a === 'single') openBuilder('single');
   else if (a === 'ranked') openRanked();
@@ -803,6 +831,26 @@ function updateSoundBtn() {
   const b = $('soundToggle');
   if (!b) return;
   b.textContent = isMuted() ? '🔇 音效：关' : '🔊 音效：开';
+}
+
+// 界面布局开关：standard（默认，菜单两列 + 组卡宽网格）/ compact（菜单三列 + 组卡左栏阵营右栏卡牌）。
+function applyLayout() {
+  const compact = App.profile && App.profile.layout === 'compact';
+  document.body.classList.toggle('layout-compact', !!compact);
+  updateLayoutBtn();
+}
+function cycleLayout() {
+  const cur = App.profile && App.profile.layout === 'compact' ? 'compact' : 'standard';
+  const next = cur === 'compact' ? 'standard' : 'compact';
+  if (App.profile) { App.profile.layout = next; saveProfile(App.profile); }
+  applyLayout();
+  playSfx('click');
+}
+function updateLayoutBtn() {
+  const b = $('layoutToggle');
+  if (!b) return;
+  const compact = App.profile && App.profile.layout === 'compact';
+  b.textContent = compact ? '🎚 布局：紧凑（三列+双栏）' : '🎚 布局：标准';
 }
 
 $('collection').addEventListener('click', (e) => {
@@ -893,6 +941,12 @@ $('ranked').addEventListener('click', (e) => {
   const b = e.target.closest('[data-ract]'); if (!b) return;
   if (b.dataset.ract === 'back') toMenu();
   else if (b.dataset.ract === 'start') { App._hotseatStep = 'A'; openBuilder('ranked'); }
+  else if (b.dataset.ract === 'onlineHost') { App._onlineManual = false; App.rules = { ...DEFAULT_RULES }; openBuilder('rankedHost'); }
+  else if (b.dataset.ract === 'onlineJoin') {
+    const code = ($('rankedRoom').value || '').trim().toUpperCase();
+    if (!code) { alert('请输入房间号或邀请码'); return; }
+    App._onlineManual = false; App.rules = { ...DEFAULT_RULES }; App._pendingRankedCode = code; openBuilder('rankedJoin');
+  }
 });
 
 $('game').addEventListener('click', (e) => {
@@ -963,14 +1017,21 @@ document.addEventListener('click', (e) => {
   else if (a === 'copyAnswer') { copyText(App.online ? App.online.answerStr : ''); UI.setLobbyStatus('回执码已复制'); }
   else if (a === 'pasteOffer') { const v = $('lobbyOfferIn').value.trim(); if (v && App.online) { App.online.connectWithOffer(v); UI.setLobbyStatus('已载入邀请码，生成回执中…'); } }
   else if (a === 'pasteAnswer') { const v = $('lobbyAnswerIn').value.trim(); if (v && App.online) { App.online.acceptAnswer(v); UI.setLobbyStatus('正在建立连接…'); } }
-  else if (a === 'switchManual') { App._onlineManual = true; UI.showOnlineLobby({ role: App.mode === 'onlineHost' ? 'host' : 'join', manual: true }); if (App.mode === 'onlineHost') startOnlineManualRegenerate(); }
+  else if (a === 'switchManual') {
+    App._onlineManual = true;
+    const isHost = App.mode.endsWith('Host');
+    UI.showOnlineLobby({ role: isHost ? 'host' : 'join', manual: true });
+    if (isHost) startOnlineManualRegenerate();
+    else renderManualGuestPrompt();
+  }
   else if (a === 'lobbyCancel') { if (App.online) App.online.close(); App.online = null; toMenu(); }
 });
 function startOnlineManualRegenerate() {
   // Re-create the host net in manual mode to produce a fresh offer.
   if (App.online) App.online.close();
+  const isHost = App.mode.endsWith('Host');
   App.online = new OnlineNet({
-    isHost: true, roomCode: genRoom(), manual: true,
+    isHost, roomCode: isHost ? genRoom() : '', manual: true,
     onMessage: onlineMsgHandler,
     onOpen: () => UI.setLobbyStatus('已连接，等待对手加入…'),
     onClose: () => UI.setLobbyStatus('连接已断开'),
@@ -999,14 +1060,14 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Auto-join via ?join=ROOM or ?m=OFFER (from a shared invite link).
+// Auto-join via ?join=ROOM / ?m=OFFER (casual) or ?rjoin=CODE (ranked P2P).
 (function autoJoinFromUrl() {
   const params = new URLSearchParams(location.search);
   const join = params.get('join');
   const m = params.get('m');
-  if (join || m) {
-    window.__autoJoin = { join, m };
-  }
+  const rjoin = params.get('rjoin');
+  if (join || m) window.__autoJoin = { join, m };
+  if (rjoin) window.__autoRankedJoin = rjoin.toUpperCase();
 })();
 
 // ---------- Boot ----------

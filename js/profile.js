@@ -20,6 +20,7 @@ function normalize(p) {
   p.coins = Number.isFinite(p.coins) ? p.coins : 0;
   p.gems = Number.isFinite(p.gems) ? p.gems : 0;
   p.muted = !!p.muted;
+  p.layout = p.layout === 'compact' ? 'compact' : 'standard'; // 界面布局：standard（默认）/ compact（菜单三列 + 组卡双栏）
   p.aiLevel = ['easy', 'normal', 'hard'].includes(p.aiLevel) ? p.aiLevel : 'normal';
   p.unlocked = Array.from(new Set(p.unlocked || []));
   // 排位赛段位：默认 一阶·下，0 晋级分。

@@ -51,6 +51,7 @@
           <button class="btn big" data-act="changelog">📋 更新日志</button>
           <button class="btn big" data-act="collection">🗃 我的收藏</button>
           <button class="btn big" data-act="sound" id="soundToggle">🔊 音效：开</button>
+          <button class="btn big" data-act="layout" id="layoutToggle">🎚 布局：标准</button>
           <div class="menu-divider">— 线下同屏（同一台电脑）—</div>
           <button class="btn big" data-act="hotseat">🖥 本地双人（同屏轮流）</button>
           <div class="menu-divider">— 联机对战 —</div>
@@ -222,7 +223,7 @@
       <div class="pane-box wide ranked-box">
         <div class="pane-head">
           <h2 class="title-sm">🏆 排 位 赛</h2>
-          <span class="pane-sub">仅限 PVP（同屏双人对战）</span>
+          <span class="pane-sub">仅限 PVP（同屏双人 / 线上 P2P）</span>
           <button class="btn small" data-ract="back">← 返回</button>
         </div>
         <div class="ranked-body">
@@ -232,8 +233,16 @@
             <div class="rank-bar-label" id="rankBarLabel"></div>
           </div>
           <div class="ranked-stats" id="rankedStats"></div>
-          <p class="ranked-note">排位赛仅以玩家对玩家（同屏轮流）形式进行。你（玩家1）的胜负决定段位升降：胜 <b>+30</b> 晋级分，负 <b>−30</b> 晋级分；小阶内满 100 分晋级上一阶（下→中→上），归零则降级。共六阶，最高 <b>六阶·上</b>。</p>
-          <button class="btn big primary" data-ract="start">▶ 开始排位赛</button>
+          <p class="ranked-note">排位赛为玩家对玩家（PVP）。<b>同屏双人</b>：同一台电脑轮流操作，段位跟随「你」。<b>线上 P2P</b>：双方各用自己设备与账号，段位各自独立结算。胜负判定：胜 <b>+30</b> 晋级分，负 <b>−30</b> 晋级分；小阶内满 100 分晋级上一阶（下→中→上），归零则降级。共六阶，最高 <b>六阶·上</b>。</p>
+          <button class="btn big" data-ract="start">🖥 同屏双人对战</button>
+          <div class="ranked-online">
+            <div class="ranked-online-title">🌐 线上 P2P 对战（双方独立段位）</div>
+            <button class="btn big primary" data-ract="onlineHost">🏠 创建线上房间</button>
+            <div class="join-row">
+              <input id="rankedRoom" class="room-input" maxlength="64" placeholder="房间号 / 邀请码" />
+              <button class="btn" data-ract="onlineJoin">加入</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

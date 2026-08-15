@@ -824,6 +824,36 @@ export function showLobbyAnswer(answer) {
 }
 
 // ============================================================================
+// RANK EMBLEMS — 每个阶数一个独立的图像标志（非「数字+圈」）
+// 形状随阶数递进：①箭簇 ②交叉双剑 ③盾牌 ④星 ⑤皇冠 ⑥钻石，颜色见 TIER_COLORS
+// ============================================================================
+const RANK_EMBLEMS = {
+  // 一阶 · 青铜（灰）：单刃箭簇
+  1: '<path d="M32 12 L50 46 L37 46 L37 54 L27 54 L27 46 L14 46 Z"/>',
+  // 二阶 · 铜：交叉双剑
+  2: '<g><rect x="28.4" y="12" width="7.2" height="40" rx="3.4" transform="rotate(45 32 32)"/>'
+    + '<rect x="28.4" y="12" width="7.2" height="40" rx="3.4" transform="rotate(-45 32 32)"/>'
+    + '<circle cx="32" cy="32" r="5" fill="#1c1710"/></g>',
+  // 三阶 · 银：盾牌（带白色对勾）
+  3: '<path d="M32 11 L51 20 V34 C51 47 42 53 32 55 C22 53 13 47 13 34 V20 Z"/>'
+    + '<path d="M23 31 L29 37.5 L42 22" fill="none" stroke="#1c1710" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>',
+  // 四阶 · 金：五角星
+  4: '<path d="M32 10 L38.4 25.4 L54.6 27.3 L42.4 38.4 L46.2 54.6 L32 45.4 L17.8 54.6 L21.6 38.4 L9.4 27.3 L25.6 25.4 Z"/>',
+  // 五阶 · 青：皇冠
+  5: '<path d="M12 46 L12 22 L22.5 33 L32 14 L41.5 33 L52 22 L52 46 Z"/>'
+    + '<rect x="12" y="46" width="40" height="6.5" rx="2.5"/>'
+    + '<circle cx="12" cy="20" r="3.2" fill="#1c1710"/><circle cx="32" cy="12" r="3.2" fill="#1c1710"/><circle cx="52" cy="20" r="3.2" fill="#1c1710"/>',
+  // 六阶 · 蓝：切割钻石（顶级）
+  6: '<path d="M18 18 H46 L57 32 L32 56 L7 32 Z"/>'
+    + '<path d="M18 18 L32 32 L46 18 M7 32 H57 M32 32 V56" fill="none" stroke="#1c1710" stroke-width="2.6" stroke-linejoin="round" opacity=".82"/>',
+};
+export function rankSvg(tier) {
+  tier = Math.min(RANK.TIERS, Math.max(1, tier || 1));
+  const inner = RANK_EMBLEMS[tier] || RANK_EMBLEMS[1];
+  return `<svg viewBox="0 0 64 64" class="rk-emblem" role="img" aria-label="${RANK.TIER_NAMES[tier]}徽章">${inner}</svg>`;
+}
+
+// ============================================================================
 // TOP CHIP (profile summary on menu)
 // ============================================================================
 export function renderTopChip(profile) {
@@ -832,7 +862,7 @@ export function renderTopChip(profile) {
   const rk = profile.rank || { tier: 1, div: 0, points: 0 };
   const rkColor = rankColor(rk.tier);
   chip.innerHTML = `<span class="tc-avatar">${profile.avatar || '🜁'}</span><span class="tc-name">${profile.name}</span>`
-    + `<span class="tc-rank" style="--tier:${rkColor}">${rankLabel(rk)}</span>`
+    + `<span class="tc-rank" style="--tier:${rkColor}">${rankSvg(rk.tier)}<b>${RANK.DIVISIONS[rk.div]}</b></span>`
     + `<span class="tc-coin">✦ ${profile.coins}</span><span class="tc-gem">💎 ${profile.gems || 0}</span><span class="tc-stat">胜 ${profile.stats.wins} · 负 ${profile.stats.losses}</span>`;
 }
 
@@ -843,7 +873,7 @@ export function renderRanked(profile) {
   const badge = el('rankBadge');
   if (badge) {
     badge.style.setProperty('--tier', color);
-    badge.innerHTML = `<div class="rb-tier">${RANK.TIER_NAMES[rk.tier]}</div><div class="rb-div">${RANK.DIVISIONS[rk.div]}</div>`;
+    badge.innerHTML = `<div class="rb-medal">${rankSvg(rk.tier)}</div><div class="rb-div">${RANK.TIER_NAMES[rk.tier]}·${RANK.DIVISIONS[rk.div]}</div>`;
   }
   const bar = el('rankBar');
   if (bar) {

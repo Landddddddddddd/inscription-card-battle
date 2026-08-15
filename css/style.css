@@ -29,8 +29,10 @@
 html, body {
   margin: 0; padding: 0; height: 100%;
   background:
-    radial-gradient(ellipse at 50% -10%, #2a2016 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 120%, #1a1410 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, transparent 48%, rgba(0,0,0,.64) 100%),
+    radial-gradient(ellipse at 50% -10%, #31200f 0%, transparent 58%),
+    radial-gradient(ellipse at 50% 120%, #1a1410 0%, transparent 62%),
+    radial-gradient(ellipse at 50% 32%, rgba(224,176,58,.05), transparent 60%),
     var(--bg);
   color: var(--text);
   font-family: var(--ui);
@@ -120,8 +122,11 @@ html, body {
 .topchip .tc-coin { color: #ffd66a; }
 .topchip .tc-stat { color: var(--text-dim); }
 .topchip .tc-rank { --tier: #9aa0a8; color: var(--tier); font-weight: 700; font-size: 12px;
+  display: inline-flex; align-items: center; gap: 4px;
   padding: 1px 9px; border-radius: 10px; border: 1px solid var(--tier); background: rgba(255,255,255,.04);
   text-shadow: 0 0 8px color-mix(in srgb, var(--tier) 60%, transparent); }
+.topchip .tc-rank .rk-emblem { width: 14px; height: 14px; fill: currentColor; }
+.topchip .tc-rank b { color: #f3e9d2; }
 
 /* ---------------- BUTTONS ---------------- */
 .btn {
@@ -388,12 +393,21 @@ html, body {
 .card.unaffordable.in-hand:hover { transform: translateY(-2px); }
 
 /* ---------------- HAND ---------------- */
-.hand { display: flex; gap: 10px; justify-content: center; padding: 10px; min-height: 162px; background: linear-gradient(180deg, rgba(23,18,13,.9), rgba(13,11,9,.95)); border-top: 1px solid var(--line2); flex-wrap: wrap; }
+.hand { display: flex; gap: 8px; justify-content: center; padding: 6px 10px; min-height: 120px; background: linear-gradient(180deg, rgba(23,18,13,.9), rgba(13,11,9,.95)); border-top: 1px solid var(--line2); flex-wrap: wrap; }
+/* 手牌区压缩：卡牌更小、更紧凑，把竖向空间让给战场，让场上的牌无需滚动就能看清 */
+.hand .card { width: 82px; height: 112px; padding: 3px; }
+.hand .card .portrait { height: 42px; }
+.hand .card .portrait .glyph { font-size: 22px; }
+.hand .card .cname { font-size: 10px; margin: 0; letter-spacing: .5px; }
+.hand .card .stats { font-size: 11px; padding: 0 2px; }
+.hand .card .sigils { margin-top: 1px; }
+.hand .card .sig { font-size: 8px; padding: 0 2px; }
+.hand .card .cost { width: 20px; height: 20px; font-size: 10px; top: -7px; right: -7px; }
 
 /* ---------------- CONTROLS / LOG ---------------- */
 .controls { display: flex; gap: 12px; align-items: center; justify-content: center; padding: 10px; background: #0b0806; border-top: 1px solid var(--line); }
 .status-msg { color: var(--gold); font-size: 13px; min-width: 120px; }
-.log { height: 88px; overflow-y: auto; background: #080605; border-top: 1px solid var(--line); padding: 6px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.55; }
+.log { height: 72px; overflow-y: auto; background: #080605; border-top: 1px solid var(--line); padding: 6px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.55; }
 .log .me { color: var(--text); }
 .log > div:last-child { color: var(--gold); }
 
@@ -473,14 +487,18 @@ html, body {
 .ranked-body { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 10px 8px; }
 .rank-badge {
   --tier: #9aa0a8;
-  width: 150px; height: 150px; border-radius: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  border: 4px solid var(--tier);
-  box-shadow: 0 0 30px -4px var(--tier), inset 0 0 26px -10px var(--tier);
-  background: radial-gradient(circle at 50% 32%, rgba(255,255,255,.07), transparent 62%);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
 }
-.rank-badge .rb-tier { font-size: 32px; font-weight: 800; color: var(--tier); letter-spacing: 5px; text-shadow: 0 0 14px color-mix(in srgb, var(--tier) 55%, transparent); }
-.rank-badge .rb-div { font-size: 22px; color: #f3e9d2; margin-top: 2px; opacity: .92; }
+.rank-badge .rb-medal {
+  width: 142px; height: 142px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 5px solid var(--tier);
+  background: radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--tier) 30%, transparent), transparent 72%);
+  box-shadow: 0 0 34px -4px var(--tier), inset 0 0 26px -10px var(--tier);
+}
+.rk-emblem { fill: currentColor; color: var(--tier); width: 90px; height: 90px;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--tier) 55%, transparent)); }
+.rank-badge .rb-div { font-size: 22px; color: #f3e9d2; font-weight: 700; letter-spacing: 2px; }
 .rank-progress { width: 100%; max-width: 420px; }
 .rank-bar-track { height: 14px; border-radius: 8px; background: rgba(255,255,255,.08); overflow: hidden; border: 1px solid rgba(255,255,255,.12); }
 .rank-bar-fill { height: 100%; width: 0; border-radius: 8px; transition: width .45s ease; box-shadow: 0 0 10px -2px currentColor; }
@@ -489,6 +507,64 @@ html, body {
 .ranked-note { font-size: 13px; color: #9a8f78; line-height: 1.7; max-width: 440px; text-align: center; margin: 0; }
 .ranked-note b { color: #d8c79a; }
 .ranked-box .btn.primary { min-width: 210px; }
+.ranked-online { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; margin-top: 4px; padding-top: 16px; border-top: 1px solid rgba(216,199,154,0.18); }
+.ranked-online-title { font-size: 13px; color: #cdbd8e; letter-spacing: 1px; }
+.ranked-online .join-row { width: 100%; max-width: 320px; justify-content: center; }
+.ranked-online .room-input { flex: 1; }
+
+/* ===== 桌面端（≥769px）：选择模式 / 选择卡组改用横屏布局 ===== */
+@media (min-width: 769px) {
+  /* 选择模式（主菜单）：更宽，按钮两列铺开，用足横向空间 */
+  .menu-box { max-width: min(920px, 94vw); }
+  .menu-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; align-items: stretch; }
+  .menu-btns .menu-divider,
+  .menu-btns .join-row,
+  .menu-btns .host-info,
+  .menu-btns [data-act="sound"],
+  .menu-btns [data-act="hotseat"] { grid-column: 1 / -1; }
+  .menu-btns .btn { width: 100%; }
+
+  /* 选择卡组（组卡界面）：加宽，卡牌网格横向铺开成横屏 */
+  #deckBuilder { justify-content: flex-start; padding-top: 28px; }
+  .builder-box { width: 96%; max-width: min(1200px, 96vw); }
+  .builder-box .subtitle { margin-bottom: 18px; }
+}
+
+/* ===== 紧凑布局（body.layout-compact，仅桌面 ≥769px 生效，非默认） =====
+   菜单改为三列网格；组卡界面改为「左侧阵营栏 + 右侧卡牌」真双栏。 */
+@media (min-width: 769px) {
+  body.layout-compact .menu-box { max-width: min(1100px, 96vw); }
+  body.layout-compact .menu-btns { grid-template-columns: 1fr 1fr 1fr; }
+  body.layout-compact .menu-btns .menu-divider,
+  body.layout-compact .menu-btns .join-row,
+  body.layout-compact .menu-btns .host-info,
+  body.layout-compact .menu-btns [data-act="sound"],
+  body.layout-compact .menu-btns [data-act="layout"],
+  body.layout-compact .menu-btns [data-act="hotseat"],
+  body.layout-compact .menu-btns [data-act="logout"] { grid-column: 1 / -1; }
+
+  /* 组卡双栏：builder-box 用 flex-wrap，标题/规则/页脚各占整行，阵营栏(左固定宽)+卡牌(右填充)并排 */
+  body.layout-compact #deckBuilder { justify-content: flex-start; padding-top: 28px; }
+  body.layout-compact .builder-box {
+    width: 96%; max-width: min(1240px, 96vw);
+    display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px 20px;
+  }
+  body.layout-compact .builder-box > .title-sm { flex: 0 0 100%; margin-bottom: 0; }
+  body.layout-compact .builder-box > #builderDesc { flex: 0 0 100%; margin-bottom: 0; }
+  body.layout-compact #rulesPanel { flex: 0 0 100%; }
+  body.layout-compact .faction-tabs {
+    flex: 0 0 210px;
+    flex-direction: column; align-items: stretch; justify-content: flex-start;
+    gap: 10px; margin: 0;
+    position: sticky; top: 20px;
+    background: rgba(0,0,0,.22);
+    border: 1px solid rgba(216,199,154,.18);
+    border-radius: 12px; padding: 12px;
+  }
+  body.layout-compact .faction-tabs .ftab { text-align: left; padding: 10px 12px; }
+  body.layout-compact #builderGrid { flex: 1 1 360px; min-width: 0; align-self: stretch; max-height: 74vh; overflow-y: auto; padding-right: 6px; }
+  body.layout-compact .builder-footer { flex: 0 0 100%; }
+}
 
 /* ---------------- RESPONSIVE ---------------- */
 
@@ -497,8 +573,9 @@ html, body {
   .menu-box, .login-box, .builder-box, .pane-box { padding: 26px 24px; }
   .title { font-size: 36px; letter-spacing: 6px; }
   .title-sm { font-size: 22px; letter-spacing: 4px; }
-  .rank-badge { width: 122px; height: 122px; }
-  .rank-badge .rb-tier { font-size: 26px; letter-spacing: 3px; }
+  .rank-badge .rb-medal { width: 104px; height: 104px; border-width: 4px; }
+  .rank-badge .rk-emblem { width: 64px; height: 64px; }
+  .rank-badge .rb-div { font-size: 18px; }
   .ranked-box .btn.primary { min-width: 0; width: 100%; }
   .tb-left { min-width: 120px; }
   .tb-right { min-width: 70px; }
@@ -725,6 +802,155 @@ html, body {
 .lobby-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
 .lobby-actions .btn { flex: 0 0 auto; }
 
+
+/* =================================================================
+   VISUAL POLISH LAYER — 精致化升级（仅改观感，不动布局结构）
+   ================================================================= */
+
+/* 面板：玻璃质感 + 描金内描边 + 立体投影 */
+.menu-box, .login-box, .pane-box, .builder-box, .overlay-box, .lobby-box {
+  background: linear-gradient(180deg, rgba(64,48,31,.94), rgba(26,19,12,.97));
+  box-shadow:
+    0 0 0 1px rgba(224,176,58,.12),
+    0 0 0 4px #000,
+    0 26px 70px rgba(0,0,0,.7),
+    inset 0 1px 0 rgba(255,255,255,.07),
+    inset 0 0 50px rgba(0,0,0,.45);
+}
+.menu-box::before, .login-box::before, .pane-box::before { border-color: rgba(224,176,58,.22); }
+
+/* 标题：金色渐变文字 + 外发光 */
+.title {
+  background: linear-gradient(180deg, #fff3cf 0%, var(--gold) 58%, #a9772a 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(224,176,58,.35));
+}
+.title-sm {
+  background: linear-gradient(180deg, #ffe9b0, var(--gold) 70%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* 按钮：玻璃高光 + 描金边 + 物理反馈 */
+.btn {
+  border-radius: 10px; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, rgba(82,61,39,.96), rgba(38,28,18,.98));
+  border: 1px solid var(--line2);
+  box-shadow: 0 3px 0 rgba(0,0,0,.6), 0 6px 14px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.btn::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 44%;
+  background: linear-gradient(180deg, rgba(255,255,255,.13), transparent);
+  pointer-events: none;
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px); border-color: var(--gold-dim);
+  box-shadow: 0 6px 18px rgba(0,0,0,.5), 0 0 16px rgba(224,176,58,.22), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0,0,0,.7), inset 0 2px 6px rgba(0,0,0,.5);
+}
+.btn:focus-visible {
+  outline: none; border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(224,176,58,.45), 0 0 16px rgba(224,176,58,.4);
+}
+.btn.primary {
+  background: linear-gradient(180deg, #f6cf6e 0%, var(--gold) 46%, #b9852a 100%);
+  color: #1c1305; border-color: #f3d889;
+  box-shadow: 0 3px 0 #6b4d16, 0 8px 22px rgba(224,176,58,.35), inset 0 1px 0 rgba(255,255,255,.55);
+}
+.btn.primary::before { background: linear-gradient(180deg, rgba(255,255,255,.5), transparent); }
+.btn.primary:hover:not(:disabled) {
+  box-shadow: 0 6px 24px rgba(224,176,58,.55), 0 0 26px rgba(224,176,58,.5), inset 0 1px 0 rgba(255,255,255,.6);
+}
+
+/* 卡牌：立体纸张 + 圆角 + 发光宝石 */
+.card, .bcard {
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--wood3), var(--wood));
+  box-shadow: 0 4px 0 rgba(0,0,0,.55), 0 8px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.07);
+}
+.card .portrait, .bcard .portrait {
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), inset 0 2px 8px rgba(0,0,0,.5);
+}
+.card .cost, .bcost {
+  box-shadow: 0 2px 6px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.5), 0 0 10px rgba(255,255,255,.12);
+}
+.card.in-hand:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 16px 30px rgba(0,0,0,.55), 0 0 22px rgba(224,176,58,.4);
+}
+.card.selected { box-shadow: 0 0 0 2px var(--gold), 0 0 26px rgba(224,176,58,.7); }
+.card.sac-target { box-shadow: 0 0 0 2px var(--red), 0 0 18px rgba(192,57,43,.7); }
+
+/* 战斗界面：顶栏 / 资源 / 棋盘 / 列 / 手牌 / 控制条 */
+#topbar {
+  background: linear-gradient(180deg, rgba(20,15,10,.96), rgba(10,8,6,.92));
+  border-bottom: 1px solid rgba(224,176,58,.2);
+  box-shadow: 0 4px 18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.resources {
+  background: linear-gradient(180deg, rgba(23,18,13,.95), rgba(13,11,9,.95));
+  border-bottom: 1px solid rgba(224,176,58,.14);
+}
+.res {
+  background: rgba(0,0,0,.42); border: 1px solid rgba(255,255,255,.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 2px 8px rgba(0,0,0,.4);
+}
+.board {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(82,60,36,.5), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 3px, transparent 3px 6px),
+    radial-gradient(circle at 50% 50%, #1d140d 0%, #0a0705 90%);
+}
+.lane {
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(16,12,8,.55), rgba(7,5,3,.62));
+  box-shadow: inset 0 0 22px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.lane.mine {
+  border-color: var(--gold-dim);
+  box-shadow: inset 0 0 22px rgba(0,0,0,.55), 0 0 0 1px rgba(224,176,58,.28), 0 0 16px rgba(224,176,58,.14);
+}
+.mid-divider {
+  height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  box-shadow: 0 0 12px rgba(224,176,58,.45);
+}
+.hand {
+  background: linear-gradient(180deg, rgba(28,21,14,.94), rgba(13,10,7,.97));
+  border-top: 1px solid rgba(224,176,58,.16);
+  box-shadow: inset 0 8px 18px rgba(0,0,0,.5);
+}
+.controls {
+  background: linear-gradient(180deg, #0d0a07, #070605);
+  border-top: 1px solid rgba(224,176,58,.1);
+}
+.log {
+  background: rgba(8,6,5,.92); border-top: 1px solid rgba(224,176,58,.12);
+}
+
+/* 段位徽章：呼吸发光 + 顶栏药丸精修 */
+.rank-badge .rb-medal {
+  box-shadow: 0 0 0 3px rgba(0,0,0,.6), 0 0 40px -2px var(--tier), inset 0 0 30px -8px var(--tier);
+  animation: medalBreath 3.6s ease-in-out infinite;
+}
+@keyframes medalBreath {
+  0%,100% { box-shadow: 0 0 0 3px rgba(0,0,0,.6), 0 0 32px -4px var(--tier), inset 0 0 26px -10px var(--tier); }
+  50%     { box-shadow: 0 0 0 3px rgba(0,0,0,.6), 0 0 54px 0 var(--tier), inset 0 0 34px -8px var(--tier); }
+}
+.rk-emblem { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--tier) 60%, transparent)); }
+.topchip {
+  background: rgba(20,15,10,.92); border: 1px solid rgba(224,176,58,.22);
+  box-shadow: 0 4px 16px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* 入场 / 过渡动画 */
+.screen:not(.hidden) { animation: screenIn .35s ease-out; }
+@keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+#collGrid .bcard { animation: cardIn .3s ease-out backwards; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+
 /* menu divider */
 .menu-divider { color: var(--gold-dim); font-size: 12px; letter-spacing: 3px; margin: 6px 0 2px; opacity: .8; }
 
@@ -784,7 +1010,7 @@ html, body {
 
 /* ---------- 画质打磨：手牌悬停抬升 + 辉光、选中金边、天平指针脉冲 ---------- */
 .hand .card { transition: transform .14s ease, box-shadow .14s ease, filter .14s ease; cursor: pointer; }
-.hand .card:hover { transform: translateY(-12px) scale(1.05); box-shadow: 0 10px 26px rgba(0,0,0,.6), 0 0 18px rgba(224,176,58,.45); filter: brightness(1.06); z-index: 6; }
+.hand .card:hover { transform: translateY(-6px) scale(1.04); box-shadow: 0 8px 20px rgba(0,0,0,.6), 0 0 16px rgba(224,176,58,.4); filter: brightness(1.06); z-index: 6; }
 .hand .card.selected { outline: 3px solid var(--gold); outline-offset: 2px; box-shadow: 0 0 22px rgba(224,176,58,.7); transform: translateY(-8px); z-index: 5; }
 .hand .card.dim { filter: grayscale(.7) brightness(.62); cursor: not-allowed; }
 .hand .card.dim:hover { transform: translateY(-2px) scale(1); box-shadow: none; filter: grayscale(.7) brightness(.62); }
