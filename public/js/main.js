@@ -124,7 +124,31 @@ function toMenu() {
   applyLayout();
   document.querySelectorAll('#aiDiff .dbtn').forEach((b) => b.classList.toggle('on', b.dataset.diff === App.aiLevel));
   applyEnvMode();
+  probeServerStatus();
   show('menu');
+}
+
+// 在菜单上展示联机可用性：非本机部署时说明 P2P 模式；本机部署时探测 server.js 是否在运行。
+async function probeServerStatus() {
+  const el = $('onlineHint'); if (!el) return;
+  const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '';
+  if (!local) {
+    el.innerHTML = '🌐 <b>线上联机</b>：点对点直连，无需服务器；若信令服务不可用会自动改用「邀请码」模式。';
+    el.classList.remove('hidden');
+    return;
+  }
+  el.innerHTML = '🔍 正在检测本地联机服务器…';
+  el.classList.remove('hidden');
+  let up = false;
+  try {
+    const r = await fetch('/api/roominfo?room=__probe__', { cache: 'no-store' });
+    const t = await r.text();
+    JSON.parse(t); // server 返回 JSON（即使是 404 错误）；静态托管返回 HTML → 解析失败。
+    up = true;
+  } catch (e) { up = false; }
+  el.innerHTML = up
+    ? '✅ 检测到联机服务器 ——「本地联机」可用（同局域网好友用本机地址加入）。'
+    : '⚠️ 未检测到联机服务器：「本地联机」需在本机先运行 <code>node server.js</code>。';
 }
 
 // ---------- Local action application ----------
@@ -395,8 +419,14 @@ function startRanked() {
 // ---------------- LAN (local server) ----------------
 async function startHost() {
   const d = App.deck || { res: 'blood', cards: DECKS.blood };
-  const res = await fetch('/api/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: App.profile ? App.profile.name : '房主', avatar: App.profile ? App.profile.avatar : '🜁', res: d.res, deck: d.cards, rules: App.rules }) });
-  const data = await res.json();
+  let data;
+  try {
+    const res = await fetch('/api/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: App.profile ? App.profile.name : '房主', avatar: App.profile ? App.profile.avatar : '🜁', res: d.res, deck: d.cards, rules: App.rules }) });
+    data = await res.json();
+  } catch (e) {
+    alert('未检测到联机服务器。\n\n若要用「本地联机」，请在本机运行：\n    node server.js\n然后刷新页面再创建房间（同一局域网内的好友用你的电脑地址加入）。\n\n若想在互联网上直接对战，请改用「🌍 线上联机」（点对点，无需服务器）。');
+    toMenu(); return;
+  }
   if (data.error) { alert(data.error); return; }
   App.mode = 'host'; App.me = data.side; App.net = null; App.rewardGiven = false;
   App.ui = { selectedIid: null, sacList: [] };
@@ -413,8 +443,14 @@ async function startJoin() {
   const room = ($('joinRoom').value || '').trim().toUpperCase();
   if (!room) { alert('请输入房间号'); return; }
   const d = App.deck || { res: 'blood', cards: DECKS.blood };
-  const res = await fetch('/api/join', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ room, avatar: App.profile ? App.profile.avatar : '🜁', res: d.res, deck: d.cards }) });
-  const data = await res.json();
+  let data;
+  try {
+    const res = await fetch('/api/join', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ room, avatar: App.profile ? App.profile.avatar : '🜁', res: d.res, deck: d.cards }) });
+    data = await res.json();
+  } catch (e) {
+    alert('无法连接联机服务器。\n\n请确认：\n① 房主已运行 node server.js；\n② 你和房主在同一局域网（或用房主的公网地址）；\n③ 房间号正确。\n\n若想在互联网上直接对战，请改用「🌍 线上联机」（点对点，无需服务器）。');
+    toMenu(); return;
+  }
   if (data.error) { alert(data.error); return; }
   App.mode = 'join'; App.me = data.side; App.net = null; App.rewardGiven = false;
   App.ui = { selectedIid: null, sacList: [] };
@@ -488,6 +524,7 @@ function onlineMsgHandler(msg) {
 function startOnline(mode, codeOverride) {
   App.mode = mode;
   const manual = App._onlineManual;
+  if (!manual) App._switchedManual = false;
   const isHost = mode.endsWith('Host');
   const isRanked = mode === 'rankedHost' || mode === 'rankedJoin';
   const roomCode = isHost ? genRoom() : ((codeOverride || '').trim().toUpperCase() || ($('joinRoom').value || '').trim().toUpperCase());
@@ -505,7 +542,16 @@ function startOnline(mode, codeOverride) {
     },
     onClose: () => { if (App.mode) UI.setLobbyStatus('连接已断开'); },
     onError: (e) => {
-      UI.setLobbyStatus('连接出错：' + (e && e.message ? e.message : e) + '（可改用「邀请码」模式）');
+      // 信令服务（PeerJS）不可用时，自动降级到「邀请码」模式（纯 WebRTC + 公共 STUN，无需任何服务器）。
+      if (!manual && !App._switchedManual) {
+        App._switchedManual = true;
+        App._onlineManual = true;
+        if (App.online) { try { App.online.close(); } catch (_) {} App.online = null; }
+        UI.setLobbyStatus('点对点信令不可用，已自动切换到「邀请码」模式（无需服务器）…');
+        startOnline(mode, codeOverride);
+        return;
+      }
+      UI.setLobbyStatus('连接出错：' + (e && e.message ? e.message : e) + '（可重试，或改用「本地联机」运行服务器）');
     },
     onStatus: (kind, payload) => {
       if (kind === 'wait') {
@@ -586,7 +632,10 @@ async function openBuilder(mode) {
       panel.innerHTML = `<div class="rules-title">⚙ 房间规则（由房主设定）</div><div class="rules-note">${UI.rulesSummaryText(App.joinRules)}</div>`;
       panel.classList.remove('hidden');
       if (App.joinRules.deckScope !== 'all') App.builder.faction = App.joinRules.deckScope;
-    } catch (e) { /* join attempt will surface the error */ }
+    } catch (e) {
+      alert('无法连接联机服务器（房间号无效或服务器未运行）。\n请确认房主已运行 node server.js 且房间号正确。');
+      toMenu(); return;
+    }
     } else if (mode === 'onlineJoin' || mode === 'rankedJoin') {
       // Connect immediately so the host can send the (read-only) room rules over
       // the channel. The builder's confirm button stays disabled until roomInfo.
@@ -816,7 +865,7 @@ $('menu').addEventListener('click', (e) => {
   else if (a === 'host') openBuilder('host');
   else if (a === 'join') openBuilder('join');
   else if (a === 'onlineHost') { App._onlineManual = false; openBuilder('onlineHost'); }
-  else if (a === 'onlineJoin') openBuilder('onlineJoin');
+  else if (a === 'onlineJoin') { App._onlineManual = false; openBuilder('onlineJoin'); }
   else if (a === 'logout') logout();
 });
 

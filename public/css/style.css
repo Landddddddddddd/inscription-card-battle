@@ -114,6 +114,10 @@ html, body {
 .hint { color: var(--text-dim); font-size: 12px; margin-top: 20px; line-height: 1.7; }
 .host-info { margin-top: 18px; padding: 12px; border: 1px dashed var(--gold-dim); border-radius: 8px; color: var(--gold); font-size: 14px; line-height: 1.7; text-align: left; }
 .host-info code { background: #000; padding: 2px 6px; border-radius: 4px; color: var(--bone); }
+.online-hint { margin: 14px auto 0; max-width: 460px; padding: 10px 14px; border: 1px solid var(--line2); border-radius: 10px; background: rgba(0,0,0,.22);
+  color: var(--text-dim); font-size: 12.5px; line-height: 1.7; text-align: center; }
+.online-hint b { color: var(--gold); }
+.online-hint code { background: #000; padding: 1px 6px; border-radius: 4px; color: var(--bone); }
 
 /* top profile chip */
 .topchip { position: fixed; top: 14px; right: 16px; z-index: 5; display: flex; gap: 12px; align-items: center;
