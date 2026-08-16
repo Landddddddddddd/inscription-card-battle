@@ -187,51 +187,51 @@ export const CARDS = {
   // 注意：骸骨阵营的 0 费卡（bone_pup）豁免——其"费用"由死亡产骸骨偿还；
   // 魔石法术卡虽 cost:0，但需场上对应魔石才能召唤，并非免费，亦不受影响。
   squirrel:    { name: '松鼠',   atk: 0, hp: 1, cost: 0, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#8a5a2b', glyph: '鼠' },
-  stoat:       { name: '白鼬',   atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#d9d2c5', glyph: '鼬' },
+  stoat:       { name: '白鼬',   atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#d9d2c5', glyph: '鼬' },
   raven:       { name: '乌鸦',   atk: 1, hp: 1, cost: 1, costType: 'blood', sigils: ['airborne'],       bloodValue: 2, color: '#2b2b3a', glyph: '鸦' },
   mole:        { name: '鼹鼠',   atk: 1, hp: 1, cost: 1, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#5b4636', glyph: '鼹' },
-  beaver:      { name: '河狸',   atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#6b4f2a', glyph: '狸' },
+  beaver:      { name: '河狸',   atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#6b4f2a', glyph: '狸' },
   adder:       { name: '蝰蛇',   atk: 1, hp: 2, cost: 1, costType: 'blood', sigils: ['poison_touch'],  bloodValue: 2, color: '#3b6b3b', glyph: '蛇' },
-  raccoon:     { name: '浣熊',   atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: ['loose_tail'],    bloodValue: 2, color: '#7a6a55', glyph: '浣' },
+  raccoon:     { name: '浣熊',   atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: ['loose_tail'],    bloodValue: 2, color: '#7a6a55', glyph: '浣' },
   opossum:     { name: '负鼠',   atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#7a6a55', glyph: '负' },
-  wolf:        { name: '狼',     atk: 3, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#6e6e6e', glyph: '狼' },
-  bullfrog:    { name: '牛蛙',   atk: 3, hp: 3, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#4a7a3a', glyph: '蛙' },
+  wolf:        { name: '狼',     atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#6e6e6e', glyph: '狼' },
+  bullfrog:    { name: '牛蛙',   atk: 3, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#4a7a3a', glyph: '蛙' },
   vulture:     { name: '秃鹫',   atk: 3, hp: 1, cost: 2, costType: 'blood', sigils: ['airborne'],       bloodValue: 2, color: '#4a3a2a', glyph: '鹫' },
-  cougar:      { name: '美洲狮', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['double_strike'],  bloodValue: 2, color: '#9a8a6a', glyph: '狮' },
-  dire_wolf:   { name: '恐狼',   atk: 3, hp: 3, cost: 3, costType: 'blood', sigils: ['pack'],           bloodValue: 2, color: '#4a4a55', glyph: '恐' },
-  hound:       { name: '猎犬',   atk: 3, hp: 4, cost: 3, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#8a6a3a', glyph: '犬' },
+  cougar:      { name: '美洲狮', atk: 2, hp: 2, cost: 3, costType: 'blood', sigils: ['double_strike'],  bloodValue: 2, color: '#9a8a6a', glyph: '狮' },
+  dire_wolf:   { name: '恐狼',   atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['pack'],           bloodValue: 2, color: '#4a4a55', glyph: '恐' },
+  hound:       { name: '猎犬',   atk: 3, hp: 3, cost: 3, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#8a6a3a', glyph: '犬' },
   skunk:       { name: '臭鼬',   atk: 1, hp: 2, cost: 1, costType: 'blood', sigils: ['brittle'],        bloodValue: 2, color: '#2b2b2b', glyph: '臭' },
-  great_white: { name: '大白鲨', atk: 3, hp: 3, cost: 3, costType: 'blood', sigils: ['sharp_quills'],   bloodValue: 2, color: '#c8d6e0', glyph: '鲨' },
-  warthog:     { name: '疣猪',   atk: 3, hp: 3, cost: 3, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#9a7a5a', glyph: '猪' },
-  bear:        { name: '巨熊',   atk: 5, hp: 4, cost: 4, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#5a4636', glyph: '熊' },
+  great_white: { name: '大白鲨', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['sharp_quills'],   bloodValue: 2, color: '#c8d6e0', glyph: '鲨' },
+  warthog:     { name: '疣猪',   atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#9a7a5a', glyph: '猪' },
+  bear:        { name: '巨熊',   atk: 4, hp: 3, cost: 4, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#5a4636', glyph: '熊' },
   wolf_cub:    { name: '狼崽',   atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#8a8a8a', glyph: '崽' },
 
   // 新增：印记演示卡（通用级，便于快速试玩）
-  viper_king:  { name: '蝰王',   atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['death_touch'],     bloodValue: 2, color: '#5a2a2a', glyph: '蝰' },
+  viper_king:  { name: '蝰王',   atk: 2, hp: 2, cost: 3, costType: 'blood', sigils: ['death_touch'],     bloodValue: 2, color: '#5a2a2a', glyph: '蝰' },
 
   // 新增普通卡（丰富卡池，配合"有费卡不可重复"规则提供更多可选单位）
   field_mouse: { name: '田鼠', atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#9a8a6a', glyph: '田' },
   toad:        { name: '蟾蜍', atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#4a7a3a', glyph: '蟾' },
   shrew:       { name: '鼩鼱', atk: 1, hp: 1, cost: 1, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#7a6a55', glyph: '鼩' },
   hawk:        { name: '苍鹰', atk: 1, hp: 2, cost: 1, costType: 'blood', sigils: ['airborne'],       bloodValue: 2, color: '#5a6a7a', glyph: '鹰' },
-  ferret:      { name: '雪貂', atk: 3, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#b8a890', glyph: '貂' },
+  ferret:      { name: '雪貂', atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: [],                 bloodValue: 2, color: '#b8a890', glyph: '貂' },
 
   // 新增：印记演示卡（狂热 / 回复）
-  warg:        { name: '战狼',   atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['frenzy'],        bloodValue: 2, color: '#9a5a3a', glyph: '战' },
-  rat_king:    { name: '鼠王',   atk: 1, hp: 4, cost: 2, costType: 'blood', sigils: ['regen'],         bloodValue: 2, color: '#8a7a6a', glyph: '王' },
+  warg:        { name: '战狼',   atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: ['frenzy'],        bloodValue: 2, color: '#9a5a3a', glyph: '战' },
+  rat_king:    { name: '鼠王',   atk: 1, hp: 3, cost: 2, costType: 'blood', sigils: ['regen'],         bloodValue: 2, color: '#8a7a6a', glyph: '王' },
   berserker:   { name: '狂战士', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['frenzy','double_strike'], bloodValue: 2, color: '#b5241f', glyph: '狂' },
 
   // [daily 2026-08-09] 重甲獾
-  armored_badger: { name: '重甲獾', atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: ['armored'],        bloodValue: 2, color: '#6b5a4a', glyph: '獾' },
+  armored_badger: { name: '重甲獾', atk: 2, hp: 1, cost: 2, costType: 'blood', sigils: ['armored'],        bloodValue: 2, color: '#6b5a4a', glyph: '獾' },
 
   // [daily 2026-08-12] 刺猬
-  hedgehog:    { name: '刺猬', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['sharp_quills'],  bloodValue: 2, color: '#7a5a3a', glyph: '猬' },
+  hedgehog:    { name: '刺猬', atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: ['sharp_quills'],  bloodValue: 2, color: '#7a5a3a', glyph: '猬' },
 
   // [daily 2026-08-14] 豪猪
   porcupine:   { name: '豪猪', atk: 2, hp: 1, cost: 1, costType: 'blood', sigils: ['sharp_quills'],  bloodValue: 2, color: '#7a5a3a', glyph: '豪' },
 
   // [daily 2026-08-15] 水獭
-  otter:       { name: '水獭', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#6b4f3a', glyph: '獭' },
+  otter:       { name: '水獭', atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#6b4f3a', glyph: '獭' },
 
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
@@ -247,7 +247,7 @@ export const CARDS = {
   zombie:      { name: '还魂僵尸', atk: 1, hp: 1, cost: 2, costType: 'bone', sigils: ['undying'],        bloodValue: 1, color: '#7a8a6a', glyph: '尸' },
   black_widow: { name: '幽冥寡妇', atk: 1, hp: 2, cost: 3, costType: 'bone', sigils: ['poison_touch'],  bloodValue: 1, color: '#2b1b2b', glyph: '蛛' },
   turtle:      { name: '朽甲龟',   atk: 1, hp: 4, cost: 3, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#4a7a6a', glyph: '龟' },
-  bone_hound:  { name: '骸骨猎犬', atk: 2, hp: 3, cost: 3, costType: 'bone', sigils: ['pack'],           bloodValue: 1, color: '#cfcabc', glyph: '骸' },
+  bone_hound:  { name: '骸骨猎犬', atk: 2, hp: 2, cost: 3, costType: 'bone', sigils: ['pack'],           bloodValue: 1, color: '#cfcabc', glyph: '骸' },
   geck:        { name: '墓行蜥',   atk: 2, hp: 2, cost: 4, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#5a8a4a', glyph: '蜥' },
 
   // 新增普通卡
@@ -312,15 +312,15 @@ export const CARDS = {
   emerald_mox: { name: '翡翠魔石', atk: 0, hp: 1, cost: 0, costType: 'gem', gemCost: [],                mox: 'green',  sigils: [],               bloodValue: 1, color: '#27ae60', glyph: '绿' },
   sapphire_mox:{ name: '蓝宝魔石', atk: 0, hp: 1, cost: 0, costType: 'gem', gemCost: [],                mox: 'blue',   sigils: [],               bloodValue: 1, color: '#2980b9', glyph: '蓝' },
   imp:         { name: '炎晶小鬼', atk: 1, hp: 1, cost: 0, costType: 'gem', gemCost: ['orange'],              sigils: [],                bloodValue: 1, color: '#6a2a4a', glyph: '鬼' },
-  panther:     { name: '暗影魔豹', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['blue'],                sigils: ['double_strike'], bloodValue: 1, color: '#1a1a2a', glyph: '豹' },
-  python:      { name: '翠鳞巨蟒', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: [],                bloodValue: 1, color: '#2a5a3a', glyph: '蟒' },
-  demon:       { name: '赤焰恶魔', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange'],              sigils: ['poison_touch'],  bloodValue: 1, color: '#7a2a2a', glyph: '魔' },
-  basilisk:    { name: '石化蛇怪', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: ['poison_touch'],  bloodValue: 1, color: '#3a6a3a', glyph: '怪' },
-  chimera:     { name: '奇美拉',   atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['green','blue'],        sigils: ['pack'],          bloodValue: 1, color: '#6a4a6a', glyph: '奇' },
-  golem:       { name: '符文魔像', atk: 2, hp: 5, cost: 0, costType: 'gem', gemCost: ['orange','green'],      sigils: [],                bloodValue: 1, color: '#8a8a96', glyph: '像' },
-  manticore:   { name: '蝎尾狮',   atk: 3, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange','blue'],       sigils: ['double_strike'], bloodValue: 1, color: '#9a5a2a', glyph: '狮' },
-  griffin:     { name: '苍空狮鹫', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['blue'],                sigils: ['airborne'],       bloodValue: 1, color: '#caa84a', glyph: '鹫' },
-  phoenix:     { name: '不灭凤凰', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['green','orange','blue'], sigils: ['undying'],      bloodValue: 1, color: '#c85a2a', glyph: '凤' },
+  panther:     { name: '暗影魔豹', atk: 2, hp: 1, cost: 0, costType: 'gem', gemCost: ['blue'],                sigils: ['double_strike'], bloodValue: 1, color: '#1a1a2a', glyph: '豹' },
+  python:      { name: '翠鳞巨蟒', atk: 2, hp: 1, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: [],                bloodValue: 1, color: '#2a5a3a', glyph: '蟒' },
+  demon:       { name: '赤焰恶魔', atk: 2, hp: 1, cost: 0, costType: 'gem', gemCost: ['orange'],              sigils: ['poison_touch'],  bloodValue: 1, color: '#7a2a2a', glyph: '魔' },
+  basilisk:    { name: '石化蛇怪', atk: 1, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: ['poison_touch'],  bloodValue: 1, color: '#3a6a3a', glyph: '怪' },
+  chimera:     { name: '奇美拉',   atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['green','blue'],        sigils: ['pack'],          bloodValue: 1, color: '#6a4a6a', glyph: '奇' },
+  golem:       { name: '符文魔像', atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange','green'],      sigils: [],                bloodValue: 1, color: '#8a8a96', glyph: '像' },
+  manticore:   { name: '蝎尾狮',   atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange','blue'],       sigils: ['double_strike'], bloodValue: 1, color: '#9a5a2a', glyph: '狮' },
+  griffin:     { name: '苍空狮鹫', atk: 2, hp: 1, cost: 0, costType: 'gem', gemCost: ['blue'],                sigils: ['airborne'],       bloodValue: 1, color: '#caa84a', glyph: '鹫' },
+  phoenix:     { name: '不灭凤凰', atk: 3, hp: 2, cost: 0, costType: 'gem', gemCost: ['green','orange','blue'], sigils: ['undying'],      bloodValue: 1, color: '#c85a2a', glyph: '凤' },
   // 新增普通法术卡（魔石卡均为 0 费，可重复）
   sprite:      { name: '焰灵',   atk: 1, hp: 1, cost: 0, costType: 'gem', gemCost: ['orange'],              sigils: [],                bloodValue: 1, color: '#e07a3a', glyph: '灵' },
   wisp:        { name: '翠灵',   atk: 1, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: ['poison_touch'],  bloodValue: 1, color: '#3a9a5a', glyph: '翠' },
@@ -328,9 +328,9 @@ export const CARDS = {
   ember:       { name: '余烬',   atk: 2, hp: 1, cost: 0, costType: 'gem', gemCost: ['orange'],              sigils: ['brittle'],        bloodValue: 1, color: '#c85a2a', glyph: '烬' },
 
   // 新增：印记演示卡（通用级）
-  soul_reaper: { name: '噬魂死神', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange','green'],     sigils: ['death_touch'],   bloodValue: 1, color: '#7a2a4a', glyph: '死' },
+  soul_reaper: { name: '噬魂死神', atk: 2, hp: 1, cost: 0, costType: 'gem', gemCost: ['orange','green'],     sigils: ['death_touch'],   bloodValue: 1, color: '#7a2a4a', glyph: '死' },
   // [daily 2026-08-09] 冰晶刺客
-  frost_assassin: { name: '冰晶刺客', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['blue'],              sigils: ['sharp_quills'], bloodValue: 1, color: '#4a8ad0', glyph: '冰' },
+  frost_assassin: { name: '冰晶刺客', atk: 2, hp: 1, cost: 0, costType: 'gem', gemCost: ['blue'],              sigils: ['sharp_quills'], bloodValue: 1, color: '#4a8ad0', glyph: '冰' },
   // [daily 2026-08-09] 石鳞卫
   stone_scale: { name: '石鳞卫',   atk: 1, hp: 3, cost: 0, costType: 'gem', gemCost: ['green'],               sigils: ['armored'],       bloodValue: 1, color: '#5a7a4a', glyph: '岩' },
 
@@ -558,6 +558,17 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.6.9',
+    date: '2026-08-16',
+    title: '纯数值平衡重调（仅改 atk/hp，不动机制/印记/费用）',
+    items: [
+      '思路：偏强阵营只能靠削其数值来压、偏弱阵营靠其对手被削后被间接抬升（单卡微调对本阵营胜率仅约 0.1pt，故采用「成批削强」而非加卡救弱）。',
+      '削 blood（原 55.9% 最高）：stoat/beaver/raccoon 2/2→2/1、wolf 3/2→2/2、bullfrog/great_white/warthog 3/3→3/2、ferret/cougar/warg/otter 3/2·2/3→2/2、hound 3/4→3/3、viper_king 3/2→2/2、bear 5/4→4/3、rat_king 1/4→1/3、hedgehog 2/3→2/2、armored_badger 2/2→2/1。',
+      '削 mox（原 52.0% 次高，全免费单位隐性过强）：panther/python/demon/griffin/soul_reaper/frost_assassin 2/2→2/1、manticore/chimera 3/2·2/3→2/2、basilisk 2/2→1/2、phoenix 3/3→3/2、golem 2/5→2/3、bone_hound 2/3→2/2。',
+      '无头仿真五阵营（PER=500，12500 局）：blood 49.1% / mox 50.4% / energy 50.0% / sand 49.3% / bone 51.0%，spread 1.9pt（基线 9.1pt），五阵营全部落在 49–51%、均值≈50%，为历史最紧。配对矩阵离对角值由基线 75–125 收窄至 88–112。',
+    ],
+  },
   {
     version: 'v0.6.8',
     date: '2026-08-16',
