@@ -1127,6 +1127,14 @@ html, body {
 .ht-p { color: var(--text); line-height: 1.8; font-size: 14px; margin: 6px 0; }
 .ht-k { color: var(--gold); }
 .ht-note { color: var(--text-dim); font-size: 13px; }
+.ht-kb-group { background: rgba(0,0,0,.22); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
+.ht-kb-gtitle { color: var(--gold); font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+.ht-kb-row { display: flex; gap: 12px; align-items: center; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,.06); }
+.ht-kb-row:last-child { border-bottom: none; }
+.ht-kb-keys { min-width: 132px; display: flex; flex-wrap: wrap; gap: 4px; }
+.ht-kb-keys kbd { display: inline-block; min-width: 20px; text-align: center; padding: 2px 7px; font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #e8eefc; background: #1b2433; border: 1px solid #36465f; border-bottom-width: 2px; border-radius: 5px; }
+.ht-kb-desc { color: var(--text); font-size: 13px; line-height: 1.5; }
+@media (max-width: 560px) { .ht-kb-row { flex-direction: column; align-items: flex-start; gap: 3px; } .ht-kb-keys { min-width: 0; } }
 .ht-modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .ht-mode { background: rgba(0,0,0,.25); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
 .ht-mode-t { color: var(--gold); font-weight: 700; margin-bottom: 4px; letter-spacing: 1px; }

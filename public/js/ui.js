@@ -4,6 +4,7 @@ import { CONFIG, SIGILS, CARDS, FACTIONS, GEMS, RARITY, RARITY_ORDER, rarityOf, 
 import { getAttack, availableGems } from './engine.js';
 import { cardArt } from './art.js';
 import { playSfx } from './audio.js';
+import { getBinds, fmtBind } from './keybinds.js';
 
 // Render a card's illustration. Accepts an instance (has .cardId) or a raw id.
 function portraitHTML(cardOrId, glyph) {
@@ -1193,5 +1194,41 @@ export function howToHTML() {
     <h3 class="ht-h">五、基本流程</h3>
     <p class="ht-p">① 选阵营、组卡、定规则 → ② 每回合用资源召唤生物到场地（默认 4 列）→ ③ 点「结束回合 / 攻击」让你的生物出击：同列有敌则交战，否则直击对方天平加分 → ④ 先把天平压满者获胜。血肉阵营打有费牌时，需先献祭场上已召唤的单位来支付。</p>
   </div>
+
+  ${keyBindsHTML()}
   `;
+}
+
+// 键盘操作说明：从 keybinds 读取「当前生效」绑定（含用户自定义），动态渲染。
+function keyBindsHTML() {
+  const b = getBinds();
+  const bindStr = (ctx, action) => (b[ctx][action] || []).map(fmtBind).join(' / ');
+  const rows = (ctx, pairs) => pairs.map(([acts, label]) =>
+    `<div class="ht-kb-row"><div class="ht-kb-keys">${acts.map((a) => `<kbd>${bindStr(ctx, a)}</kbd>`).join(' ')}</div><div class="ht-kb-desc">${label}</div></div>`
+  ).join('');
+  const battle = rows('battle', [
+    [['select'], '选牌 / 在光标列放牌'],
+    [['cursorLeft', 'cursorRight'], '移动光标（未选牌时移手牌，选牌后移列）'],
+    [['endTurn'], '结束回合（选牌时改为在该列打出）'],
+    [['lane1', 'lane2', 'lane3', 'lane4'], '在指定列（1-4）出牌'],
+    [['cancel'], '取消选择'],
+    [['surrender'], '投降（认输）'],
+    [['peace'], '求和（申请平局，每局限 1 次）'],
+    [['emote1', 'emote2', 'emote3', 'emote4', 'emote5', 'emote6'], '发送表情 👍😂😡🙏🔥💀'],
+  ]);
+  const builder = rows('builder', [
+    [['cursorUp', 'cursorDown', 'cursorLeft', 'cursorRight'], '移动卡牌焦点（WASD）'],
+    [['add1', 'sub1'], '该卡 +1 / −1'],
+    [['add5', 'sub5'], '该卡 +5 / −5（选卡组快捷）'],
+    [['confirm'], '确定并开始'],
+    [['cancel'], '返回'],
+  ]);
+  return `
+  <div class="ht-section">
+    <h3 class="ht-h">六、键盘操作（可自定义）</h3>
+    <p class="ht-p">全面支持键盘操作，并以 <b>WASD</b> 为主轴。所有键位均可在主菜单「⚙ 键位设置」里自由改键（支持 Shift/Ctrl/Alt 组合键）。下表为<span class="ht-k">当前生效</span>的绑定：</p>
+    <div class="ht-kb-group"><div class="ht-kb-gtitle">⚔ 对战界面</div>${battle}</div>
+    <div class="ht-kb-group"><div class="ht-kb-gtitle">🛠 组卡界面</div>${builder}</div>
+    <p class="ht-p ht-note">提示：在组卡界面输入框打字时游戏快捷键不触发；按任意键即可在设置里重绑，Esc 取消本次重绑。</p>
+  </div>`;
 }

@@ -12,7 +12,7 @@ const LS_KEY = 'inscription.keybinds.v1';
 //  - 1-4 在对应列出牌（选中牌时）
 //  - F 投降 · P 求和
 //  - Q/E/R/T/G/H 六个表情
-const DEFAULTS = {
+export const DEFAULTS = {
   battle: {
     cursorLeft:  [{ code: 'KeyA' }, { code: 'ArrowLeft' }],
     cursorRight: [{ code: 'KeyD' }, { code: 'ArrowRight' }],
