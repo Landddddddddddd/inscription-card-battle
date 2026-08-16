@@ -13,6 +13,11 @@ export const CONFIG = {
   BONE_PER_TURN: 1,      // passive graveyard drip each turn
   BONE_DEATH_GAIN: 0,     // bones from creature deaths OFF (bone is now a steady passive-drip faction)
   BLOOD_PER_TURN: 0,      // 每回合无偿血肉 = 0（用户硬约束：血肉阵营不靠无偿发放，完全靠献祭已召唤单位来获得血肉）。pool 恒为 0，所有 blood 卡费用都由场上单位 bloodValue 支付。平衡由卡牌数值承担。
+  // 时砂阵营：秒能预算与能量阵营同构地「爬升」——首回合即 +1（比能量早一回合放量，弥补时砂
+  // 没有无偿经济的微弱劣势）、之后每 SAND_RAMP_EVERY 个己方回合再 +1、封顶 SAND_CAP。这样时砂
+  // 不会首回合铺满 4 列，同时单位数值曲线照搬能量阵营，保证五阵营整体平衡。卡牌以「秒」为费，不可透支。
+  SAND_RAMP_EVERY: 2,   // 时砂：每 N 个己方回合 +1 秒能（与能量 ENERGY_RAMP_EVERY 一致）
+  SAND_CAP: 5,          // 时砂：秒能预算上限（与能量 ENERGY_CAP 一致）
   DECK_MIN: 5,           // deck builder constraints（0 费卡下限：卡组最少 5 张）
   DECK_MAX: 30,
   ZERO_COST_MAX: 15,     // 单张 0 费卡在卡组中的最多重复数（原上限 2，现放宽到 15）
@@ -335,6 +340,35 @@ export const CARDS = {
   // [daily 2026-08-15] 熔岩哨
   lava_sentinel: { name: '熔岩哨', atk: 1, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange'],               sigils: ['regen'],         bloodValue: 1, color: '#e07a3a', glyph: '熔' },
 
+  // ==========================================================================
+  // 时砂阵营（sand）：核心创新点 = 召唤方式——消耗「剩余秒数」召唤，不可透支。
+  // 单位数值曲线 1:1 镜像能量阵营（同费同级、攻防分布完全一致：1 费×7 / 2 费×9 /
+  // 3 费×3 / 4 费×2 / 0 费×1），仅替换主题化的名字与印记，以保证「消耗秒数」这一
+  // 新机制不会破坏五阵营整体平衡（时砂胜率与能量对齐，约 45-50%）。成本 0~4，封顶 5 的秒能预算可覆盖。
+  sand_pebble:     { name: '砂砾',   atk: 0, hp: 1, cost: 0, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c2b280', glyph: '砾' },
+  sand_lizard:     { name: '时蜥',   atk: 2, hp: 1, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#b89a5a', glyph: '蜥' },
+  chrono_fox:      { name: '刻狐',   atk: 2, hp: 1, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c0a050', glyph: '狐' },
+  chrono_sparrow:  { name: '刻雀',   atk: 1, hp: 2, cost: 1, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#caa84a', glyph: '雀' },
+  time_wren:       { name: '时鹡',   atk: 1, hp: 3, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#b8a85a', glyph: '鹡' },
+  sand_ant:        { name: '砂蚁',   atk: 1, hp: 2, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c8b070', glyph: '蚁' },
+  sand_cricket:    { name: '砂蟀',   atk: 2, hp: 2, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#bca05a', glyph: '蟀' },
+  time_moth:       { name: '时蛾',   atk: 2, hp: 3, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#b0a060', glyph: '蛾' },
+  pendulum:        { name: '钟摆兽', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['double_strike'],  bloodValue: 1, color: '#c9a24a', glyph: '摆' },
+  chrono_twin:     { name: '双刻兽', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['double_strike'],  bloodValue: 1, color: '#d0a84a', glyph: '孪' },
+  sand_swift:      { name: '流沙隼', atk: 3, hp: 1, cost: 2, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#c8b070', glyph: '隼' },
+  sand_ram:        { name: '沙岩撞兽', atk: 3, hp: 3, cost: 2, costType: 'sand', sigils: [],                bloodValue: 1, color: '#b89a4a', glyph: '撞' },
+  gear_beetle:     { name: '齿甲',   atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['sharp_quills'],    bloodValue: 1, color: '#9a8a4a', glyph: '甲' },
+  sand_panther:    { name: '时影豹', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#a98a4a', glyph: '影' },
+  sand_wisp:       { name: '流沙精', atk: 2, hp: 2, cost: 2, costType: 'sand', sigils: ['poison_touch'],    bloodValue: 1, color: '#b59a4a', glyph: '沙' },
+  clock_hound:     { name: '时犬',   atk: 2, hp: 2, cost: 2, costType: 'sand', sigils: ['frenzy'],          bloodValue: 1, color: '#a98a4a', glyph: '犬' },
+  rewind_owl:      { name: '回溯枭', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['regen'],           bloodValue: 1, color: '#a9b0c0', glyph: '枭' },
+  sand_eagle:      { name: '时涡鹰', atk: 3, hp: 3, cost: 3, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#7fb0c0', glyph: '涡' },
+  chrono_knight:    { name: '时之骑士', atk: 3, hp: 4, cost: 3, costType: 'sand', sigils: ['armored'],       bloodValue: 1, color: '#b8a85a', glyph: '骑' },
+  sand_golem:      { name: '砂岩魔像', atk: 3, hp: 3, cost: 3, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c8b070', glyph: '像' },
+  hourglass_titan: { name: '沙漏泰坦', atk: 4, hp: 4, cost: 4, costType: 'sand', sigils: ['frenzy'],         bloodValue: 1, color: '#e0b03a', glyph: '泰' },
+  chronolord:      { name: '时主',   atk: 5, hp: 4, cost: 4, costType: 'sand', sigils: ['undying','regen'], bloodValue: 1, color: '#d0b060', glyph: '主' },
+  eternal_sand:    { name: '永恒之砂', atk: 5, hp: 6, cost: 6, costType: 'sand', sigils: ['regen','undying'], bloodValue: 1, color: '#ffd24a', glyph: '永', premium: true },
+
   // ===================== 神话卡（premium / mythic）=====================
   // 仅可通过魂晶（付费货币）获取：暗夜卡包极低概率掉落 或 直购商店高价购买。
   // 设计原则：比同费用普通卡略强（+1 stat 或多一个印记），但有明确弱点（脆皮/高费/多宝石需求）。
@@ -379,6 +413,11 @@ export const FACTIONS = {
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
     cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','archmage','void_phantom'],
   },
+  sand: {
+    key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
+    desc: '时间即是资源：每回合开始获得「秒能」预算（首回合 0，之后每 2 个己方回合 +1、封顶 5），卡牌以「秒」为费召唤，剩余不足则无法打出（不可透支，例如还剩 4 秒时打不出 5 秒的牌）。没有无偿经济、也没有额外成长，全靠这一回合的秒数铺场。主题：时钟、沙漏、流沙与时光生物。',
+    cards: ['sand_pebble','sand_lizard','chrono_fox','chrono_sparrow','time_wren','sand_ant','sand_cricket','time_moth','pendulum','chrono_twin','sand_swift','sand_ram','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord'],
+  },
 };
 
 // Ready-made decks (arrays of card ids), kept for quick-start / AI opponents.
@@ -391,6 +430,7 @@ export const DECKS = {
   bone:   FACTIONS.bone.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
   energy: FACTIONS.energy.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
   mox:    FACTIONS.mox.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
+  sand:   FACTIONS.sand.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
 };
 
 // Build a default deck for a faction (each card x2, padded to a sane size).
@@ -518,6 +558,39 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.6.5',
+    date: '2026-08-16',
+    title: '新阵营「时砂」——消耗剩余秒数召唤',
+    items: [
+      '新增第 5 阵营「时砂」：召唤方式 = 消耗「剩余秒数」，卡牌以「秒」为费，不可透支（剩余不足无法打出，例如剩 4 秒打不出 5 秒的牌）。',
+      '秒能预算与能量阵营同构地爬升：每回合开始重置，首回合 0、之后每 2 个己方回合 +1、封顶 5（无无偿经济、无额外成长，全靠当回合秒数铺场）。',
+      '配套 22 张时砂卡，单位数值曲线 1:1 镜像能量阵营（1 费×7 / 2 费×9 / 3 费×3 / 4 费×2 / 0 费×1），主题改为时钟/沙漏/流沙与时光生物，含飞行/毒触/尖刺/连击/厚甲/不死/回复/狂热等印记。',
+      '平衡结果：无头仿真五阵营全交叉（每对位 300~500 局）显示时砂胜率约 47%，与能量（约 47%）同档，五阵营 spread 降至约 8pt（目标 ≤10），不再偏强或偏弱。',
+      '出牌界面成本角标显示「N秒」；组卡/收藏/玩法说明/教程/对手 AI 均已接入该阵营。',
+    ],
+  },
+  {
+    version: 'v0.6.4',
+    date: '2026-08-16',
+    title: '人机出牌速度可调 · PvP/PvE 每回合出牌时限',
+    items: [
+      '新增「人机出牌速度」设置（菜单）：慢 / 正常 / 快 / 瞬发，控制对手（AI）出牌演示节奏。',
+      '新增「每回合时限」设置（菜单，默认 20s，可关 / 10s / 20s / 30s / 60s）：PvP 与 PvE 每方每回合倒计时，时间到自动结束回合；剩余 ≤5s 时计时器变红脉动提醒。',
+      '人机不思考、直接按顺序打牌：对手回合按设定速度逐步演示（瞬发即 0ms 一口气打出），不占用思考时间；计时器只对人类玩家的回合生效。',
+      '教程模式不启用计时器，避免打扰学习；同屏双人 / 排位交接时计时器随当前行动方重置。',
+    ],
+  },
+  {
+    version: 'v0.6.3',
+    date: '2026-08-16',
+    title: '对手出牌分步演示（PvE 可看清）',
+    items: [
+      'AI（对手）出牌改为逐步演示：每出一张牌间隔约 0.78 秒（简单难度 0.56 秒），玩家能逐步看清对手的每一步操作，不再一瞬间全部打出。',
+      '对手每打出一张牌，该单位会以金色脉冲高亮（ai-just），并在顶部状态栏显示「对手打出「卡名」」，配合召唤光柱演出，出牌动作一目了然。',
+      '内部重构：AI 决策与执行分离为生成器（aiTurnPlan），无头平衡仿真仍走一次性接口（aiTakeTurn / runAITurn），行为完全不变。',
+    ],
+  },
   {
     version: 'v0.6.2',
     date: '2026-08-16',

@@ -20,6 +20,7 @@ function canAfford(state, me, c) {
     for (const u of state.board[me]) if (u) avail += u.bloodValue;
     return avail >= c.cost;
   }
+  if (c.costType === 'sand') return (state.players[me].seconds || 0) >= c.cost;
   const pool = c.costType === 'bone' ? 'bones' : 'energy';
   return state.players[me][pool] >= c.cost;
 }
@@ -80,17 +81,13 @@ function emptyLanes(state, me) {
   return out;
 }
 
-export function aiTakeTurn(state, level = 'normal') {
-  takeTurnLogic(state, 'B', level);
-}
-
-// Generic AI turn for an arbitrary player (used by headless balance sims and
-// could back the hotseat "AI opponent" too). `me` is 'A' or 'B'.
-export function runAITurn(state, me, level = 'normal') {
-  takeTurnLogic(state, me, level);
-}
-
-function takeTurnLogic(state, me, level = 'normal') {
+// Generator: yields one AI action at a time (decision/execution separated) so
+// the UI can animate each play step-by-step instead of snapping the whole turn
+// at once. Each yielded action is `{type:'play', iid, lane, sacrifices?}` or
+// `{type:'endTurn'}`. The driver applies it externally (playCard / endTurn) and
+// the generator resumes with the *updated* state, so later decisions correctly
+// depend on earlier plays (resources, board, hand all change between steps).
+export function* aiTurnPlan(state, me, level = 'normal') {
   const pl = state.players[me];
   if (state.over || state.currentPlayer !== me) return;
 
@@ -105,12 +102,11 @@ function takeTurnLogic(state, me, level = 'normal') {
       if (!playable.length) break;
       const card = playable[Math.floor(Math.random() * playable.length)];
       const lane = empty[Math.floor(Math.random() * empty.length)];
-      const opts = {};
-      if (card.costType === 'blood' && card.cost > 0) opts.sacrifices = pickSacrifices(state, me, card.cost, level);
-      const r = playCard(state, me, card.iid, lane, opts);
-      if (!r.ok) break;
+      const action = { type: 'play', iid: card.iid, lane };
+      if (card.costType === 'blood' && card.cost > 0) action.sacrifices = pickSacrifices(state, me, card.cost, level);
+      yield action;
     }
-    endTurn(state, me);
+    yield { type: 'endTurn' };
     return;
   }
 
@@ -147,13 +143,36 @@ function takeTurnLogic(state, me, level = 'normal') {
         if (level === 'hard') continue;
         slots.push(emptyLanes(state, me)[0]);
       }
-      const opts = {};
-      if (card.costType === 'blood' && card.cost > 0) opts.sacrifices = pickSacrifices(state, me, card.cost, level);
-      const r = playCard(state, me, card.iid, slots[0], opts);
-      if (r.ok) { played = true; break; }
+      const action = { type: 'play', iid: card.iid, lane: slots[0] };
+      if (card.costType === 'blood' && card.cost > 0) action.sacrifices = pickSacrifices(state, me, card.cost, level);
+      yield action;
+      played = true;
+      break;
     }
     if (!played) break;
   }
 
-  endTurn(state, me);
+  yield { type: 'endTurn' };
+}
+
+function applyAIAction(state, me, a) {
+  if (a.type === 'play') {
+    const opts = {};
+    if (a.sacrifices) opts.sacrifices = a.sacrifices;
+    playCard(state, me, a.iid, a.lane, opts);
+  } else if (a.type === 'endTurn') {
+    endTurn(state, me);
+  }
+}
+
+// One-shot complete turn (used by headless balance sims). Replays the plan
+// generator and applies every action immediately.
+export function aiTakeTurn(state, level = 'normal') {
+  for (const a of aiTurnPlan(state, 'B', level)) applyAIAction(state, 'B', a);
+}
+
+// Generic AI turn for an arbitrary player (used by headless balance sims).
+// `me` is 'A' or 'B'.
+export function runAITurn(state, me, level = 'normal') {
+  for (const a of aiTurnPlan(state, me, level)) applyAIAction(state, me, a);
 }

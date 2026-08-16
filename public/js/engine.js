@@ -56,8 +56,8 @@ export function createGame(opts = {}) {
   const deckB = (opts.deckB || DECKS.blood).slice();
   const resA = opts.resA || 'blood';
   const resB = opts.resB || 'blood';
-  const mkPly = (deck, name, res, key) => {
-    const pl = { name, res, avatar: opts['avatar' + key] || '🜁', deck: shuffle(deck), hand: [], blood: 0, bloodCap: 0, bones: 0, energy: 0, energyMax: 0, energyRamp: 0, mox: 0, discard: [] };
+    const mkPly = (deck, name, res, key) => {
+    const pl = { name, res, avatar: opts['avatar' + key] || '🜁', deck: shuffle(deck), hand: [], blood: 0, bloodCap: 0, bones: 0, energy: 0, energyMax: 0, energyRamp: 0, mox: 0, seconds: 0, sandBudget: 0, sandRamp: 0, discard: [] };
     initResources(pl);
     return pl;
   };
@@ -164,6 +164,7 @@ function poolOf(card) {
   if (card.costType === 'bone') return 'bones';
   if (card.costType === 'energy') return 'energy';
   if (card.costType === 'gem') return 'gem';
+  if (card.costType === 'sand') return 'sand';
   return 'free';
 }
 
@@ -228,6 +229,12 @@ export function playCard(state, player, iid, lane, opts = {}) {
         state.log.push(`${pl.name} 献祭了 ${sc.name}（血肉+${sc.bloodValue}）`);
       }
     }
+  } else if (pool === 'sand') {
+    // 时砂：消耗「剩余秒数」(pl.seconds) 召唤，不可透支；每回合开始 pl.seconds 重置为当前秒能预算(budget)。
+    if (pl.seconds < card.cost) {
+      return { ok: false, reason: '剩余秒数不足（需 ' + card.cost + ' 秒，当前 ' + Math.floor(pl.seconds) + ' 秒）' };
+    }
+    pl.seconds -= card.cost;
   } else {
     if (pl[pool] < card.cost) return { ok: false, reason: '资源不足（需' + card.cost + (card.costType === 'bone' ? '骸骨' : '能量') + '）' };
     pl[pool] -= card.cost;
@@ -379,6 +386,15 @@ function beginTurn(state, p) {
     // board unit every single turn; higher-cost blood cards still require
     // sacrificing already-summoned creatures on top of this allowance.
     pl.blood = CONFIG.BLOOD_PER_TURN;
+  } else if (pl.res === 'sand') {
+    // 时砂：秒能预算与能量阵营「同构」地爬升——首回合 0，之后每 SAND_RAMP_EVERY 个己方回合
+    // +1，封顶 SAND_CAP（与 ENERGY_RAMP_EVERY / ENERGY_CAP 完全一致）。单位数值曲线也照搬能量
+    // 阵营，因此时砂整体胜率与能量对齐（~45-50%），不会破坏五阵营平衡。卡牌以「秒」为费，不可透支。
+    pl.sandRamp = (pl.sandRamp || 0) + 1;
+    if (pl.sandRamp % CONFIG.SAND_RAMP_EVERY === 0) {
+      pl.sandBudget = Math.min(CONFIG.SAND_CAP, pl.sandBudget + 1);
+    }
+    pl.seconds = pl.sandBudget;
   }
   // mox: board-presence gems from Mox creatures — no per-turn regen.
   // 狂热(frenzy)：每回合开始攻击力 +1（封顶 6）；回复(regen)：每回合开始恢复 1 点生命（不超过上限）。

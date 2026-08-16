@@ -388,6 +388,7 @@ html, body {
 .card .cost.blood { background: radial-gradient(circle at 35% 30%, #e05a4a, var(--red)); }
 .card .cost.bone { background: radial-gradient(circle at 35% 30%, #fff, #b9b39c); color: #1a120a; }
 .card .cost.energy { background: radial-gradient(circle at 35% 30%, #6fc0f0, var(--blue)); }
+.card .cost.sand { background: radial-gradient(circle at 35% 30%, #ffe08a, #e0b03a); color: #2a1d00; }
 .card.in-hand:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,.5), 0 0 16px rgba(224,176,58,.3); z-index: 3; }
 .card.selected { outline: 2px solid var(--gold); outline-offset: 2px; box-shadow: 0 0 20px rgba(224,176,58,.6); transform: translateY(-6px); }
 .card.sac-target { outline: 2px solid var(--red); outline-offset: 2px; box-shadow: 0 0 18px rgba(192,57,43,.65); }
@@ -659,6 +660,7 @@ html, body {
   .tb-left { min-width: 0; flex-direction: row; gap: 8px; align-items: center; flex: 1; }
   .mode-label { font-size: 10px; letter-spacing: 1px; }
   .turn-label { font-size: 13px; }
+  .turn-timer { font-size: 12px; padding: 2px 8px; }
   .tb-center { flex-basis: 100%; order: 3; }
   .tb-right { min-width: 0; order: 2; }
 
@@ -820,6 +822,26 @@ html, body {
 
 /* top chip avatar */
 .tc-avatar { font-size: 18px; margin-right: 2px; }
+
+/* ---- 回合计时器（PvP/PvE 每方每回合出牌时限）---- */
+.turn-timer {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 11px; border-radius: 999px;
+  font-size: 13px; font-weight: 700; letter-spacing: .5px;
+  color: #e9d9a8; background: rgba(224,176,58,.14);
+  border: 1px solid rgba(224,176,58,.4);
+  transition: color .2s, background .2s, border-color .2s;
+}
+.turn-timer.hidden { display: none; }
+.turn-timer.urgent {
+  color: #ff6a5a; background: rgba(192,57,43,.18);
+  border-color: rgba(255,90,74,.65);
+  animation: timerPulse .8s ease-in-out infinite;
+}
+@keyframes timerPulse {
+  0%,100% { box-shadow: 0 0 0 rgba(255,90,74,0); transform: scale(1); }
+  50% { box-shadow: 0 0 12px rgba(255,90,74,.65); transform: scale(1.06); }
+}
 
 /* player avatar shown next to board labels */
 .pl-avatar { display: inline-block; font-size: 16px; margin-right: 4px; vertical-align: middle;
@@ -1023,6 +1045,17 @@ html, body {
 .cl-items li { color: var(--text-dim); font-size: 13px; line-height: 1.7; }
 .cl-items li::marker { color: var(--gold); }
 .ht-section { text-align: left; margin: 4px 0 12px; }
+
+/* AI 刚打出的单位：金色脉冲高亮，让玩家看清对手每一步出牌 */
+.ai-just { z-index: 3; }
+.ai-just .card {
+  animation: aiJust 1s ease-in-out infinite;
+  box-shadow: 0 0 0 2px var(--gold), 0 0 18px 3px rgba(224,176,58,.55);
+}
+@keyframes aiJust {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
 .ht-h { color: var(--gold); font-size: 18px; letter-spacing: 2px; border-left: 4px solid var(--gold); padding-left: 10px; margin: 14px 0 10px; }
 .ht-p { color: var(--text); line-height: 1.8; font-size: 14px; margin: 6px 0; }
 .ht-k { color: var(--gold); }

@@ -279,6 +279,7 @@ export function canPlayCard(state, me, card) {
     for (const c of state.board[me]) if (c) avail += c.bloodValue;
     return avail >= card.cost;
   }
+  if (card.costType === 'sand') return (pl.seconds || 0) >= card.cost;
   const pool = card.costType === 'bone' ? 'bones' : 'energy';
   return pl[pool] >= card.cost;
 }
@@ -296,7 +297,7 @@ function costBadgeHTML(card) {
     const col = GEMS[card.mox] ? GEMS[card.mox].color : '#aaa';
     return `<div class="cost gem" title="魔石生物"><span class="gpip" style="background:${col}"></span></div>`;
   }
-  const label = card.costType === 'blood' ? '血' : card.costType === 'bone' ? '骨' : '能';
+  const label = card.costType === 'blood' ? '血' : card.costType === 'bone' ? '骨' : card.costType === 'sand' ? '秒' : '能';
   return `<div class="cost ${card.costType}">${card.cost}${label}</div>`;
 }
 
@@ -457,6 +458,7 @@ export function renderGame(ctx) {
           anim: isNew ? 'appear' : (isHit ? 'hit' : ''),
           dataAttr: isSacMode ? `data-saccard="${c.iid}"` : '',
         });
+        if (ui.aiLastIid === c.iid) cls += ' ai-just';
       } else if (isMine && isMyTurn && canPlaySel && !state.over) {
         cls += ' playable';
         ds += ` data-playlane="${l}"`;
@@ -600,7 +602,7 @@ export function hideGameOver() { el('gameover').classList.add('hidden'); }
 // ============================================================================
 // DECK BUILDER  (locked cards are shown but not addable)
 // ============================================================================
-const FACTION_ORDER = ['blood', 'bone', 'energy', 'mox'];
+const FACTION_ORDER = ['blood', 'bone', 'energy', 'mox', 'sand'];
 const costLabel = (t) => (t === 'blood' ? '血' : t === 'bone' ? '骨' : '能');
 
 function miniCostHTML(c) {
@@ -1086,7 +1088,7 @@ export function howToHTML() {
   <div class="ht-section">
     <h3 class="ht-h">三、四大阵营</h3>
     <p class="ht-p">不同阵营的「资源」与核心机制各不相同，可在新手教程里逐一对练：</p>
-    <div class="ht-factions">${['blood', 'bone', 'energy', 'mox'].map(factionCard).join('')}</div>
+    <div class="ht-factions">${['blood', 'bone', 'energy', 'mox', 'sand'].map(factionCard).join('')}</div>
   </div>
 
   <div class="ht-section">

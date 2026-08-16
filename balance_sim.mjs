@@ -5,11 +5,28 @@
 // Usage: node balance_sim.mjs [perMatchup=60] [level=normal]
 import { createGame } from './public/js/engine.js';
 import { runAITurn } from './public/js/ai.js';
-import { DECKS, DEFAULT_RULES } from './public/js/constants.js';
+import { DECKS, DEFAULT_RULES, CONFIG } from './public/js/constants.js';
 
-const FACTIONS = ['blood', 'bone', 'energy', 'mox'];
+const FACTIONS = ['blood', 'bone', 'energy', 'mox', 'sand'];
 const PER = parseInt(process.argv[2] || '60', 10);
 const LEVEL = process.argv[3] || 'normal';
+// Optional overrides:
+//   node balance_sim.mjs 40 normal 5      -> SAND_CAP=5
+//   node balance_sim.mjs 40 normal 5 1    -> SAND_CAP=5, SAND_RAMP_EVERY=1
+if (process.argv[4]) {
+  const v = parseInt(process.argv[4], 10);
+  if (!Number.isNaN(v) && v >= 0) {
+    CONFIG.SAND_CAP = v;
+    console.log(`(override SAND_CAP=${v})`);
+  }
+}
+if (process.argv[5]) {
+  const v = parseInt(process.argv[5], 10);
+  if (!Number.isNaN(v) && v >= 0) {
+    CONFIG.SAND_RAMP_EVERY = v;
+    console.log(`(override SAND_RAMP_EVERY=${v})`);
+  }
+}
 
 function simulate(fa, fb) {
   const state = createGame({
@@ -35,6 +52,9 @@ const factionWins = Object.create(null);
 const factionGames = Object.create(null);
 for (const f of FACTIONS) { factionWins[f] = 0; factionGames[f] = 0; }
 
+const matrix = {};
+for (const fa of FACTIONS) for (const fb of FACTIONS) matrix[fa + '>' + fb] = { w: 0, g: 0 };
+
 let games = 0;
 for (const fa of FACTIONS) {
   for (const fb of FACTIONS) {
@@ -42,8 +62,9 @@ for (const fa of FACTIONS) {
       const w = simulate(fa, fb); // fa is A, fb is B
       games++;
       factionGames[fa]++; factionGames[fb]++;
-      if (w === 'A') factionWins[fa]++;
-      else if (w === 'B') factionWins[fb]++;
+      if (w === 'A') { factionWins[fa]++; matrix[fa + '>' + fb].w++; }
+      else if (w === 'B') { factionWins[fb]++; matrix[fb + '>' + fa].w++; }
+      matrix[fa + '>' + fb].g++;
     }
   }
 }
@@ -60,3 +81,14 @@ for (const f of FACTIONS) {
   console.log(`${f.padEnd(7)} ${(r * 100).toFixed(1)}%  (${factionWins[f]}/${factionGames[f]})`);
 }
 console.log(`spread: ${((best - worst) * 100).toFixed(1)} pts (target ≤ ~10)`);
+console.log('--- Pairwise (row beats col, as A) ---');
+for (const fa of FACTIONS) {
+  let row = fa.padEnd(7);
+  for (const fb of FACTIONS) {
+    const m = matrix[fa + '>' + fb];
+    const r = m.g ? (m.w / m.g * 100).toFixed(0) : '-';
+    row += ' ' + r.padStart(4) + '%';
+  }
+  console.log(row);
+}
+console.log('cols = opponent-as-B; diagonal meaningless');
