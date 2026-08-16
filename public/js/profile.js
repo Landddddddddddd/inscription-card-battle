@@ -1,6 +1,10 @@
 // Local player profile: name, coins, unlocked-card collection, stats.
 // Persisted in localStorage (no server auth — this is a local "login").
-import { starterUnlocked, allCardIds, rarityOf, RARITY, PACK, GEM_PACK, CARD_SHOP_PRICES, GEM_EXCHANGE, RANK, isTopRank } from './constants.js';
+import {
+  starterUnlocked, allCardIds, rarityOf, RARITY, PACK, GEM_PACK,
+  CARD_SHOP_PRICES, GEM_EXCHANGE, RANK, isTopRank,
+  defaultUnlockedForAllFactions,
+} from './constants.js';
 
 const KEY = 'inscryption_profile_v1';
 
@@ -25,6 +29,11 @@ function normalize(p) {
   p.aiSpeed = ['slow', 'normal', 'fast', 'instant'].includes(p.aiSpeed) ? p.aiSpeed : 'normal'; // 人机出牌速度：慢/正常/快/瞬发
   p.turnTime = (Number.isFinite(p.turnTime) && p.turnTime >= 0) ? p.turnTime : 20; // 每回合出牌时限（秒），0=关闭
   p.unlocked = Array.from(new Set(p.unlocked || []));
+  // 迁移：v0.6.5 才加的时砂阵营，老存档的 unlocked 里没有一张时砂卡 → 组卡器卡池为
+  // 0 永远开不了战。把所有阵营的 non-premium 基础卡统一补齐到 unlocked（idempotent，
+  // 也作为"未来再加新阵营时给老用户自动补基础卡"的通用迁移）。
+  for (const id of defaultUnlockedForAllFactions()) p.unlocked.push(id);
+  p.unlocked = Array.from(new Set(p.unlocked));
   // 排位赛段位：默认 一阶·下，0 晋级分。
   p.rank = p.rank || { tier: 1, div: 0, points: 0 };
   p.rank.tier = Math.min(RANK.TIERS, Math.max(1, p.rank.tier || 1));

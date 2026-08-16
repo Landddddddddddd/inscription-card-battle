@@ -503,8 +503,36 @@ export function allCardIds() { return Object.keys(CARDS); }
 // Cards a brand-new player owns for free: every "common" tier card, so each
 // faction has enough basics to build a starter deck immediately. Everything
 // rarer starts LOCKED and must be earned through card packs.
+//
+// 注：时砂阵营的卡牌因为 costType 是 'sand'（按默认 rarity 推断公式 cost≥2=rare），
+// 一张 common 都没有 → 旧实现下"全是 common"的策略会让时砂玩家一张也组不出。
+// 因此把 "每个阵营的非付费 non-premium 卡" 都视为基础卡池一并解锁（每个阵营都保留
+// 几张有费 1-3 费的常用生物，足够开局组一套完整卡组；神话 premium 卡仍只能魂晶抽到）。
 export function starterUnlocked() {
-  return allCardIds().filter((id) => rarityOf(id) === 'common');
+  const base = new Set(allCardIds().filter((id) => rarityOf(id) === 'common'));
+  for (const fk of Object.keys(FACTIONS)) {
+    for (const id of FACTIONS[fk].cards) {
+      const c = CARDS[id];
+      if (!c || c.premium) continue;
+      base.add(id);
+    }
+  }
+  return [...base];
+}
+
+// Migrate an old profile so a faction that was added AFTER the profile was first
+// saved still has its non-premium basics in `unlocked`. Call from profile.js#normalize
+// when loading any existing save (idempotent: uses Set semantics).
+export function defaultUnlockedForAllFactions() {
+  const out = new Set();
+  for (const fk of Object.keys(FACTIONS)) {
+    for (const id of FACTIONS[fk].cards) {
+      const c = CARDS[id];
+      if (!c || c.premium) continue;
+      out.add(id);
+    }
+  }
+  return out;
 }
 
 // Card pack economy.
@@ -561,6 +589,16 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.6',
+    date: '2026-08-16',
+    title: '时砂阵营终于能玩了（修复基础卡池解锁 + 老存档迁移）',
+    items: [
+      '修时砂阵营"卡组数量永远是 0、根本开不了战"的根因：starterUnlocked 此前只解锁所有 common 卡，而时砂阵营按 rarity 推断公式全部是 rare+（一张 common 都没有），导致老存档与新玩家的收藏里 22 张时砂卡全是 🔒。',
+      'constants.js#starterUnlocked 改为「每个阵营的 non-premium 卡都视为基础卡」一并解锁，让所有玩家（血/骨/能/魔/砂）都能立即组出一套像样的卡组。神话卡（premium）仍只能魂晶抽到，经济原则不破。',
+      'profile.js#normalize 增加轻量迁移：加载任何存档时把 defaultUnlockedForAllFactions 并入 unlocked（idempotent / Set 去重）。老玩家这次刷新页面就能直接进时砂组卡器；同时这段迁移也是「未来再新增阵营时，自动给老用户补基础卡」的通用模板。',
+    ],
+  },
   {
     version: 'v0.7.5',
     date: '2026-08-16',
