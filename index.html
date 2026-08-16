@@ -43,6 +43,23 @@
           <button class="dbtn" data-diff="hard">困难</button>
         </div>
 
+        <div class="ai-diff" id="aiSpeed">
+          <span class="ai-diff-label">⏩ 人机出牌速度</span>
+          <button class="dbtn" data-speed="slow">慢</button>
+          <button class="dbtn on" data-speed="normal">正常</button>
+          <button class="dbtn" data-speed="fast">快</button>
+          <button class="dbtn" data-speed="instant">瞬发</button>
+        </div>
+
+        <div class="ai-diff" id="turnTimeBox">
+          <span class="ai-diff-label">⏱ 每回合时限（PvP/PvE）</span>
+          <button class="dbtn" data-tt="0">关闭</button>
+          <button class="dbtn" data-tt="10">10s</button>
+          <button class="dbtn on" data-tt="20">20s</button>
+          <button class="dbtn" data-tt="30">30s</button>
+          <button class="dbtn" data-tt="60">60s</button>
+        </div>
+
         <div class="menu-btns">
           <button class="btn big" data-act="single">⚔ 单机模式（对战 AI）</button>
           <button class="btn big primary" data-act="ranked">🏆 排位赛（PVP 段位）</button>
@@ -254,6 +271,7 @@
         <div class="tb-left">
           <span id="modeLabel" class="mode-label">单机模式</span>
           <span id="turnLabel" class="turn-label">轮到：玩家A</span>
+          <span id="turnTimer" class="turn-timer hidden">⏱ 20s</span>
         </div>
         <div class="tb-center">
           <div id="scaleWrap" class="scale-wrap" title="天平：把指针压到「你胜」一端即获胜">

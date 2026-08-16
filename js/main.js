@@ -1,7 +1,7 @@
 // App controller: login, screen routing, single/AI, LAN, ONLINE(P2P), tutorial, collection, gacha.
 import { createGame, playCard, endTurn, applyAction, instantiate } from './engine.js';
 import { DECKS, CONFIG, FACTIONS, defaultDeck, DEFAULT_RULES, normalizeRules, SCOPE_NAMES, CARDS, defaultWinScaleFor, winModeName, winModeDesc, winScaleOptions, WIN_SCALE_CAP, isCostedCard, RECHARGE_PACKAGES, GEM_EXCHANGE, RANK, rankLabel, isTopRank } from './constants.js';
-import { aiTakeTurn } from './ai.js';
+import { aiTurnPlan } from './ai.js';
 import * as UI from './ui.js';
 import { canPlayCard, renderTutSetup, TUT_MODULES, renderHowTo, changelogHTML } from './ui.js';
 import { NetClient } from './network.js';
@@ -21,9 +21,13 @@ const App = {
   coll: { faction: 'blood' },
   rewardGiven: false,
   aiLevel: 'normal',
+  aiSpeed: 'normal',
+  turnTime: 20,
+  timer: { id: null, remaining: 0, total: 0, key: '' },
   kb: { handIdx: -1, laneIdx: 0 },
 };
 
+const AI_SPEED = { slow: 1300, normal: 800, fast: 420, instant: 0 }; // 人机出牌每步演示间隔（ms）
 const $ = (id) => document.getElementById(id);
 const SCREENS = ['login', 'menu', 'collection', 'deckBuilder', 'game', 'tutorialSetup', 'howto', 'changelog', 'ranked'];
 
@@ -57,6 +61,7 @@ function modeLabel() {
 function render() {
   if (!App.state) return;
   UI.renderGame({ state: App.state, me: App.me, isMyTurn: canAct(), ui: App.ui, statusMsg: App.status, modeLabel: modeLabel(), kb: App.kb, kbArmed: !!App.ui.selectedIid && canAct() });
+  maybeStartTimer();
 }
 
 // ---------- Login / Menu ----------
@@ -78,6 +83,8 @@ function doLogin() {
   else if (App.profile) { App.profile.name = name.slice(0, 12); saveProfile(App.profile); }
   else { App.profile = createProfile(name); }
   App.aiLevel = App.profile.aiLevel || 'normal';
+  App.aiSpeed = App.profile.aiSpeed || 'normal';
+  App.turnTime = (typeof App.profile.turnTime === 'number') ? App.profile.turnTime : 20;
   applyLayout();
   // Restore the last-used deck from the profile (persisted across sessions).
   if (App.profile.deck && Array.isArray(App.profile.deck.cards) && App.profile.deck.cards.length) {
@@ -117,6 +124,7 @@ function toMenu() {
   if (App.net) { App.net.close(); App.net = null; }
   if (App.online) { App.online.close(); App.online = null; }
   App.state = null; App.status = ''; App.me = 'A';
+  stopTurnTimer();
   App.ui = { selectedIid: null, sacList: [] }; App.rewardGiven = false; App.onlineJoinInfo = null;
   UI.hideOverlay(); UI.hideGameOver(); UI.hideOnlineLobby();
   $('hostInfo').classList.add('hidden');
@@ -124,6 +132,8 @@ function toMenu() {
   updateSoundBtn();
   applyLayout();
   document.querySelectorAll('#aiDiff .dbtn').forEach((b) => b.classList.toggle('on', b.dataset.diff === App.aiLevel));
+  document.querySelectorAll('#aiSpeed .dbtn').forEach((b) => b.classList.toggle('on', b.dataset.speed === App.aiSpeed));
+  document.querySelectorAll('#turnTimeBox .dbtn').forEach((b) => b.classList.toggle('on', Number(b.dataset.tt) === App.turnTime));
   applyEnvMode();
   probeServerStatus();
   show('menu');
@@ -160,8 +170,15 @@ function applyLocal(action) {
   else return;
   if (!r.ok) { App.status = r.reason; render(); return; }
   if (action.type === 'play') {
+    const playedCard = App.state.players[App.me].hand.find((c) => c.iid === action.iid);
+    const isSand = playedCard && playedCard.costType === 'sand';
     if (action.sacrifices && action.sacrifices.length) { playSfx('sacrifice'); UI.markSacrifice(action.sacrifices); }
     else playSfx('play');
+    // 时砂：从回合倒计时扣减对应「秒」数（剩余秒数 = 资源，打出即消耗）。
+    if (isSand && App.timer.id && playedCard) {
+      App.timer.remaining = Math.max(0, App.timer.remaining - playedCard.cost);
+      if (App.state.players[App.me]) App.state.players[App.me].seconds = App.timer.remaining;
+    }
   }
   App.ui.selectedIid = null; App.ui.sacList = []; App.status = '';
   render();
@@ -200,12 +217,109 @@ function act(action) {
 }
 
 function runAI() {
-  setTimeout(() => {
-    if (App.mode !== 'single' && App.mode !== 'tutorial') return;
-    if (App.state.over || App.state.currentPlayer !== 'B') return;
-    aiTakeTurn(App.state, App.aiLevel || 'normal');
-    App.ui.selectedIid = null; render(); checkGameOver();
-  }, 700);
+  if (App.mode !== 'single' && App.mode !== 'tutorial') return;
+  if (!App.state || App.state.over || App.state.currentPlayer !== 'B') return;
+  const me = 'B';
+  const level = App.aiLevel || 'normal';
+  const gen = aiTurnPlan(App.state, me, level);
+  // 每步演示间隔由「人机出牌速度」设置决定；instant 时 0ms（不思考、直接按顺序打牌）。
+  const stepDelay = (AI_SPEED[App.aiSpeed] != null) ? AI_SPEED[App.aiSpeed] : 800;
+  const thinkDelay = App.aiSpeed === 'instant' ? 0 : 640;
+  App.ui.selectedIid = null; App.ui.sacList = []; App.ui.aiLastIid = null;
+  App.status = '对手出牌中…';
+  render();
+  function step() {
+    if (!App.state || App.state.over) { App.status = ''; render(); checkGameOver(); return; }
+    if (App.state.currentPlayer !== me) { App.status = ''; render(); checkGameOver(); return; }
+    let res;
+    try { res = gen.next(); } catch (e) { App.status = ''; render(); checkGameOver(); return; }
+    if (res.done) { App.status = ''; render(); checkGameOver(); return; }
+    const action = res.value;
+    let ok = false;
+    if (action.type === 'play') {
+      const card = App.state.players[me].hand.find((c) => c.iid === action.iid);
+      const opts = {};
+      if (action.sacrifices) opts.sacrifices = action.sacrifices;
+      const r = playCard(App.state, me, action.iid, action.lane, opts);
+      ok = !!r.ok;
+      if (ok) { App.ui.aiLastIid = action.iid; App.status = card ? `对手打出「${card.name}」` : '对手出牌…'; }
+    } else if (action.type === 'endTurn') {
+      endTurn(App.state, me);
+      ok = true;
+    }
+    if (!ok) { App.ui.aiLastIid = null; App.status = ''; render(); checkGameOver(); return; }
+    render();
+    if (action.type === 'endTurn') { App.ui.aiLastIid = null; App.status = ''; checkGameOver(); return; }
+    setTimeout(step, stepDelay);
+  }
+  setTimeout(step, thinkDelay);
+}
+
+// ---------- 回合计时器（PvP/PvE 每方每回合出牌时限）----------
+// 仅对“当前由本机人类控制的回合”计时；AI 回合不计时（人机不思考、直接按序打牌）。
+// key 用 currentPlayer + state.turn 唯一标识每一回合，确保同方连续回合也会重置。
+function isHumanTurn() {
+  return !!App.state && !App.state.over && App.state.currentPlayer === App.me;
+}
+function stopTurnTimer() {
+  if (App.timer.id) { clearInterval(App.timer.id); App.timer.id = null; }
+  App.timer.key = '';
+  const elT = $('turnTimer'); if (elT) { elT.classList.add('hidden'); elT.classList.remove('urgent'); }
+}
+function startTurnTimer(key) {
+  stopTurnTimer();
+  App.timer.key = key;
+  // 时砂：真实回合时长用全局设置（或默认 20s），用于自动结束回合；
+  // 「秒能」资源预算（CONFIG.SAND_TURN_SECONDS）是另一回事，只随出牌扣减，不随真实时间流逝。
+  const sand = !!App.state && App.state.players[App.state.currentPlayer].res === 'sand';
+  const limit = sand ? (App.turnTime || 20) : App.turnTime;
+  App.timer.total = limit;
+  App.timer.remaining = limit;
+  updateTimerDisplay();
+  const elT = $('turnTimer'); if (elT) elT.classList.remove('hidden');
+  App.timer.id = setInterval(() => {
+    App.timer.remaining -= 1;
+    if (App.timer.remaining <= 0) {
+      updateTimerDisplay();
+      stopTurnTimer();
+      autoEndTurn();
+      return;
+    }
+    updateTimerDisplay();
+  }, 1000);
+}
+function maybeStartTimer() {
+  const st = App.state;
+  if (!st || st.over) { stopTurnTimer(); return; }
+  if (App.mode === 'tutorial') { stopTurnTimer(); return; }   // 教程不计时，避免打扰学习
+  const sand = !!st && st.players[st.currentPlayer].res === 'sand';
+  if (!App.turnTime && !sand) { stopTurnTimer(); return; }    // 0 = 关闭时限；但时砂阵营强制启用（用默认 20s 真实回合）
+  if (!$('overlay').classList.contains('hidden')) { stopTurnTimer(); return; } // 覆盖层（教程/交接）暂停
+  if (!isHumanTurn()) { stopTurnTimer(); return; }
+  const key = st.currentPlayer + ':' + st.turn;
+  if (App.timer.key === key && App.timer.id) return;           // 本回合计时已在跑
+  startTurnTimer(key);
+}
+// 时砂：顶栏的「⏱」显示「剩余秒能」（资源预算），而非真实倒计时；资源紧张时变红提醒。
+function updateTimerDisplay() {
+  const elT = $('turnTimer'); if (!elT) return;
+  const st = App.state;
+  const sand = !!st && st.players[st.currentPlayer] && st.players[st.currentPlayer].res === 'sand';
+  if (sand) {
+    const secs = Math.floor(st.players[st.currentPlayer].seconds || 0);
+    elT.textContent = '⏱ ' + secs + 's';
+    elT.classList.toggle('urgent', secs <= 3);
+    return;
+  }
+  const r = Math.max(0, App.timer.remaining);
+  elT.textContent = '⏱ ' + r + 's';
+  elT.classList.toggle('urgent', r <= 5);
+}
+function autoEndTurn() {
+  if (!App.state || App.state.over || App.state.currentPlayer !== App.me) return;
+  if (App.ui.selectedIid || (App.ui.sacList && App.ui.sacList.length)) { App.ui.selectedIid = null; App.ui.sacList = []; }
+  App.status = '时间到，自动结束回合';
+  act({ type: 'endTurn' });
 }
 
 function checkGameOver() {
@@ -257,7 +371,7 @@ function tutNext() { if (!App.tut) return; App.tut.step++; showTutStep(); }
 
 // Short description of each faction's resource, used inside tutorial text.
 function resDescShort(fac) {
-  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡/每回合积累骸骨', energy: '每回合回能（封顶 6）', mox: '场上魔石生物提供魔石' }[fac] || '';
+  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡/每回合积累骸骨', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「剩余秒数」召唤（不可透支：剩余不足打不出；每回合开始按秒能预算重置，首回合 0、每 2 回合 +1、封顶 5）' }[fac] || '';
 }
 function sigilsIntro() {
   return '【印记特性】卡牌可能携带「印记」，常见有：\n'
@@ -849,6 +963,22 @@ $('menu').addEventListener('click', (e) => {
     App.aiLevel = diff.dataset.diff;
     if (App.profile) { App.profile.aiLevel = App.aiLevel; saveProfile(App.profile); }
     document.querySelectorAll('#aiDiff .dbtn').forEach((b) => b.classList.toggle('on', b.dataset.diff === App.aiLevel));
+    playSfx('click');
+    return;
+  }
+  const speed = e.target.closest('[data-speed]');
+  if (speed) {
+    App.aiSpeed = speed.dataset.speed;
+    if (App.profile) { App.profile.aiSpeed = App.aiSpeed; saveProfile(App.profile); }
+    document.querySelectorAll('#aiSpeed .dbtn').forEach((b) => b.classList.toggle('on', b.dataset.speed === App.aiSpeed));
+    playSfx('click');
+    return;
+  }
+  const tt = e.target.closest('[data-tt]');
+  if (tt) {
+    App.turnTime = Number(tt.dataset.tt);
+    if (App.profile) { App.profile.turnTime = App.turnTime; saveProfile(App.profile); }
+    document.querySelectorAll('#turnTimeBox .dbtn').forEach((b) => b.classList.toggle('on', Number(b.dataset.tt) === App.turnTime));
     playSfx('click');
     return;
   }

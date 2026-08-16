@@ -22,6 +22,8 @@ function normalize(p) {
   p.muted = !!p.muted;
   p.layout = p.layout === 'compact' ? 'compact' : 'standard'; // 界面布局：standard（默认）/ compact（菜单三列 + 组卡双栏）
   p.aiLevel = ['easy', 'normal', 'hard'].includes(p.aiLevel) ? p.aiLevel : 'normal';
+  p.aiSpeed = ['slow', 'normal', 'fast', 'instant'].includes(p.aiSpeed) ? p.aiSpeed : 'normal'; // 人机出牌速度：慢/正常/快/瞬发
+  p.turnTime = (Number.isFinite(p.turnTime) && p.turnTime >= 0) ? p.turnTime : 20; // 每回合出牌时限（秒），0=关闭
   p.unlocked = Array.from(new Set(p.unlocked || []));
   // 排位赛段位：默认 一阶·下，0 晋级分。
   p.rank = p.rank || { tier: 1, div: 0, points: 0 };
@@ -66,6 +68,7 @@ export function createProfile(name) {
     unlocked: starterUnlocked(),
     rank: { tier: 1, div: 0, points: 0 },
     stats: { wins: 0, losses: 0, packs: 0, rankedWins: 0, rankedLosses: 0 },
+    aiSpeed: 'normal', turnTime: 20,
   });
   saveProfile(p);
   return p;
