@@ -93,6 +93,7 @@ export function createGame(opts = {}) {
     // is resource-starved on turn 1 (see ensureZeroCostRatioInHand).
     ensureZeroCostRatioInHand(state, p);
     if (state.players[p].res === 'mox') ensureMoxGemInHand(state, p);
+    if (state.players[p].res === 'sand') ensureSandStarterInHand(state, p);
   }
   beginTurn(state, 'A');
   state.log.push('对局开始！目标是把对方的天平压到顶端。');
@@ -121,6 +122,23 @@ function ensureMoxGemInHand(state, p) {
   const hi = pl.hand.findIndex((c) => !c.mox);
   if (hi >= 0) pl.deck.push(pl.hand.splice(hi, 1)[0].cardId);
   pl.hand.push(instantiate(moxId));
+}
+
+// 时砂：保证开局手牌里有一张「新手牌」(sand_apprentice，0 费时砂生物)，
+// 这样即使第 1 回合秒能预算为 0，时砂玩家也能立刻铺场、不会开局空过。
+// 与 ensureMoxGemInHand 同构：优先从牌库取一张，牌库没有则直接送（防御性分支）。
+function ensureSandStarterInHand(state, p) {
+  const pl = state.players[p];
+  const SAND_STARTER = 'sand_apprentice';
+  if (!CARDS[SAND_STARTER]) return;
+  if (pl.hand.some((c) => c.cardId === SAND_STARTER)) return;
+  const di = pl.deck.findIndex((id) => id === SAND_STARTER);
+  const id = di >= 0 ? pl.deck.splice(di, 1)[0] : SAND_STARTER; // 牌库没有则直接送
+  if (pl.hand.length >= CONFIG.HAND_LIMIT) {
+    const hi = pl.hand.findIndex((c) => c.cardId !== SAND_STARTER);
+    if (hi >= 0) pl.deck.push(pl.hand.splice(hi, 1)[0].cardId); // 手牌满则挤掉一张非新手牌回牌库
+  }
+  pl.hand.push(instantiate(id));
 }
 
 // Guarantee the opening hand contains 0-cost cards making up (about) HALF of it,
