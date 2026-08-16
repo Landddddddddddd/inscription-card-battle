@@ -319,6 +319,21 @@ html, body {
 .builder-count { color: var(--text-dim); font-size: 14px; }
 .builder-count .ok { color: var(--blue); } .builder-count .bad { color: var(--red); }
 
+/* ---------------- 多套卡组管理条 ---------------- */
+.deck-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; padding: 8px 12px; background: rgba(255,255,255,.04); border: 1px solid var(--line2, #2a221a); border-radius: 10px; }
+.deck-bar-label { color: var(--gold, #e0b03a); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.deck-select { background: #1a1410; color: var(--text, #e8e0d2); border: 1px solid var(--line2, #2a221a); border-radius: 8px; padding: 6px 10px; font-size: 14px; max-width: 280px; }
+.deck-name { background: #1a1410; color: var(--text, #e8e0d2); border: 1px solid var(--line2, #2a221a); border-radius: 8px; padding: 6px 10px; font-size: 14px; width: 180px; }
+.deck-name::placeholder { color: #7a6f60; }
+.deck-msg { color: var(--blue, #5aa9e6); font-size: 13px; margin-left: 4px; }
+.btn.danger { background: linear-gradient(180deg, #b23a3a, #8a2b2b); }
+.btn.danger:hover { background: linear-gradient(180deg, #c64a4a, #9a3030); }
+@media (max-width: 560px) {
+  .deck-bar { gap: 6px; }
+  .deck-name { width: 140px; }
+  .deck-select { max-width: 100%; }
+}
+
 /* ---------------- TOPBAR / SCALE ---------------- */
 #topbar { display: flex; align-items: center; gap: 16px; padding: 10px 16px; background: linear-gradient(180deg, #140f0a, #0b0806); border-bottom: 1px solid var(--line2); box-shadow: 0 3px 12px rgba(0,0,0,.5); }
 .tb-left { display: flex; flex-direction: column; min-width: 160px; }
