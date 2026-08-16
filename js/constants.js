@@ -346,17 +346,9 @@ export const CARDS = {
   // 3 费×3 / 4 费×2 / 0 费×1），仅替换主题化的名字与印记，以保证「消耗秒数」这一
   // 新机制不会破坏五阵营整体平衡（时砂胜率与能量对齐，约 45-50%）。成本 0~4，封顶 5 的秒能预算可覆盖。
   sand_pebble:     { name: '砂砾',   atk: 0, hp: 1, cost: 0, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c2b280', glyph: '砾' },
-  sand_lizard:     { name: '时蜥',   atk: 2, hp: 1, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#b89a5a', glyph: '蜥' },
-  chrono_fox:      { name: '刻狐',   atk: 2, hp: 1, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c0a050', glyph: '狐' },
-  chrono_sparrow:  { name: '刻雀',   atk: 1, hp: 2, cost: 1, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#caa84a', glyph: '雀' },
-  time_wren:       { name: '时鹡',   atk: 1, hp: 3, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#b8a85a', glyph: '鹡' },
-  sand_ant:        { name: '砂蚁',   atk: 1, hp: 2, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c8b070', glyph: '蚁' },
-  sand_cricket:    { name: '砂蟀',   atk: 2, hp: 2, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#bca05a', glyph: '蟀' },
-  time_moth:       { name: '时蛾',   atk: 2, hp: 3, cost: 1, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#b0a060', glyph: '蛾' },
   pendulum:        { name: '钟摆兽', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['double_strike'],  bloodValue: 1, color: '#c9a24a', glyph: '摆' },
   chrono_twin:     { name: '双刻兽', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['double_strike'],  bloodValue: 1, color: '#d0a84a', glyph: '孪' },
   sand_swift:      { name: '流沙隼', atk: 3, hp: 1, cost: 2, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#c8b070', glyph: '隼' },
-  sand_ram:        { name: '沙岩撞兽', atk: 3, hp: 3, cost: 2, costType: 'sand', sigils: [],                bloodValue: 1, color: '#b89a4a', glyph: '撞' },
   gear_beetle:     { name: '齿甲',   atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['sharp_quills'],    bloodValue: 1, color: '#9a8a4a', glyph: '甲' },
   sand_panther:    { name: '时影豹', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#a98a4a', glyph: '影' },
   sand_wisp:       { name: '流沙精', atk: 2, hp: 2, cost: 2, costType: 'sand', sigils: ['poison_touch'],    bloodValue: 1, color: '#b59a4a', glyph: '沙' },
