@@ -320,6 +320,7 @@
         <button class="btn primary" data-act="endTurn">结束回合 / 攻击</button>
         <button class="btn" data-act="requestPeace">🤝 求和</button>
         <button class="btn danger" data-act="surrender">🏳 投降</button>
+        <button class="btn" data-act="toggleCheat" title="键位小抄（K / ` 切换显示）">⌨ 键位</button>
         <span class="emote-row" title="表情（也可按 Q/E/R/T/G/H）">
           <button class="emote-btn" data-emote="0">👍</button>
           <button class="emote-btn" data-emote="1">😂</button>
@@ -335,6 +336,11 @@
         <span id="peaceText" class="peace-text"></span>
         <button class="btn small primary" data-act="peaceAccept">接受平局</button>
         <button class="btn small ghost" data-act="peaceDecline">拒绝</button>
+      </div>
+
+      <div id="cheatSheet" class="cheat-sheet hidden">
+        <div class="cs-head">⌨ 键位小抄<span class="cs-hint">按 K / ` 关闭</span></div>
+        <div id="cheatList" class="cs-list"></div>
       </div>
 
       <div id="kbHint" class="kb-hint">⌨ 键盘操作（可在菜单「⚙ 键位设置」中自定义）：<b>W A S D</b> 移动 / 选牌 / 放牌 · <b>空格 / Enter</b> 结束回合 · <b>F</b> 投降 · <b>P</b> 求和 · <b>Q E R T G H</b> 表情 · <b>1-4</b> 指定列出牌 · <b>Esc</b> 取消。组卡界面：<b>WASD</b> 移动卡牌焦点，<b>= / −</b> 增减 1，<b>Shift+← / →</b> 增减 5。</div>
