@@ -1229,6 +1229,6 @@ function keyBindsHTML() {
     <p class="ht-p">全面支持键盘操作，并以 <b>WASD</b> 为主轴。所有键位均可在主菜单「⚙ 键位设置」里自由改键（支持 Shift/Ctrl/Alt 组合键）。下表为<span class="ht-k">当前生效</span>的绑定：</p>
     <div class="ht-kb-group"><div class="ht-kb-gtitle">⚔ 对战界面</div>${battle}</div>
     <div class="ht-kb-group"><div class="ht-kb-gtitle">🛠 组卡界面</div>${builder}</div>
-    <p class="ht-p ht-note">提示：在组卡界面输入框打字时游戏快捷键不触发；按任意键即可在设置里重绑，Esc 取消本次重绑。</p>
+    <p class="ht-p ht-note">提示：在组卡界面输入框打字时游戏快捷键不触发；按任意键即可在设置里重绑，Esc 取消本次重绑。对战内随时按 <b>K</b> 或 <b>\`</b>（反引号）可呼出 / 收起一张同款的「键位小抄」浮窗，记不住键位时很方便。</p>
   </div>`;
 }

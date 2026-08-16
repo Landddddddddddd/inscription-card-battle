@@ -31,6 +31,7 @@ export const DEFAULTS = {
     emote4:      [{ code: 'KeyT' }],
     emote5:      [{ code: 'KeyG' }],
     emote6:      [{ code: 'KeyH' }],
+    cheat:       [{ code: 'KeyK' }, { code: 'Backquote' }],
   },
   // 组卡上下文：WASD 移动卡牌焦点，=/- 增减 1，Shift+←/→ 增减 5（即「选卡组快捷」）。
   builder: {
@@ -117,7 +118,7 @@ export function matchAction(binds, ctx, e) {
 
 const CODE_LABEL = {
   ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓',
-  Space: '空格', Enter: 'Enter', Escape: 'Esc',
+  Space: '空格', Enter: 'Enter', Escape: 'Esc', Backquote: '`',
   Equal: '=', Minus: '−', NumpadAdd: '+', NumpadSubtract: '−',
   NumpadEnter: 'Enter',
 };

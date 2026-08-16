@@ -131,7 +131,7 @@ function applyEnvMode() {
   });
 }
 
-function showGame() { show('game'); UI.hideOverlay(); UI.hideGameOver(); UI.resetGameView(); }
+function showGame() { show('game'); UI.hideOverlay(); UI.hideGameOver(); UI.resetGameView(); App._cheatOpen = false; const cs = $('cheatSheet'); if (cs) cs.classList.add('hidden'); }
 
 function toMenu() {
   if (App.net) { App.net.close(); App.net = null; }
@@ -1365,6 +1365,7 @@ function ctrlAct(name) {
   }
   else if (name === 'peaceAccept') act({ type: 'respondPeace', accept: true });
   else if (name === 'peaceDecline') act({ type: 'respondPeace', accept: false });
+  else if (name === 'toggleCheat') toggleCheatSheet();
   else if (name === 'menu') toMenu();
   else if (name === 'tutNext') tutNext();
   else if (name === 'hotseatContinue') hotseatContinue();
@@ -1450,9 +1451,11 @@ document.addEventListener('keydown', (e) => {
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
 function handleBattleKey(e) {
-  if (App.state.over) return;
   const binds = KB.getBinds();
   const action = KB.matchAction(binds, 'battle', e);
+  // 键位小抄切换：任何时候（含对局结束后）都可用，不受 over 限制。
+  if (action === 'cheat') { e.preventDefault(); toggleCheatSheet(); return; }
+  if (App.state.over) return;
   const hand = App.state.players[App.me].hand;
   const LANES = (App.state.rules && App.state.rules.lanes) || CONFIG.LANES;
   // 数字 1-9 为内置快捷：未选牌直接选该张；选中后在 1-4 列打出。
@@ -1495,6 +1498,41 @@ function handleBattleKey(e) {
     case 'emote1': case 'emote2': case 'emote3': case 'emote4': case 'emote5': case 'emote6':
       doEmote(parseInt(action.slice(5), 10) - 1); break;
   }
+}
+
+// ---------- 对战内键位小抄浮窗（K / ` 切换）----------
+// 与「⚙ 键位设置」同源：读取当前生效绑定，紧凑展示战斗全部快捷键。
+const CHEAT_ROWS = [
+  ['select', '选牌 / 放牌（在光标列打出）'],
+  ['cursorLeft', '移动光标 ◀（未选牌移手牌，选中后移列）'],
+  ['cursorRight', '移动光标 ▶'],
+  ['endTurn', '结束回合 / 攻击'],
+  ['lane1', '1-4 在指定列出牌'],
+  ['cancel', '取消选择'],
+  ['surrender', '投降（认输）'],
+  ['peace', '求和（申请平局）'],
+  ['emote1', '表情 👍'],
+  ['emote2', '表情 😂'],
+  ['emote3', '表情 😡'],
+  ['emote4', '表情 🙏'],
+  ['emote5', '表情 🔥'],
+  ['emote6', '表情 💀'],
+  ['cheat', '切换本小抄'],
+];
+function renderCheatSheet() {
+  const binds = KB.getBinds();
+  const el = $('cheatList'); if (!el) return;
+  el.innerHTML = CHEAT_ROWS.map(([a, label]) => {
+    const keys = (binds.battle[a] || []).map(KB.fmtBind).join(' / ');
+    return `<div class="cs-row"><span class="cs-key">${keys}</span><span class="cs-label">${label}</span></div>`;
+  }).join('');
+}
+function toggleCheatSheet() {
+  App._cheatOpen = !App._cheatOpen;
+  const box = $('cheatSheet');
+  if (!box) return;
+  if (App._cheatOpen) renderCheatSheet();
+  box.classList.toggle('hidden', !App._cheatOpen);
 }
 
 function builderCols() {
@@ -1567,6 +1605,7 @@ const KB_GROUPS = [
     { a: 'emote4', l: 'T 表情 · 拜托 🙏' },
     { a: 'emote5', l: 'G 表情 · 火 🔥' },
     { a: 'emote6', l: 'H 表情 · 骷 💀' },
+    { a: 'cheat', l: 'K / ` 切换键位小抄浮窗' },
   ] },
   { ctx: 'builder', title: '组卡', items: [
     { a: 'cursorLeft', l: 'A / ← 左移卡牌焦点' },
