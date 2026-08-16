@@ -301,7 +301,15 @@
 
       <div id="controls" class="controls">
         <button class="btn primary" data-act="endTurn">结束回合 / 攻击</button>
+        <button class="btn" data-act="requestPeace">🤝 求和</button>
+        <button class="btn danger" data-act="surrender">🏳 投降</button>
         <span id="statusMsg" class="status-msg"></span>
+      </div>
+
+      <div id="peaceBar" class="peace-bar hidden">
+        <span id="peaceText" class="peace-text"></span>
+        <button class="btn small primary" data-act="peaceAccept">接受平局</button>
+        <button class="btn small ghost" data-act="peaceDecline">拒绝</button>
       </div>
 
       <div id="kbHint" class="kb-hint">⌨ 键盘操作：<b>1-9</b> 选牌 · 选中后 <b>1-4 / Q W E R</b> 出牌或献祭 · <b>← →</b> 移动光标 · <b>空格 / Enter</b> 结束回合 · <b>Esc</b> 取消</div>
