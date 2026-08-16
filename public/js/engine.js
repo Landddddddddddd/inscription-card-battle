@@ -252,7 +252,7 @@ function fight(state, atkSide, atkLane, defSide, defLane) {
   if (d.sigils.includes('armored')) dmg = Math.max(0, dmg - 1); // 厚甲：受击 -1
   d.hp -= dmg;
   if (c.sigils.includes('death_touch') && dmg > 0) d.hp = 0;    // 致死：任何伤害即死
-  if (state.lastCombat) state.lastCombat.push({ side: defSide, lane: defLane, dmg, by: atkSide });
+  if (state.lastCombat) state.lastCombat.push({ side: defSide, lane: defLane, dmg, by: atkSide, dbl: cDbl, death: (c.sigils.includes('death_touch') && dmg > 0) });
   if (d.sigils.includes('sharp_quills')) {            // 尖刺：被攻击时反伤1点（攻击方同样享受厚甲减免）
     let q = 1;
     if (c.sigils.includes('armored')) q = Math.max(0, q - 1);
@@ -282,7 +282,7 @@ function resolveAttacks(state, attacker) {
         didAttack = true;
       } else if (cAir && !dAir) {
         state.weights[attacker] += pw;
-        if (state.lastCombat) state.lastCombat.push({ scale: true, dmg: pw, by: attacker, lane });
+        if (state.lastCombat) state.lastCombat.push({ scale: true, dmg: pw, by: attacker, lane, dbl: c.sigils.includes('double_strike') });
         state.log.push(`${c.name} 飞越攻击，天平 +${pw}`);
         didAttack = true;
       } else if (!cAir && dAir) {
@@ -294,7 +294,7 @@ function resolveAttacks(state, attacker) {
       }
     } else {
       state.weights[attacker] += pw;
-      if (state.lastCombat) state.lastCombat.push({ scale: true, dmg: pw, by: attacker, lane });
+      if (state.lastCombat) state.lastCombat.push({ scale: true, dmg: pw, by: attacker, lane, dbl: c.sigils.includes('double_strike') });
       state.log.push(`${c.name} 攻击天平 +${pw}`);
       didAttack = true;
     }

@@ -107,6 +107,52 @@ function boardShake() {
   void b.offsetWidth; b.classList.add('shake-sm');
   _shakeT = setTimeout(() => b.classList.remove('shake-sm'), 320);
 }
+// Stronger shake for critical hits (double_strike / 致死 / heavy scale damage).
+let _shakeLgT = 0;
+function boardShakeLg() {
+  const b = el('board'); if (!b) return;
+  clearTimeout(_shakeLgT); b.classList.remove('shake-lg');
+  void b.offsetWidth; b.classList.add('shake-lg');
+  _shakeLgT = setTimeout(() => b.classList.remove('shake-lg'), 440);
+}
+// 召唤光柱：从列中心向上冲出的光能柱。
+function beam(x, y, color) {
+  const b = document.createElement('div');
+  b.className = 'fx-beam';
+  b.style.left = x + 'px'; b.style.top = y + 'px';
+  if (color) b.style.background = `linear-gradient(to top, ${color}, transparent)`;
+  fx().appendChild(b);
+  requestAnimationFrame(() => b.classList.add('go'));
+  setTimeout(() => b.remove(), 720);
+}
+// 死亡碎裂：碎片四散 + 暗烟。
+function shatter(x, y) {
+  for (let i = 0; i < 9; i++) {
+    const a = (Math.PI * 2 * i) / 9 + Math.random() * 0.5;
+    particle(x, y, { color: ['#9a9a9a', '#6a6a6a', '#bdbdbd'][i % 3], size: 6 + Math.random() * 5, square: true, dx: Math.cos(a) * 40, dy: Math.sin(a) * 40 - 8, rot: Math.random() * 360, life: 640 });
+  }
+  burst(x, y, { count: 9, color: ['#2a2a2a', '#464646'], size: 6, spread: 30, grav: 12, life: 520 });
+}
+// 献祭血祭：红色血光上涌（献祭场上单位支付血肉时播放）。
+function bloodRitual(x, y) {
+  const b = document.createElement('div');
+  b.className = 'fx-blood';
+  b.style.left = x + 'px'; b.style.top = y + 'px';
+  fx().appendChild(b);
+  requestAnimationFrame(() => b.classList.add('go'));
+  setTimeout(() => b.remove(), 760);
+  burst(x, y, { count: 18, color: ['#e0402f', '#b5241f', '#7a1a12', '#ff7a5a'], size: 6, spread: 48, grav: -22, life: 740, glow: 6 });
+  floatText(x, y - 8, '献祭', '#e0655a');
+}
+// 暴击/双击金色爆点。
+function critBurst(x, y) {
+  burst(x, y, { count: 16, color: ['#ffd15a', '#e0b03a', '#fff2c0'], glyph: '✦', size: 13, spread: 52, life: 620, glow: 10 });
+}
+
+// 待播的献祭特效：main.js 在 act() 献祭分支调用 markSacrifice(iids)，
+// 下次 render 后 runGameFX 据此把被献祭单位渲染成血祭而非普通死亡碎裂。
+let _pendingSac = [];
+export function markSacrifice(iids) { _pendingSac = Array.isArray(iids) ? iids.slice() : []; }
 
 // Make the attacker card lunge toward the lane it just struck.
 function lungeAttacker(defSide, lane, me) {
@@ -148,6 +194,7 @@ function resourceBurst(kind, amount, gemColor) {
 
 function runGameFX(ev, me, state) {
   if (_prev.first) return; // no FX on the very first paint
+  const sacSet = new Set(_pendingSac); _pendingSac = [];
   // ---- Combat damage numbers (BOTH sides) ----
   // Driven by the engine's lastCombat log: every creature hit (mine OR enemy,
   // including LETHAL hits where the card is already gone) and every scale
@@ -162,7 +209,8 @@ function runGameFX(ev, me, state) {
         const r = scale.getBoundingClientRect();
         const mine = e.by === me;
         const x = mine ? r.left + r.width * 0.72 : r.left + r.width * 0.28;
-        floatText(x, r.top + 6, '天平 +' + e.dmg, mine ? '#e0b03a' : '#c0392b');
+        floatText(x, r.top + 6, '天平 +' + e.dmg + (e.dbl ? ' ×2' : ''), mine ? '#e0b03a' : '#c0392b');
+        if (e.dbl) critBurst(x, r.top + 14);
         playSfx('scale');
       }
       continue;
@@ -189,17 +237,20 @@ function runGameFX(ev, me, state) {
     ring(c.x, c.y, mine ? '#ff6a4a' : '#ffcf5a');
     burst(c.x, c.y, { count: 12, color: mine ? ['#ff7a5a', '#c0392b', '#ffd0b0'] : ['#ffd15a', '#e0b03a', '#fff2c0'], size: 5, spread: 42, life: 520, glow: 5, grav: 8 });
     floatText(c.x, c.y - 10, '-' + e.dmg, '#ff5a4a');
+    if (e.quill) floatText(c.x + 22, c.y - 6, '反伤', '#7fd0ff');
+    if (e.dbl) { critBurst(c.x, c.y); floatText(c.x, c.y - 30, '双击!', '#ffd15a'); boardShakeLg(); }
+    if (e.death) { floatText(c.x, c.y - 44, '即死!', '#c77dff'); critBurst(c.x, c.y); }
   }
   // summons: sparkle
   for (const s of ev.summons) {
     const c = cellCenter(s.side, s.lane);
-    if (c) burst(c.x, c.y, { count: 10, color: ['#ffe08a', '#d9a441', '#ffffff'], glyph: '✦', size: 11, spread: 40, life: 560, glow: 6 });
+    if (c) { beam(c.x, c.y, s.side === me ? 'rgba(255,224,138,1)' : 'rgba(205,234,254,1)'); burst(c.x, c.y, { count: 12, color: ['#ffe08a', '#d9a441', '#ffffff'], glyph: '✦', size: 11, spread: 44, life: 600, glow: 6 }); }
     if (s.side === me) playSfx('summon');
   }
   // deaths: dark puff at last known cell
   for (const d of ev.deaths) {
     const c = cellCenter(d.side, d.lane);
-    if (c) burst(c.x, c.y, { count: 12, color: ['#3a3a3a', '#6a6a6a', '#1a1a1a'], size: 7, spread: 40, grav: 10, life: 640 });
+    if (c) { if (sacSet.has(d.iid)) bloodRitual(c.x, c.y); else shatter(c.x, c.y); }
   }
   // (scale "+N" floats are now emitted per-attack from ev.combat above)
 }
@@ -437,7 +488,7 @@ export function renderGame(ctx) {
   const nowSet = { A: new Set(state.board.A.filter(Boolean).map((c) => c.iid)), B: new Set(state.board.B.filter(Boolean).map((c) => c.iid)) };
   for (const side of ['A', 'B']) {
     for (const iid of _prev.board[side]) {
-      if (!nowSet[side].has(iid) && _prev.laneOf[iid]) fxEv.deaths.push(_prev.laneOf[iid]);
+      if (!nowSet[side].has(iid) && _prev.laneOf[iid]) fxEv.deaths.push({ ..._prev.laneOf[iid], iid });
     }
   }
   fxEv.weightDelta.me = state.weights[me] - _prev.weights[me];
@@ -484,15 +535,46 @@ function renderLog(state) {
   const box = el('log'); box.scrollTop = box.scrollHeight;
 }
 
-export function showOverlay(text, showNext) {
+// 新手引导动画指针：动态箭头指向教程要求操作的目标元素 + 脉冲高亮。
+let _tutArrow = null, _tutPulseEl = null;
+function clearTutPointer() {
+  if (_tutArrow) { _tutArrow.remove(); _tutArrow = null; }
+  if (_tutPulseEl) { _tutPulseEl.classList.remove('tut-pulse'); _tutPulseEl = null; }
+}
+export function showOverlay(text, showNext, step) {
+  clearTutPointer();
   el('overlayText').textContent = text;
   el('overlayNext').classList.toggle('hidden', !showNext);
   const c = el('overlayContinue'); if (c) c.classList.add('hidden');
-  el('overlay').classList.remove('hidden');
+  const ov = el('overlay');
+  ov.classList.remove('hidden');
+  const useTut = !!(step && step.target);
+  ov.classList.toggle('tut-mode', useTut);
+  if (useTut) {
+    const tgt = document.querySelector(step.target);
+    if (tgt) {
+      _tutPulseEl = tgt; tgt.classList.add('tut-pulse');
+      requestAnimationFrame(() => {
+        if (_tutPulseEl !== tgt) return;
+        const r = tgt.getBoundingClientRect();
+        const dir = step.arrowDir || 'above';
+        const a = document.createElement('div');
+        a.className = 'tut-arrow ' + dir;
+        let x = r.left + r.width / 2, y = r.top - 16;
+        if (dir === 'below') { x = r.left + r.width / 2; y = r.bottom + 16; }
+        else if (dir === 'left') { x = r.left - 16; y = r.top + r.height / 2; }
+        else if (dir === 'right') { x = r.right + 16; y = r.top + r.height / 2; }
+        a.style.left = x + 'px'; a.style.top = y + 'px';
+        document.body.appendChild(a);
+        _tutArrow = a;
+      });
+    }
+  }
 }
-export function hideOverlay() { el('overlay').classList.add('hidden'); const c = el('overlayContinue'); if (c) c.classList.add('hidden'); }
+export function hideOverlay() { clearTutPointer(); el('overlay').classList.remove('tut-mode'); el('overlay').classList.add('hidden'); const c = el('overlayContinue'); if (c) c.classList.add('hidden'); }
 // Handoff screen for local hotseat: hide the tutorial "next" button, show "continue".
 export function showHandoff(text) {
+  clearTutPointer(); el('overlay').classList.remove('tut-mode');
   el('overlayText').textContent = text;
   const next = el('overlayNext'); if (next) next.classList.add('hidden');
   const cont = el('overlayContinue');

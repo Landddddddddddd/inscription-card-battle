@@ -319,6 +319,38 @@ function gem(id, pal, col) {
 }
 const DRAW = { beast, critter, bird, serpent, bug, skull, shell, frog, shark, demon, golem, gem };
 
+/* =============================== variant overlay =============================== */
+// 让每张卡即使共用基础 archetype，也因「印记 + 种子」产生不同的轮廓/姿态差异：
+// 飞行加翼、连击/高攻加角、尖刺加刺、厚甲加甲片、致死红眼、毒触毒滴、再生光环、
+// 高费加华丽尾；再叠加由卡牌 ID 决定的轻微姿态倾斜，使同 archetype 也不雷同。
+function variantOverlay(card, pal, id) {
+  const sig = new Set(card.sigils || []);
+  const r = rng(seed(card.cardId + 'v2'));
+  let out = '';
+  if (sig.has('airborne')) {
+    out += `<g fill="url(#bd${id})" stroke="${pal.dark}" stroke-width="1.1" opacity=".9">
+      <path d="M50,54 q-27,-15 -41,-5 q15,3 23,11 q-13,0 -19,7 q16,3 28,-3z"/>
+      <path d="M50,54 q27,-15 41,-5 q-15,3 -23,11 q13,0 19,7 q-16,3 -28,-3z"/></g>`;
+  }
+  if (sig.has('double_strike') || (card.atk || 0) >= 4) {
+    out += `<g fill="${shade(pal.base, .25)}" stroke="${pal.dark}" stroke-width="1">
+      <path d="M41,30 l-4,-13 l7,8 l3,-10 l3,11z"/><path d="M59,30 l4,-13 l-7,8 l-3,-10 l-3,11z"/></g>`;
+  }
+  if (sig.has('sharp_quills')) {
+    out += `<g stroke="${shade(pal.base, .35)}" stroke-width="1.6" stroke-linecap="round" opacity=".9">
+      <path d="M28,42 l-9,-5 M28,52 l-10,-1 M72,42 l9,-5 M72,52 l10,-1 M50,28 l0,-10"/></g>`;
+  }
+  if (sig.has('armored')) {
+    out += `<g fill="${shade(pal.base, .3)}" stroke="${pal.dark}" stroke-width="1" opacity=".9">
+      <path d="M27,54 q7,-9 13,-3 q-2,7 -13,7z"/><path d="M73,54 q-7,-9 -13,-3 q2,7 13,7z"/></g>`;
+  }
+  if (sig.has('death_touch')) out += `<g fill="#ff2d55" opacity=".95"><circle cx="43" cy="40" r="3"/><circle cx="57" cy="40" r="3"/></g>`;
+  if (sig.has('poison_touch')) out += `<path d="M50,53 q-3,6 0,11 q3,-5 0,-11z" fill="#7CFC00" opacity=".8"/>`;
+  if (sig.has('regen') || sig.has('undying')) out += `<ellipse cx="50" cy="52" rx="40" ry="42" fill="none" stroke="#8ad98a" stroke-width="1.3" opacity=".38"/>`;
+  if ((card.cost || 0) >= 3) out += `<path d="M50,90 q${6 + (r() * 6 | 0)},9 ${3 + (r() * 12 | 0)},17" fill="none" stroke="${pal.dark}" stroke-width="3" stroke-linecap="round" opacity=".65"/>`;
+  return out;
+}
+
 /* =============================== faction overlays / frame =============================== */
 function overlayBlood() { return `<g opacity=".85"><path d="M6,8 q6,3 8,9 M12,6 q4,4 5,9 M18,6 q3,4 3,8" stroke="#e05a3a" stroke-width="1.4" fill="none" opacity=".7"/><path d="M50,0 q-2,6 1,10 q3,-4 -1,-10z" fill="#c0392b" opacity=".6"/></g>`; }
 function overlayBone() { return `<g stroke="#cfe8f2" stroke-width="1.2" opacity=".6" fill="none"><path d="M4,14 q6,-3 6,-9 M96,14 q-6,-3 -6,-9"/></g><g fill="#dfeef4" opacity=".7"><circle cx="8" cy="8" r="1.5"/><circle cx="92" cy="8" r="1.5"/></g>`; }
@@ -357,12 +389,17 @@ export function cardArt(card) {
   // Premium cards: use cosmic scene + golden overlay instead of faction-specific ones.
   const scene = isPremium ? scenePremium(id, rng(s ^ 0x9e3779b9)) : (SCENE[fac] || sceneBlood)(id, rng(s ^ 0x9e3779b9));
   const overlay = isPremium ? overlayPremium() : (OVERLAY[fac] || overlayBlood)();
+  // 由卡牌 ID 决定的轻微姿态倾斜，使同 archetype 的卡也不会完全雷同。
+  const posR = rng(s ^ 0x51ed270b);
+  const tilt = (-4 + posR() * 8).toFixed(2);
+  const variant = variantOverlay(card, pal, id);
 
   return `<svg class="cardart${isPremium ? ' premium-art' : ''}" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     ${bodyDefs(id, pal)}
     ${scene}
     ${ground(pal)}
-    ${body}
+    <g transform="rotate(${tilt} 50 55)">${body}</g>
+    ${variant}
     ${overlay}
     ${vignette(id)}
   </svg>`;
