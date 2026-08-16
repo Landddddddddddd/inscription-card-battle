@@ -84,7 +84,8 @@ function doLogin() {
   else { App.profile = createProfile(name); }
   App.aiLevel = App.profile.aiLevel || 'normal';
   App.aiSpeed = App.profile.aiSpeed || 'normal';
-  App.turnTime = (typeof App.profile.turnTime === 'number') ? App.profile.turnTime : 20;
+  // 每回合时限硬编码为 20 秒（不可更改），不再从 profile 读取旧值。
+  App.turnTime = 20;
   applyLayout();
   // Restore the last-used deck from the profile (persisted across sessions).
   if (App.profile.deck && Array.isArray(App.profile.deck.cards) && App.profile.deck.cards.length) {
@@ -133,7 +134,7 @@ function toMenu() {
   applyLayout();
   document.querySelectorAll('#aiDiff .dbtn').forEach((b) => b.classList.toggle('on', b.dataset.diff === App.aiLevel));
   document.querySelectorAll('#aiSpeed .dbtn').forEach((b) => b.classList.toggle('on', b.dataset.speed === App.aiSpeed));
-  document.querySelectorAll('#turnTimeBox .dbtn').forEach((b) => b.classList.toggle('on', Number(b.dataset.tt) === App.turnTime));
+  // 每回合时限为静态固定 20 秒，不再同步 .dbtn 状态。
   applyEnvMode();
   probeServerStatus();
   show('menu');
@@ -1060,14 +1061,7 @@ $('menu').addEventListener('click', (e) => {
     playSfx('click');
     return;
   }
-  const tt = e.target.closest('[data-tt]');
-  if (tt) {
-    App.turnTime = Number(tt.dataset.tt);
-    if (App.profile) { App.profile.turnTime = App.turnTime; saveProfile(App.profile); }
-    document.querySelectorAll('#turnTimeBox .dbtn').forEach((b) => b.classList.toggle('on', Number(b.dataset.tt) === App.turnTime));
-    playSfx('click');
-    return;
-  }
+  // 每回合时限已硬编码为 20 秒（不可更改），不再暴露 data-tt 选项按钮。
   const btn = e.target.closest('[data-act]'); if (!btn) return;
   const a = btn.dataset.act;
   if (a === 'sound') { toggleSound(); return; }

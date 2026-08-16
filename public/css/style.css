@@ -319,6 +319,26 @@ html, body {
 .builder-count { color: var(--text-dim); font-size: 14px; }
 .builder-count .ok { color: var(--blue); } .builder-count .bad { color: var(--red); }
 
+/* ---------------- 菜单设置行：AI 难度 / 人机速度 ---------------- */
+.ai-diff { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 6px 12px; }
+.ai-diff-label { font-size: 14px; color: var(--text-dim); letter-spacing: 1px; padding: 0 6px; }
+.ai-diff-static { display: flex; align-items: center; justify-content: center; padding: 6px 12px; }
+.dbtn {
+  font-family: var(--ui); font-size: 14px; letter-spacing: 1px;
+  background: var(--wood2); color: var(--text);
+  border: 1px solid var(--line2); border-radius: 8px;
+  padding: 6px 14px; cursor: pointer;
+  transition: .12s ease;
+  box-shadow: 0 2px 0 rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.dbtn:hover { border-color: var(--gold-dim); transform: translateY(-1px); }
+.dbtn:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,.5); }
+.dbtn.on {
+  background: linear-gradient(180deg, #e8c05a, var(--gold-dim));
+  color: #14100a; border-color: var(--gold); font-weight: 700;
+  box-shadow: 0 0 12px rgba(224,176,58,.45), inset 0 1px 0 rgba(255,255,255,.4);
+}
+
 /* ---------------- 多套卡组管理条 ---------------- */
 .deck-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; padding: 8px 12px; background: rgba(255,255,255,.04); border: 1px solid var(--line2, #2a221a); border-radius: 10px; }
 .deck-bar-label { color: var(--gold, #e0b03a); font-size: 14px; font-weight: 600; white-space: nowrap; }
