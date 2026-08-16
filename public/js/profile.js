@@ -42,6 +42,18 @@ function normalize(p) {
   } else {
     p.deck = null;
   }
+
+  // 多套已保存卡组（命名存储，可在组卡界面读取/改名/删除）。
+  if (!Array.isArray(p.decks)) {
+    // 迁移：旧版只有「最后使用卡组」，把它作为首条已保存卡组。
+    p.decks = (p.deck && Array.isArray(p.deck.cards) && p.deck.cards.length)
+      ? [{ id: genDeckId(), name: '默认卡组', res: p.deck.res || 'blood', cards: p.deck.cards.slice() }]
+      : [];
+  } else {
+    p.decks = p.decks
+      .filter((d) => d && Array.isArray(d.cards) && d.cards.length)
+      .map((d) => ({ id: d.id || genDeckId(), name: (d.name || '卡组').slice(0, 12), res: d.res || 'blood', cards: d.cards.slice() }));
+  }
   return p;
 }
 
@@ -81,6 +93,49 @@ export function saveDeck(p, deck) {
   p.deck = (deck && Array.isArray(deck.cards) && deck.cards.length)
     ? { res: deck.res || 'blood', cards: deck.cards.slice() }
     : null;
+  saveProfile(p);
+}
+
+// ---------- 多套已保存卡组（命名存储） ----------
+function genDeckId() { return 'did_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+// 返回全部已保存卡组（数组，每项 { id, name, res, cards }）。
+export function getDecks(p) { return Array.isArray(p.decks) ? p.decks : []; }
+
+// 按 id 查找一条已保存卡组。
+export function findDeck(p, id) { return getDecks(p).find((d) => d.id === id) || null; }
+
+// 按内容（阵营 + 卡牌多重集）查找已有卡组，避免重复保存同一套牌。
+export function matchDeck(p, res, cards) {
+  const key = (arr) => arr.slice().sort().join(',');
+  const k = key(cards || []);
+  return getDecks(p).find((d) => d.res === res && key(d.cards) === k) || null;
+}
+
+// 保存/更新一条卡组。传 id 则覆盖该条，否则新建。返回保存后的卡组对象。
+export function saveCustomDeck(p, deck, { id, name } = {}) {
+  const decks = getDecks(p);
+  const res = deck.res || 'blood';
+  const cards = (deck.cards || []).slice();
+  const nm = (name || '').trim() || '卡组';
+  let target = id ? decks.find((d) => d.id === id) : null;
+  if (target) {
+    target.name = nm.slice(0, 12);
+    target.res = res;
+    target.cards = cards;
+  } else {
+    target = { id: genDeckId(), name: nm.slice(0, 12), res, cards };
+    decks.push(target);
+  }
+  p.decks = decks;
+  saveProfile(p);
+  return target;
+}
+
+// 删除一条已保存卡组。
+export function deleteDeck(p, id) {
+  if (!id) return;
+  p.decks = getDecks(p).filter((d) => d.id !== id);
   saveProfile(p);
 }
 

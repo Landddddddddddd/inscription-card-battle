@@ -6,7 +6,7 @@ import * as UI from './ui.js';
 import { canPlayCard, renderTutSetup, TUT_MODULES, renderHowTo, changelogHTML } from './ui.js';
 import { NetClient } from './network.js';
 import { OnlineNet } from './net.js';
-import { loadProfile, createProfile, saveProfile, drawPack, drawGemPack, buyCardDirect, recharge, exchangeGemsForCoins, recordResult, recordRanked, saveDeck, AVATARS, randomAvatar } from './profile.js';
+import { loadProfile, createProfile, saveProfile, drawPack, drawGemPack, buyCardDirect, recharge, exchangeGemsForCoins, recordResult, recordRanked, saveDeck, getDecks, findDeck, matchDeck, saveCustomDeck, deleteDeck, AVATARS, randomAvatar } from './profile.js';
 import { unlockAudio, setMuted, isMuted, loadMute, playSfx } from './audio.js';
 
 const App = {
@@ -707,7 +707,7 @@ function genRoom() {
 
 // ---------- Deck builder (unlocked-only) ----------
 async function openBuilder(mode) {
-  App.builder = { mode, faction: 'blood', counts: {} };
+  App.builder = { mode, faction: 'blood', counts: {}, deckId: null, deckName: '' };
   App.joinRules = null;
   App.onlineJoinInfo = null;
   App._pendingRankedCode = null;
@@ -729,6 +729,9 @@ async function openBuilder(mode) {
     for (const id of FACTIONS[last.res].cards) App.builder.counts[id] = 0;
     for (const id of last.cards) if (unlocked.has(id)) App.builder.counts[id] = Math.min(maxCopies(id), (App.builder.counts[id] || 0) + 1);
     App.builder.faction = last.res;
+    // 若「最后使用卡组」与某条已保存卡组内容一致，则高亮该条（便于直接覆盖保存）。
+    const m = matchDeck(App.profile, last.res, last.cards);
+    if (m) { App.builder.deckId = m.id; App.builder.deckName = m.name; }
   }
 
   if (mode === 'single' || mode === 'host' || mode === 'onlineHost' || (mode === 'hotseat' && App._hotseatStep === 'A')) {
@@ -772,7 +775,7 @@ function renderBuilder() {
   const f = FACTIONS[App.builder.faction];
   const total = f.cards.reduce((s, id) => s + (App.builder.counts[id] || 0), 0);
   const who = App.builder.mode === 'hotseat' ? (App._hotseatStep === 'B' ? '玩家2' : '玩家1') : null;
-  UI.renderDeckBuilder({ faction: f, counts: App.builder.counts, min: CONFIG.DECK_MIN, max: CONFIG.DECK_MAX, total, unlocked: unlockedSet(), who });
+  UI.renderDeckBuilder({ faction: f, counts: App.builder.counts, min: CONFIG.DECK_MIN, max: CONFIG.DECK_MAX, total, unlocked: unlockedSet(), who, decks: getDecks(App.profile), currentDeckId: App.builder.deckId, currentDeckName: App.builder.deckName });
   // Online guest may not confirm until the host's rules have arrived.
   const confirm = document.querySelector('[data-bact="builderConfirm"]');
   if (confirm && (App.builder.mode === 'onlineJoin' || App.builder.mode === 'rankedJoin') && !App.onlineJoinInfo) confirm.disabled = true;
@@ -823,6 +826,16 @@ function builderConfirm() {
   App.deck = { res: f.res, cards };
   if (App.profile) {
     saveDeck(App.profile, App.deck);
+    // 把本次使用的卡组也存入「我的卡组」，确保组好的卡组被保留（覆盖同名/同内容，或新建）。
+    if (App.builder.deckId) {
+      const ex = findDeck(App.profile, App.builder.deckId);
+      if (ex) saveCustomDeck(App.profile, { res: f.res, cards }, { id: App.builder.deckId, name: ex.name });
+      else saveCustomDeck(App.profile, { res: f.res, cards }, { name: App.builder.deckName || ('卡组 ' + (getDecks(App.profile).length + 1)) });
+    } else {
+      const m = matchDeck(App.profile, f.res, cards);
+      if (m) saveCustomDeck(App.profile, { res: f.res, cards }, { id: m.id, name: m.name });
+      else saveCustomDeck(App.profile, { res: f.res, cards }, { name: App.builder.deckName || ('卡组 ' + (getDecks(App.profile).length + 1)) });
+    }
     App.profile.rules = { ...App.rules };
     saveProfile(App.profile);
   }
@@ -852,6 +865,79 @@ function builderConfirm() {
   }
 }
 function builderCancel() { App.builder = null; toMenu(); }
+
+// ---------- 多套卡组管理（localStorage 持久化） ----------
+// 当前组卡界面所选阵营 + 各卡数量，折算成 cards 数组。
+function builderCurrentCards() {
+  const f = FACTIONS[App.builder.faction];
+  const unlocked = unlockedSet();
+  const cards = [];
+  for (const id of f.cards) {
+    if (!unlocked.has(id)) continue;
+    const n = Math.min(maxCopies(id), App.builder.counts[id] || 0);
+    for (let i = 0; i < n; i++) cards.push(id);
+  }
+  return { res: f.res, cards };
+}
+// 当前组卡界面受规则约束的单一阵营（'all' 表示不限）。
+function currentBuilderScope() {
+  if (App.builder.mode === 'join') return App.joinRules ? App.joinRules.deckScope : 'all';
+  if (App.builder.mode === 'onlineJoin' || App.builder.mode === 'rankedJoin') return App.onlineJoinInfo ? App.onlineJoinInfo.rules.deckScope : 'all';
+  return App.rules.deckScope;
+}
+function deckMsg(txt) {
+  const m = $('deckMsg');
+  if (!m) return;
+  m.textContent = txt;
+  clearTimeout(App._deckMsgT);
+  App._deckMsgT = setTimeout(() => { m.textContent = ''; }, 2500);
+}
+function deckLoadSelected(id) {
+  if (!id) { App.builder.deckId = null; App.builder.deckName = ''; renderBuilder(); return; }
+  const d = findDeck(App.profile, id);
+  if (!d) { App.builder.deckId = null; renderBuilder(); return; }
+  const scope = currentBuilderScope();
+  if (scope !== 'all' && d.res !== scope) { alert(`当前规则限定「${SCOPE_NAMES[scope]}」，无法载入「${FACTIONS[d.res].name}」卡组`); renderBuilder(); return; }
+  App.builder.faction = d.res;
+  App.builder.counts = {};
+  for (const cid of d.cards) if (unlockedSet().has(cid)) App.builder.counts[cid] = Math.min(maxCopies(cid), (App.builder.counts[cid] || 0) + 1);
+  App.builder.deckId = d.id;
+  App.builder.deckName = d.name;
+  renderBuilder();
+}
+function deckSave() {
+  const { res, cards } = builderCurrentCards();
+  if (cards.length < CONFIG.DECK_MIN) { alert(`卡组数量需在 ${CONFIG.DECK_MIN} ~ ${CONFIG.DECK_MAX} 之间`); return; }
+  const name = ($('deckName').value || '').trim();
+  let saved;
+  if (App.builder.deckId && findDeck(App.profile, App.builder.deckId)) {
+    saved = saveCustomDeck(App.profile, { res, cards }, { id: App.builder.deckId, name: name || findDeck(App.profile, App.builder.deckId).name });
+  } else {
+    saved = saveCustomDeck(App.profile, { res, cards }, { name: name || ('卡组 ' + (getDecks(App.profile).length + 1)) });
+  }
+  App.builder.deckId = saved.id; App.builder.deckName = saved.name;
+  deckMsg('已保存：' + saved.name);
+  renderBuilder();
+}
+function deckSaveAs() {
+  const { res, cards } = builderCurrentCards();
+  if (cards.length < CONFIG.DECK_MIN) { alert(`卡组数量需在 ${CONFIG.DECK_MIN} ~ ${CONFIG.DECK_MAX} 之间`); return; }
+  const name = ($('deckName').value || '').trim() || ('卡组 ' + (getDecks(App.profile).length + 1));
+  const saved = saveCustomDeck(App.profile, { res, cards }, { name });
+  App.builder.deckId = saved.id; App.builder.deckName = saved.name;
+  deckMsg('已另存为：' + saved.name);
+  renderBuilder();
+}
+function deckDelete() {
+  if (!App.builder.deckId) { deckMsg('当前是「新建卡组」，无需删除'); return; }
+  const d = findDeck(App.profile, App.builder.deckId);
+  if (!d) { App.builder.deckId = null; renderBuilder(); return; }
+  if (!confirm('确定删除卡组「' + d.name + '」？此操作不可撤销。')) return;
+  deleteDeck(App.profile, App.builder.deckId);
+  App.builder.deckId = null; App.builder.deckName = '';
+  deckMsg('已删除：' + d.name);
+  renderBuilder();
+}
 
 // ---------- Collection (图鉴 + 抽卡分支) ----------
 function openCollection() { App.coll.faction = 'blood'; App.coll.shopTab = 'packs'; showCollSub('grid'); }
@@ -1077,10 +1163,15 @@ $('deckBuilder').addEventListener('click', (e) => {
   const act = e.target.closest('[data-bact]'); if (!act) return;
   if (act.dataset.bact === 'builderCancel') builderCancel();
   else if (act.dataset.bact === 'builderConfirm') builderConfirm();
+  else if (act.dataset.bact === 'deckSave') deckSave();
+  else if (act.dataset.bact === 'deckSaveAs') deckSaveAs();
+  else if (act.dataset.bact === 'deckDelete') deckDelete();
 });
 
 // 胜利目标自由输入（累计分数模式可设很高的自定义数值）。监听 change 而非 input，避免输入时被重渲染夺走焦点。
 $('deckBuilder').addEventListener('change', (e) => {
+  const sel = e.target.closest('[data-bact="deckSelect"]');
+  if (sel) { deckLoadSelected(sel.value); return; }
   const rin = e.target.closest('[data-rinput="winScale"]');
   if (!rin) return;
   let v = Math.round(Number(rin.value));

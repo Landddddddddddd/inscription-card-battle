@@ -13,6 +13,7 @@ function portraitHTML(cardOrId, glyph) {
 }
 
 function el(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 // ---- animation diff state (survives innerHTML rebuilds by comparing iids) ----
 const _prev = {
@@ -615,7 +616,16 @@ function miniCostHTML(c) {
 }
 
 export function renderDeckBuilder(ctx) {
-  const { faction, counts, min, max, total, unlocked, who } = ctx;
+  const { faction, counts, min, max, total, unlocked, who, decks, currentDeckId, currentDeckName } = ctx;
+  // 渲染「我的卡组」下拉
+  const sel = el('deckSelect');
+  if (sel) {
+    sel.innerHTML = `<option value="">＋ 新建 / 未保存</option>` + (decks || []).map((d) =>
+      `<option value="${d.id}" ${d.id === currentDeckId ? 'selected' : ''}>${esc(d.name)}（${FACTIONS[d.res] ? FACTIONS[d.res].name : d.res} · ${d.cards.length}）</option>`
+    ).join('');
+  }
+  const nm = el('deckName');
+  if (nm) nm.value = currentDeckName || '';
   el('builderFactionName').textContent = (who ? who + ' · ' : '') + faction.name;
   el('builderDesc').textContent = faction.desc;
   el('factionTabs').innerHTML = FACTION_ORDER.map((k) => {
