@@ -298,6 +298,8 @@ export function renderGame(ctx) {
   if (state.over) turnTxt = `对局结束`;
   else if (!isMyTurn) turnTxt = `等待 ${cur.name}…`;
   el('turnLabel').textContent = turnTxt;
+  // 轮到玩家时给回合标签加呼吸高亮（"该你出牌了"）
+  el('turnLabel').classList.toggle('my-turn', isMyTurn && !state.over);
 
   // ---- Scale ----
   const meAdv = state.weights[me] - state.weights[enemy];
@@ -378,6 +380,8 @@ export function renderGame(ctx) {
   // don't replay the same damage numbers.
   const showCombat = (state.combatSeq || 0) !== (_prev.combatSeq || 0);
   const fxEv = { hits: [], summons: [], deaths: [], combat: showCombat ? (state.lastCombat || []) : [], weightDelta: { me: 0, enemy: 0 } };
+  // 非战斗的生命变化（regen / 各类加血）：收集起来，渲染后飘绿色 +N♥。
+  const hpUps = [];
   // ---- Board (vertical stack): enemy army on TOP, yours on BOTTOM. ----
   //      Each army is a horizontal row of lanes; the field stacks vertically. ----
   const laneRow = (side, isMine) => {
@@ -392,6 +396,8 @@ export function renderGame(ctx) {
         const wasHp = _prev.hp[c.iid];
         const isHit = wasHp !== undefined && c.hp < wasHp;
         if (isNew) fxEv.summons.push({ side, lane: l });
+        // 非战斗加血（regen 等）：旧 HP 已知且本回合变高 → 飘绿字。
+        if (!isNew && wasHp !== undefined && c.hp > wasHp) hpUps.push({ side, lane: l, delta: c.hp - wasHp });
         const isSacMode = isMine && needSac && isMyTurn && !state.over;
         const sacChosen = isSacMode && (ui.sacList || []).includes(c.iid);
         inner = cardHTML(c, {
@@ -420,6 +426,12 @@ export function renderGame(ctx) {
     <div class="mid-divider"></div>
     <div class="row-label"><span class="pl-avatar">${state.players[me].avatar || '🜁'}</span>▼ 你的场地（${state.players[me].name}）</div>
     ${laneRow(me, true)}`;
+
+  // ---- 非战斗加血飘字（regen 等）：DOM 已就位，直接定位每列中心 ----
+  for (const u of hpUps) {
+    const ctr = cellCenter(u.side, u.lane);
+    if (ctr) floatText(ctr.x, ctr.y - 6, '+' + u.delta + '♥', '#8ad98a');
+  }
 
   // ---- deaths: iids that were on board and are gone now ----
   const nowSet = { A: new Set(state.board.A.filter(Boolean).map((c) => c.iid)), B: new Set(state.board.B.filter(Boolean).map((c) => c.iid)) };

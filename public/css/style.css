@@ -369,8 +369,9 @@ html, body {
 
 /* ---------------- CARD ---------------- */
 .card { width: 104px; height: 144px; background: linear-gradient(180deg, var(--wood3), var(--wood)); border: 2px solid #000; border-radius: 8px;
-  box-shadow: 0 3px 0 rgba(0,0,0,.6); display: flex; flex-direction: column; position: relative; padding: 4px; cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0,0,0,.6); display: flex; flex-direction: column; position: relative; padding: 4px; cursor: default;
   transition: transform .1s ease-out, box-shadow .12s; }
+.card.in-hand, .card.sac-target { cursor: pointer; }
 .card .portrait { height: 58px; border: 2px solid #000; border-radius: 5px; margin-bottom: 2px; position: relative; overflow: hidden; background: #0c0a08; }
 .card .portrait .glyph { font-size: 34px; color: #fff; text-shadow: 0 2px 3px #000, 0 0 8px rgba(0,0,0,.6); z-index: 1; }
 .card .portrait::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.22), transparent 42%, transparent 70%, rgba(0,0,0,.25)); pointer-events: none; z-index: 1; }
@@ -1023,6 +1024,17 @@ html, body {
 .scale-needle { animation: needlePulse 2.4s ease-in-out infinite; }
 @keyframes needlePulse { 0%,100% { box-shadow: 0 0 10px var(--gold); } 50% { box-shadow: 0 0 18px var(--gold); } }
 
+/* 轮到玩家时：回合标签金光呼吸，强化"该你出牌了"的提示感 */
+.turn-label.my-turn { color: var(--gold); font-weight: 700; text-shadow: 0 0 12px rgba(224,176,58,.5); animation: turnPulse 2s ease-in-out infinite; }
+@keyframes turnPulse {
+  0%,100% { opacity: .82; text-shadow: 0 0 10px rgba(224,176,58,.4); }
+  50%     { opacity: 1;   text-shadow: 0 0 18px rgba(224,176,58,.85); }
+}
+
+/* 手牌入场：仅"新抽到"的牌播 appear（由 ui.js 通过 .appear class 控制），
+   不再给所有 .hand .card 加全局 animation —— 否则每次选牌/切回合重建手牌
+   都会让整手牌反复重弹入场动画，观感非常廉价。 */
+
 /* 资源条：本回合资源变化时轻微高亮（配合 ui.js resflash） */
 .res.bump { animation: resflash .35s ease-out; }
 
@@ -1050,4 +1062,5 @@ html, body {
 }
 .kb-hint b { color: var(--gold); font-weight: 700; }
 
-.hand .card { animation: appear .28s ease-out backwards; }
+/* 注：手牌入场动画改由 ui.js 对"新抽到的牌"单独加 .appear class 触发，
+   此处不再写全局 .hand .card 规则，避免每次重建手牌重弹入场。 */
