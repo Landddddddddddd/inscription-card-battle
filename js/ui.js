@@ -201,7 +201,21 @@ function runGameFX(ev, me, state) {
   // including LETHAL hits where the card is already gone) and every scale
   // (airborne / unblocked) attack shows a floating number. This replaces the
   // old HP-diff detection, which silently missed deaths and scale strikes.
-  if (ev.combat && ev.combat.length) { boardShake(); playSfx('attack'); }
+  if (ev.combat && ev.combat.length) {
+    const realHit = ev.combat.some((e) => e.scale || e.dmg != null || e.blocked || e.quill || e.dbl || e.death);
+    if (realHit) { boardShake(); playSfx('attack'); }
+  }
+  // 骸骨掉落特效：己方单位「以任何方式死亡」掉骸骨时，在死亡处迸发骨片并飘「💀 +N🦴」。
+  for (const e of (ev.combat || [])) {
+    if (!e.boneGain) continue;
+    const c = cellCenter(e.side, e.lane);
+    if (c) {
+      burst(c.x, c.y, { count: 12, color: ['#efe9d6', '#cfc7ac', '#fff7e0'], square: true, size: 7, spread: 46, grav: 30, life: 760, glow: 4 });
+      floatText(c.x, c.y - 12, '💀 +' + (e.amount || 1) + '🦴', '#efe9d6');
+      ring(c.x, c.y, '#cfc7ac');
+    }
+    playSfx('bone');
+  }
   for (const e of (ev.combat || [])) {
     if (e.scale) {
       // airborne / unblocked attack landed on the scale, not a creature.
@@ -389,11 +403,15 @@ export function renderGame(ctx) {
       return `<span class="gpip lg ${n ? 'on' : ''}" style="background:${GEMS[g].color}">${n > 1 ? n : ''}</span>`;
     }).join('');
     resHTML = `<div class="res mox"><span class="dot" style="background:#9a4ad0"></span>魔石 ${pips}</div>`;
+  } else if (pl.res === 'sand') {
+    const secs = Math.floor(pl.seconds || 0);
+    resHTML = `<div class="res sand"><span class="dot"></span>剩余秒数 <span class="val">${secs}</span><span class="cap">s</span></div>`;
   }
   const curRes = {};
   if (pl.res === 'bone') curRes.bone = pl.bones;
   else if (pl.res === 'energy') curRes.energy = pl.energy;
   else if (pl.res === 'mox') curRes.gemTotal = Object.values(counts).reduce((a, b) => a + b, 0);
+  else if (pl.res === 'sand') curRes.seconds = Math.floor(pl.seconds || 0);
   const prevRes = _prev.res[me] || {};
   let resFlash = false, resGain = null, gemColor = null;
   for (const k in curRes) {
@@ -453,12 +471,16 @@ export function renderGame(ctx) {
         if (!isNew && wasHp !== undefined && c.hp > wasHp) hpUps.push({ side, lane: l, delta: c.hp - wasHp });
         const isSacMode = isMine && needSac && isMyTurn && !state.over;
         const sacChosen = isSacMode && (ui.sacList || []).includes(c.iid);
+        // 刚被献祭的格子（已选为祭品且血肉已凑够）→ 变成「放置新城」的目标列：
+        // 可把刚打出的血肉生物直接放在这一列（与其它阵营统一：放在刚腾出的格子）。
+        const sacPlace = isSacMode && sacChosen && sacReady;
         inner = cardHTML(c, {
           inHand: false, side, lane: l, boardRef: state,
-          sacTarget: isSacMode, sacChosen,
+          sacTarget: isSacMode && !sacPlace, sacChosen: sacChosen && !sacPlace,
           anim: isNew ? 'appear' : (isHit ? 'hit' : ''),
-          dataAttr: isSacMode ? `data-saccard="${c.iid}"` : '',
+          dataAttr: sacPlace ? `data-playlane="${l}"` : (isSacMode ? `data-saccard="${c.iid}"` : ''),
         });
+        if (sacPlace) cls += ' playable sac-place';
         if (ui.aiLastIid === c.iid) cls += ' ai-just';
       } else if (isMine && isMyTurn && canPlaySel && !state.over) {
         cls += ' playable';
@@ -1066,7 +1088,7 @@ export function howToHTML() {
     return `<div class="ht-faction" style="--fc:${f.color}">
       <div class="ht-fh"><span class="ht-dot" style="background:${f.color}"></span>${f.name}</div>
       <div class="ht-fd">${f.desc}</div>
-      <div class="ht-fres">资源：${k === 'blood' ? '每回合 1 点血肉（不攒、重置）+ 献祭场上单位支付更高费' : k === 'bone' ? '生物死亡/每回合积累骸骨' : k === 'energy' ? '每回合回能（封顶 6，整回满）' : '场上魔石生物提供魔石（不消耗，但死亡即失）'}</div>
+      <div class="ht-fres">资源：${k === 'blood' ? '每回合 1 点血肉（不攒、重置）+ 献祭场上单位支付更高费' : k === 'bone' ? '生物死亡掉落骸骨（每只 +1）＋每回合 +1 墓地滴流' : k === 'energy' ? '每回合回能（封顶 6，整回满）' : '场上魔石生物提供魔石（不消耗，但死亡即失）'}</div>
     </div>`;
   };
   const sigRows = Object.keys(SIGILS).map((s) =>

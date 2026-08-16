@@ -78,6 +78,7 @@ export const SFX = {
   play()     { tone(360, 0.12, { type: 'triangle', slideTo: 540 }); },
   summon()   { tone(300, 0.16, { type: 'sine', slideTo: 620, gain: 0.4 }); },
   sacrifice(){ noise(0.22, { filter: 'lowpass', freq: 500, gain: 0.4 }); tone(140, 0.2, { type: 'sawtooth', slideTo: 70, gain: 0.3 }); },
+  bone()     { noise(0.1, { filter: 'bandpass', freq: 1100, gain: 0.32 }); tone(200, 0.12, { type: 'square', slideTo: 330, gain: 0.22 }); },
   attack()   { tone(220, 0.09, { type: 'sawtooth', slideTo: 150 }); noise(0.08, { filter: 'bandpass', freq: 1200, gain: 0.25 }); },
   hit()      { noise(0.14, { filter: 'highpass', freq: 600, gain: 0.4 }); tone(180, 0.1, { type: 'square', slideTo: 90, gain: 0.25 }); },
   scale()    { tone(660, 0.14, { type: 'sine', slideTo: 880, gain: 0.35 }); },

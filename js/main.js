@@ -172,14 +172,10 @@ function applyLocal(action) {
   if (!r.ok) { App.status = r.reason; render(); return; }
   if (action.type === 'play') {
     const playedCard = App.state.players[App.me].hand.find((c) => c.iid === action.iid);
-    const isSand = playedCard && playedCard.costType === 'sand';
     if (action.sacrifices && action.sacrifices.length) { playSfx('sacrifice'); UI.markSacrifice(action.sacrifices); }
     else playSfx('play');
-    // 时砂：从回合倒计时扣减对应「秒」数（剩余秒数 = 资源，打出即消耗）。
-    if (isSand && App.timer.id && playedCard) {
-      App.timer.remaining = Math.max(0, App.timer.remaining - playedCard.cost);
-      if (App.state.players[App.me]) App.state.players[App.me].seconds = App.timer.remaining;
-    }
+    // 时砂：剩余秒数由引擎统一管理（playCard 内扣减 pl.seconds，beginTurn 按预算重置），
+    // 不再与真实回合倒计时耦合，避免 UI 中时砂预算被 20s 计时器覆盖。
   }
   App.ui.selectedIid = null; App.ui.sacList = []; App.status = '';
   render();
@@ -301,17 +297,10 @@ function maybeStartTimer() {
   if (App.timer.key === key && App.timer.id) return;           // 本回合计时已在跑
   startTurnTimer(key);
 }
-// 时砂：顶栏的「⏱」显示「剩余秒能」（资源预算），而非真实倒计时；资源紧张时变红提醒。
+// 顶栏「⏱」统一显示真实回合倒计时（固定 20 秒，所有阵营一致，含时砂）。
+// 时砂的「剩余秒数」资源单独显示在顶部资源条 #resources（与其它阵营的召唤条件同位置）。
 function updateTimerDisplay() {
   const elT = $('turnTimer'); if (!elT) return;
-  const st = App.state;
-  const sand = !!st && st.players[st.currentPlayer] && st.players[st.currentPlayer].res === 'sand';
-  if (sand) {
-    const secs = Math.floor(st.players[st.currentPlayer].seconds || 0);
-    elT.textContent = '⏱ ' + secs + 's';
-    elT.classList.toggle('urgent', secs <= 3);
-    return;
-  }
   const r = Math.max(0, App.timer.remaining);
   elT.textContent = '⏱ ' + r + 's';
   elT.classList.toggle('urgent', r <= 5);
@@ -372,7 +361,7 @@ function tutNext() { if (!App.tut) return; App.tut.step++; showTutStep(); }
 
 // Short description of each faction's resource, used inside tutorial text.
 function resDescShort(fac) {
-  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡/每回合积累骸骨', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「剩余秒数」召唤（不可透支：剩余不足打不出；每回合开始按秒能预算重置，首回合 0、每 2 回合 +1、封顶 5）' }[fac] || '';
+  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡掉落骸骨（每只 +1）＋每回合 +1 墓地滴流', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「剩余秒数」召唤（不可透支：剩余不足打不出；每回合开始按秒能预算重置，首回合 0、每 2 回合 +1、封顶 5）' }[fac] || '';
 }
 function sigilsIntro() {
   return '【印记特性】卡牌可能携带「印记」，常见有：\n'
@@ -1271,8 +1260,15 @@ function laneKey(lane) {
   const unit = App.state.board[me][lane];
   const sel = App.state.players[me].hand.find((c) => c.iid === App.ui.selectedIid);
   if (unit) {
-    if (sel && sel.costType === 'blood' && sel.cost > 0) toggleSac(unit.iid);
-    else { App.status = '该列已有单位，请选空列出牌'; render(); }
+    if (sel && sel.costType === 'blood' && sel.cost > 0) {
+      // 已选为祭品且血肉已凑够 → 在该（刚被献祭的）列放上新单位；否则切换献祭。
+      const inSac = (App.ui.sacList || []).includes(unit.iid);
+      const pool = App.state.players[me].blood || 0;
+      let have = 0; for (const s of (App.ui.sacList || [])) { const u = App.state.board[me].find((c) => c && c.iid === s); if (u) have += u.bloodValue; }
+      const ready = (pool + have) >= sel.cost;
+      if (inSac && ready) playOnLane(lane);
+      else toggleSac(unit.iid);
+    } else { App.status = '该列已有单位，请选空列出牌'; render(); }
   } else {
     playOnLane(lane);
   }
