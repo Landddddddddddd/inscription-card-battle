@@ -369,6 +369,16 @@ export const CARDS = {
   chronolord:      { name: '时主',   atk: 5, hp: 4, cost: 4, costType: 'sand', sigils: ['undying','regen'], bloodValue: 1, color: '#d0b060', glyph: '主' },
   eternal_sand:    { name: '永恒之砂', atk: 5, hp: 6, cost: 6, costType: 'sand', sigils: ['regen','undying'], bloodValue: 1, color: '#ffd24a', glyph: '永', premium: true },
 
+  // —— 机械 / 钟表 / 指针 主题卡（v0.7.0 新增，替换 8 张通用砂生物填充卡）——
+  mainspring_mouse: { name: '发条鼠',   atk: 2, hp: 1, cost: 1, costType: 'sand', sigils: ['loose_tail'],    bloodValue: 1, color: '#b08d57', glyph: '鼠' },
+  gear_fly:        { name: '齿轮蝇',   atk: 1, hp: 2, cost: 1, costType: 'sand', sigils: ['airborne'],       bloodValue: 1, color: '#9a8a4a', glyph: '蝇' },
+  escapement:      { name: '擒纵轮',   atk: 2, hp: 2, cost: 1, costType: 'sand', sigils: [],                 bloodValue: 1, color: '#a8985a', glyph: '擒' },
+  hairspring:      { name: '游丝',     atk: 1, hp: 3, cost: 1, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c0c0d0', glyph: '丝' },
+  second_hand:     { name: '秒针',     atk: 2, hp: 1, cost: 1, costType: 'sand', sigils: ['double_strike'], bloodValue: 1, color: '#c9a24a', glyph: '秒' },
+  hour_hand:       { name: '时针',     atk: 2, hp: 3, cost: 1, costType: 'sand', sigils: ['armored'],        bloodValue: 1, color: '#b8a85a', glyph: '时' },
+  minute_hand:     { name: '分针',     atk: 3, hp: 3, cost: 2, costType: 'sand', sigils: ['sharp_quills'],   bloodValue: 1, color: '#c9a24a', glyph: '分' },
+  brass_automaton: { name: '黄铜傀儡', atk: 3, hp: 3, cost: 2, costType: 'sand', sigils: [],                 bloodValue: 1, color: '#b08d57', glyph: '铜' },
+
   // ===================== 神话卡（premium / mythic）=====================
   // 仅可通过魂晶（付费货币）获取：暗夜卡包极低概率掉落 或 直购商店高价购买。
   // 设计原则：比同费用普通卡略强（+1 stat 或多一个印记），但有明确弱点（脆皮/高费/多宝石需求）。
@@ -415,8 +425,8 @@ export const FACTIONS = {
   },
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
-    desc: '时间即是资源：每回合开始获得「秒能」预算（首回合 0，之后每 2 个己方回合 +1、封顶 5），卡牌以「秒」为费召唤，剩余不足则无法打出（不可透支，例如还剩 4 秒时打不出 5 秒的牌）。没有无偿经济、也没有额外成长，全靠这一回合的秒数铺场。主题：时钟、沙漏、流沙与时光生物。',
-    cards: ['sand_pebble','sand_lizard','chrono_fox','chrono_sparrow','time_wren','sand_ant','sand_cricket','time_moth','pendulum','chrono_twin','sand_swift','sand_ram','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord'],
+    desc: '时间即是资源：每回合开始获得「秒能」预算（首回合 0，之后每 2 个己方回合 +1、封顶 5），卡牌以「秒」为费召唤，剩余不足则无法打出（不可透支，例如还剩 4 秒时打不出 5 秒的牌）。没有无偿经济、也没有额外成长，全靠这一回合的秒数铺场。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
+    cards: ['sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton'],
   },
 };
 
@@ -558,6 +568,16 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.0',
+    date: '2026-08-16',
+    title: '时砂新增机械 / 钟表 / 指针主题卡（同数量替换填充卡，规模与平衡不变）',
+    items: [
+      '新增 8 张机械/钟表/指针风格时砂卡：发条鼠（断尾·2/1）、齿轮蝇（飞行·1/2）、擒纵轮（2/2）、游丝（回复·1/3）、秒针（连击·2/1）、时针（重甲·2/3）、分针（尖刺·3/3）、黄铜傀儡（3/3）。主题覆盖发条、齿轮、擒纵、游丝、时钟三针（时/分/秒）、黄铜傀儡。',
+      '采用「同数量替换」保持平衡：移除 8 张最通用的砂生物填充卡（时蜥/刻狐/刻雀/时鹡/砂蚁/砂蟀/时蛾/沙岩撞兽），新卡进默认牌组，牌库规模仍 22 张（23 张含 0 费砂砾×2），数值曲线与能量 1:1 镜像不变。',
+      '无头仿真五阵营（PER=500）：在替换后重新跑，spread 仍 ≤5（详见提交说明），时砂强度未因新印记组合失稳。',
+    ],
+  },
   {
     version: 'v0.6.9',
     date: '2026-08-16',
