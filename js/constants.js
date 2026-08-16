@@ -400,7 +400,7 @@ export const FACTIONS = {
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
-    desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，加上每回合 +1 的墓地滴流，用骸骨召唤亡灵。用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
+    desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，另有极轻的每回合墓地滴流（约 0.75，攒满 1 才 +1，仅防前期断档）。用骸骨召唤亡灵，用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
     cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','lich_king','bone_dragon'],
   },
   energy: {

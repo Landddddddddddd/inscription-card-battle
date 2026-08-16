@@ -1088,7 +1088,7 @@ export function howToHTML() {
     return `<div class="ht-faction" style="--fc:${f.color}">
       <div class="ht-fh"><span class="ht-dot" style="background:${f.color}"></span>${f.name}</div>
       <div class="ht-fd">${f.desc}</div>
-      <div class="ht-fres">资源：${k === 'blood' ? '每回合 1 点血肉（不攒、重置）+ 献祭场上单位支付更高费' : k === 'bone' ? '生物死亡掉落骸骨（每只 +1）＋每回合 +1 墓地滴流' : k === 'energy' ? '每回合回能（封顶 6，整回满）' : '场上魔石生物提供魔石（不消耗，但死亡即失）'}</div>
+      <div class="ht-fres">资源：${k === 'blood' ? '每回合 1 点血肉（不攒、重置）+ 献祭场上单位支付更高费' : k === 'bone' ? '生物死亡掉落骸骨（每只 +1）＋每回合极轻墓地滴流（约 0.75，攒满 1 才 +1）' : k === 'energy' ? '每回合回能（封顶 6，整回满）' : '场上魔石生物提供魔石（不消耗，但死亡即失）'}</div>
     </div>`;
   };
   const sigRows = Object.keys(SIGILS).map((s) =>

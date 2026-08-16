@@ -361,7 +361,7 @@ function tutNext() { if (!App.tut) return; App.tut.step++; showTutStep(); }
 
 // Short description of each faction's resource, used inside tutorial text.
 function resDescShort(fac) {
-  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡掉落骸骨（每只 +1）＋每回合 +1 墓地滴流', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「剩余秒数」召唤（不可透支：剩余不足打不出；每回合开始按秒能预算重置，首回合 0、每 2 回合 +1、封顶 5）' }[fac] || '';
+  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡掉落骸骨（每只 +1）＋每回合极轻墓地滴流（约 0.75，攒满 1 才 +1）', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「剩余秒数」召唤（不可透支：剩余不足打不出；每回合开始按秒能预算重置，首回合 0、每 2 回合 +1、封顶 5）' }[fac] || '';
 }
 function sigilsIntro() {
   return '【印记特性】卡牌可能携带「印记」，常见有：\n'
