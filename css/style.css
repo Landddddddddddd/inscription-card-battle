@@ -453,6 +453,31 @@ html, body {
 .peace-text { color: #cfe0f5; font-size: 13px; }
 .peace-bar .btn.small { padding: 6px 14px; }
 .log { height: 72px; overflow-y: auto; background: #080605; border-top: 1px solid var(--line); padding: 6px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.55; }
+
+/* ---------------- EMOTE ROW ---------------- */
+.emote-row { display: inline-flex; gap: 4px; align-items: center; padding: 2px 6px; background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 8px; }
+.emote-btn { width: 30px; height: 30px; padding: 0; font-size: 17px; line-height: 1; background: rgba(255,255,255,.05); border: 1px solid var(--line); border-radius: 6px; cursor: pointer; transition: transform .1s, background .15s; }
+.emote-btn:hover { background: rgba(255,255,255,.14); transform: translateY(-2px) scale(1.12); }
+.emote-btn:active { transform: scale(.94); }
+
+/* ---------------- EMOTE FLOAT (fx layer) ---------------- */
+.fx-emote { position: absolute; font-size: 42px; transform: translate(-50%, 0) scale(1); opacity: 1; pointer-events: none; transition: transform .9s ease-out, opacity .9s ease-out; filter: drop-shadow(0 2px 8px rgba(0,0,0,.6)); z-index: 40; will-change: transform, opacity; }
+
+/* ---------------- DECK BUILDER KEYBOARD FOCUS ---------------- */
+.bcard.kb-focus { outline: 2px solid var(--gold); outline-offset: 2px; box-shadow: 0 0 16px rgba(224,177,58,.5); }
+
+/* ---------------- KEYBIND SETTINGS ---------------- */
+.keybind-list { display: flex; flex-direction: column; gap: 18px; padding: 10px 4px; max-height: 64vh; overflow-y: auto; }
+.kb-group { background: rgba(255,255,255,.03); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.kb-group-title { font-size: 15px; color: var(--gold); font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+.kb-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,.06); }
+.kb-row:last-child { border-bottom: none; }
+.kb-label { color: var(--text); font-size: 13px; }
+.kb-btn { min-width: 92px; font-variant-numeric: tabular-nums; }
+.kb-btn.capturing { background: linear-gradient(180deg, #b23a3a, #8a2b2b); color: #fff; animation: kbPulse 1s infinite; }
+@keyframes kbPulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+.keybind-foot { display: flex; align-items: center; gap: 14px; padding: 12px 4px 2px; }
+.keybind-note { color: var(--text-dim); font-size: 12px; }
 .log .me { color: var(--text); }
 .log > div:last-child { color: var(--gold); }
 

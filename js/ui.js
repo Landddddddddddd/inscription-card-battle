@@ -72,6 +72,19 @@ function floatText(x, y, text, color) {
   setTimeout(() => t.remove(), 900);
 }
 
+// 表情浮层：在发送方一侧（A=下方 / B=上方）弹出一个上浮淡出的 emoji。
+export function showEmote(side, icon) {
+  const layer = fx(); if (!layer || !icon) return;
+  const d = document.createElement('div');
+  d.className = 'fx-emote';
+  d.textContent = icon;
+  d.style.left = '50%';
+  d.style.top = (side === 'B') ? '16%' : '80%';
+  layer.appendChild(d);
+  requestAnimationFrame(() => { d.style.transform = 'translate(-50%, -64px) scale(1.5)'; d.style.opacity = '0'; });
+  setTimeout(() => d.remove(), 1200);
+}
+
 function slash(x, y) {
   const s = document.createElement('div');
   s.className = 'fx-slash';
@@ -685,7 +698,7 @@ function miniCostHTML(c) {
 }
 
 export function renderDeckBuilder(ctx) {
-  const { faction, counts, min, max, total, unlocked, who, decks, currentDeckId, currentDeckName } = ctx;
+  const { faction, counts, min, max, total, unlocked, who, decks, currentDeckId, currentDeckName, focusIdx } = ctx;
   // 渲染「我的卡组」下拉
   const sel = el('deckSelect');
   if (sel) {
@@ -703,7 +716,7 @@ export function renderDeckBuilder(ctx) {
   }).join('');
   // 战斗前选卡组：只展示「已解锁」的卡牌；未解锁的卡仅在「我的收藏」中显示。
   const visibleCards = (unlocked ? faction.cards.filter((id) => unlocked.has(id)) : faction.cards);
-  el('builderGrid').innerHTML = visibleCards.map((id) => {
+  el('builderGrid').innerHTML = visibleCards.map((id, idx) => {
     const c = CARDS[id];
     const n = counts[id] || 0;
     // 有费卡（含需特定魔石才能召唤的魔石法术卡）每张最多 1 张；真正的 0 费免费卡（含魔石生物）可重复。
@@ -711,8 +724,9 @@ export function renderDeckBuilder(ctx) {
     const cap = capped ? 1 : CONFIG.ZERO_COST_MAX;
     const rk = rarityOf(id);
     const sig = (c.sigils || []).map((s) => `<span class="sig" title="${SIGILS[s] ? SIGILS[s].desc : ''}">${SIGILS[s] ? SIGILS[s].name : s}</span>`).join(' ');
+    const focusCls = (idx === focusIdx) ? ' kb-focus' : '';
     return `
-      <div class="bcard rar-${rk}" data-rarity="${rk}">
+      <div class="bcard rar-${rk}${focusCls}" data-rarity="${rk}" data-bidx="${idx}">
         ${portraitHTML(id)}
         <div class="cname">${c.name}</div>
         ${miniCostHTML(c)}

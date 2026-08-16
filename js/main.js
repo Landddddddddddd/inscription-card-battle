@@ -8,9 +8,10 @@ import { NetClient } from './network.js';
 import { OnlineNet } from './net.js';
 import { loadProfile, createProfile, saveProfile, drawPack, drawGemPack, buyCardDirect, recharge, exchangeGemsForCoins, recordResult, recordRanked, saveDeck, getDecks, findDeck, matchDeck, saveCustomDeck, deleteDeck, AVATARS, randomAvatar } from './profile.js';
 import { unlockAudio, setMuted, isMuted, loadMute, playSfx } from './audio.js';
+import * as KB from './keybinds.js';
 
 const App = {
-  mode: null, me: 'A', state: null, net: null, online: null,
+  mode: null, me: 'A', state: null, net: null, online: null, screen: 'login',
   ui: { selectedIid: null, sacList: [] },
   status: '', tut: null,
   builder: null, deck: null, deckA: null, deckB: null, _hotseatStep: 'A',
@@ -29,12 +30,21 @@ const App = {
 
 const AI_SPEED = { slow: 1300, normal: 800, fast: 420, instant: 0 }; // 人机出牌每步演示间隔（ms）
 const $ = (id) => document.getElementById(id);
-const SCREENS = ['login', 'menu', 'collection', 'deckBuilder', 'game', 'tutorialSetup', 'howto', 'changelog', 'ranked'];
+const SCREENS = ['login', 'menu', 'collection', 'deckBuilder', 'game', 'tutorialSetup', 'howto', 'changelog', 'ranked', 'keybindSettings'];
+
+// 六个表情（按键 Q/E/R/T/G/H，也可点表情按钮发送）。
+const EMOTES = [
+  { icon: '👍', name: '赞' }, { icon: '😂', name: '笑' }, { icon: '😡', name: '怒' },
+  { icon: '🙏', name: '拜托' }, { icon: '🔥', name: '火' }, { icon: '💀', name: '骷' },
+];
 
 // Resume the AudioContext on the very first user gesture (browsers block audio
 // until then). unlockAudio is idempotent and safe if Web Audio is unavailable.
 document.addEventListener('pointerdown', () => unlockAudio(), { once: true });
-function show(screen) { for (const s of SCREENS) $(s).classList.toggle('hidden', s !== screen); }
+function show(screen) {
+  App.screen = screen;
+  for (const s of SCREENS) $(s).classList.toggle('hidden', s !== screen);
+}
 
 const isMyTurn = () => !!App.state && App.state.currentPlayer === App.me && !App.state.over;
 const canAct = () => (App.online ? App.online._open : (App.net ? App.net.ready : true)) && isMyTurn();
@@ -629,6 +639,8 @@ async function startJoin() {
 
 // ---------------- ONLINE (P2P) ----------------
 function onlineMsgHandler(msg) {
+  // 表情转发：房主(A)/挑战者(B) 各自收到对方表情，本地浮层展示。
+  if (msg.type === 'emote') { UI.showEmote(msg.side || App.me, (EMOTES[msg.idx] || EMOTES[0]).icon); return; }
   // Host side (authoritative): both casual and ranked hosts run identical logic.
   if (App.mode === 'onlineHost' || App.mode === 'rankedHost') {
     if (msg.type === 'hello') {
@@ -758,7 +770,7 @@ function genRoom() {
 
 // ---------- Deck builder (unlocked-only) ----------
 async function openBuilder(mode) {
-  App.builder = { mode, faction: 'blood', counts: {}, deckId: null, deckName: '' };
+  App.builder = { mode, faction: 'blood', counts: {}, deckId: null, deckName: '', focusIdx: 0 };
   App.joinRules = null;
   App.onlineJoinInfo = null;
   App._pendingRankedCode = null;
@@ -826,7 +838,7 @@ function renderBuilder() {
   const f = FACTIONS[App.builder.faction];
   const total = f.cards.reduce((s, id) => s + (App.builder.counts[id] || 0), 0);
   const who = App.builder.mode === 'hotseat' ? (App._hotseatStep === 'B' ? '玩家2' : '玩家1') : null;
-  UI.renderDeckBuilder({ faction: f, counts: App.builder.counts, min: CONFIG.DECK_MIN, max: CONFIG.DECK_MAX, total, unlocked: unlockedSet(), who, decks: getDecks(App.profile), currentDeckId: App.builder.deckId, currentDeckName: App.builder.deckName });
+  UI.renderDeckBuilder({ faction: f, counts: App.builder.counts, min: CONFIG.DECK_MIN, max: CONFIG.DECK_MAX, total, unlocked: unlockedSet(), who, decks: getDecks(App.profile), currentDeckId: App.builder.deckId, currentDeckName: App.builder.deckName, focusIdx: App.builder.focusIdx });
   // Online guest may not confirm until the host's rules have arrived.
   const confirm = document.querySelector('[data-bact="builderConfirm"]');
   if (confirm && (App.builder.mode === 'onlineJoin' || App.builder.mode === 'rankedJoin') && !App.onlineJoinInfo) confirm.disabled = true;
@@ -1123,12 +1135,22 @@ $('menu').addEventListener('click', (e) => {
   else if (a === 'howto') openHowTo();
   else if (a === 'changelog') openChangelog();
   else if (a === 'collection') openCollection();
+  else if (a === 'keybinds') openKeybindSettings();
   else if (a === 'hotseat') { App.deckA = null; App.deckB = null; App._hotseatStep = 'A'; openBuilder('hotseat'); }
   else if (a === 'host') openBuilder('host');
   else if (a === 'join') openBuilder('join');
   else if (a === 'onlineHost') { App._onlineManual = false; openBuilder('onlineHost'); }
   else if (a === 'onlineJoin') { App._onlineManual = false; openBuilder('onlineJoin'); }
   else if (a === 'logout') logout();
+});
+
+// 键位设置面板：重绑 / 恢复默认 / 返回。
+$('keybindSettings').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-kbact]'); if (!b) return;
+  const a = b.dataset.kbact;
+  if (a === 'back') { toMenu(); return; }
+  if (a === 'reset') { KB.resetBinds(); renderKeybindSettings(); try { playSfx('click'); } catch (_) {} return; }
+  if (a === 'rebind') { App._capturing = b.dataset.ctx + ':' + b.dataset.action; renderKeybindSettings(); return; }
 });
 
 function toggleSound() {
@@ -1349,7 +1371,8 @@ function ctrlAct(name) {
 }
 
 $('game').addEventListener('click', (e) => {
-  const t = e.target.closest('[data-hand],[data-playlane],[data-saccard],[data-act]'); if (!t) return;
+  const t = e.target.closest('[data-hand],[data-playlane],[data-saccard],[data-act],[data-emote]'); if (!t) return;
+  if (t.dataset.emote != null) { doEmote(parseInt(t.dataset.emote, 10)); return; }
   if (t.dataset.hand) { selectHand(t.dataset.hand); return; }
   if (t.dataset.saccard) { toggleSac(t.dataset.saccard); return; }
   if (t.dataset.playlane) { playOnLane(parseInt(t.dataset.playlane, 10)); return; }
@@ -1394,62 +1417,193 @@ function startOnlineManualRegenerate() {
 }
 function copyText(t) { if (!t) return; if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {}); else { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (_) {} ta.remove(); } }
 
-// ---------- 键盘交互（战斗界面）----------
-// 完整键盘操作：1-9 选牌 · 选牌后 1-4/QWER 在该列出牌或献祭 · ←→ 移动光标 ·
-// 空格/Enter 结束回合（无选牌时）或在列光标打出（有选牌时）· Esc 取消。
+// ---------- 键盘交互（自定义键位：战斗 / 组卡 + 改键捕获）----------
+// 通过 keybinds.js 管理，可在「⚙ 键位设置」中重绑。WASD 为主轴。
 document.addEventListener('keydown', (e) => {
-  if (!App.state || $('game').classList.contains('hidden')) return;
+  // 0) 改键捕获：吃掉下一次按键（Esc 取消本次重绑）
+  if (App._capturing) {
+    e.preventDefault();
+    if (e.code === 'Escape') { App._capturing = null; renderKeybindSettings(); return; }
+    if (['ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight'].includes(e.code)) return;
+    const [ctx, action] = App._capturing.split(':');
+    const b = KB.eventToBind(e);
+    if (b) KB.setBind(ctx, action, b);
+    App._capturing = null;
+    renderKeybindSettings();
+    return;
+  }
+  // 1) 覆盖层（教程信息 / 同屏交接）：Enter / Esc 继续
   const overlayOpen = !$('overlay').classList.contains('hidden');
   const tutStep = App.tut && App.tut.steps ? App.tut.steps[App.tut.step] : null;
   const onInfoStep = overlayOpen && App.mode === 'tutorial' && tutStep && tutStep.need == null;
-  // 覆盖层（教程信息 / 同屏交接）：Enter / Esc → 继续
   if (onInfoStep) { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); tutNext(); } return; }
   if (overlayOpen && App.mode === 'hotseat') { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); hotseatContinue(); } return; }
-  if (App.state.over) return;
+  // 在输入框（卡组命名等）中打字时不要触发游戏/组卡快捷键
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  // 2) 组卡界面
+  if (App.screen === 'deckBuilder' && App.builder) { handleBuilderKey(e); return; }
+  // 3) 战斗界面
+  if (App.screen === 'game' && App.state && !$('game').classList.contains('hidden')) { handleBattleKey(e); return; }
+});
 
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function handleBattleKey(e) {
+  if (App.state.over) return;
+  const binds = KB.getBinds();
+  const action = KB.matchAction(binds, 'battle', e);
   const hand = App.state.players[App.me].hand;
   const LANES = (App.state.rules && App.state.rules.lanes) || CONFIG.LANES;
-  const k = e.key;
+  // 数字 1-9 为内置快捷：未选牌直接选该张；选中后在 1-4 列打出。
+  if (!action) {
+    const m = /^Digit([1-9])$/.exec(e.code) || /^Numpad([1-9])$/.exec(e.code);
+    if (m) {
+      const d = parseInt(m[1], 10); e.preventDefault();
+      if (App.ui.selectedIid) { if (d >= 1 && d <= LANES) laneKey(d - 1); }
+      else if (d <= hand.length) { App.kb.handIdx = d - 1; selectHand(hand[d - 1].iid); }
+      return;
+    }
+    return;
+  }
+  e.preventDefault();
+  const placing = !!App.ui.selectedIid;
+  switch (action) {
+    case 'cursorLeft':
+      if (!placing) { if (hand.length) App.kb.handIdx = clamp(App.kb.handIdx < 0 ? 0 : App.kb.handIdx - 1, 0, hand.length - 1); }
+      else { App.kb.laneIdx = (App.kb.laneIdx + LANES - 1) % LANES; }
+      render(); break;
+    case 'cursorRight':
+      if (!placing) { if (hand.length) App.kb.handIdx = clamp(App.kb.handIdx < 0 ? 0 : App.kb.handIdx + 1, 0, hand.length - 1); }
+      else { App.kb.laneIdx = (App.kb.laneIdx + 1) % LANES; }
+      render(); break;
+    case 'select':
+      if (!placing) { const i = App.kb.handIdx >= 0 && App.kb.handIdx < hand.length ? App.kb.handIdx : 0; if (hand.length) selectHand(hand[i].iid); }
+      else { playOnLane(clamp(App.kb.laneIdx, 0, LANES - 1)); }
+      break;
+    case 'cancel':
+      if (placing || (App.ui.sacList && App.ui.sacList.length)) { App.ui.selectedIid = null; App.ui.sacList = []; App.kb.laneIdx = 0; App.status = ''; render(); }
+      break;
+    case 'endTurn':
+      if (!placing) { if (canAct()) act({ type: 'endTurn' }); }
+      else { playOnLane(clamp(App.kb.laneIdx, 0, LANES - 1)); }
+      break;
+    case 'lane1': case 'lane2': case 'lane3': case 'lane4':
+      if (placing) laneKey(parseInt(action.slice(4), 10) - 1); break;
+    case 'surrender': ctrlAct('surrender'); break;
+    case 'peace': ctrlAct('requestPeace'); break;
+    case 'emote1': case 'emote2': case 'emote3': case 'emote4': case 'emote5': case 'emote6':
+      doEmote(parseInt(action.slice(5), 10) - 1); break;
+  }
+}
 
-  // 1) 选牌：数字 1-9（未选中任何牌时）
-  if (/^[1-9]$/.test(k) && !App.ui.selectedIid) {
-    const idx = parseInt(k, 10) - 1;
-    if (idx < hand.length) { e.preventDefault(); App.kb.handIdx = idx; selectHand(hand[idx].iid); }
-    return;
+function builderCols() {
+  const grid = $('builderGrid'); if (!grid) return 4;
+  const items = grid.querySelectorAll('[data-bidx]');
+  if (items.length < 2) return Math.max(1, items.length);
+  const top0 = items[0].offsetTop;
+  let c = 0; for (const it of items) { if (it.offsetTop === top0) c++; else break; }
+  return c || 1;
+}
+
+function handleBuilderKey(e) {
+  const action = KB.matchAction(KB.getBinds(), 'builder', e);
+  if (!action) return;
+  e.preventDefault();
+  const f = FACTIONS[App.builder.faction];
+  const vis = f.cards.filter((id) => unlockedSet().has(id));
+  const n = vis.length;
+  if (App.builder.focusIdx == null || App.builder.focusIdx < 0) App.builder.focusIdx = 0;
+  App.builder.focusIdx = clamp(App.builder.focusIdx, 0, n - 1);
+  const cols = builderCols();
+  switch (action) {
+    case 'cursorLeft':  App.builder.focusIdx = Math.max(0, App.builder.focusIdx - 1); break;
+    case 'cursorRight': App.builder.focusIdx = Math.min(n - 1, App.builder.focusIdx + 1); break;
+    case 'cursorUp':    App.builder.focusIdx = Math.max(0, App.builder.focusIdx - cols); break;
+    case 'cursorDown':  App.builder.focusIdx = Math.min(n - 1, App.builder.focusIdx + cols); break;
+    case 'add1': builderAdjust(vis[App.builder.focusIdx], +1); return;
+    case 'sub1': builderAdjust(vis[App.builder.focusIdx], -1); return;
+    case 'add5': builderAdjustMany(vis[App.builder.focusIdx], +5); return;
+    case 'sub5': builderAdjustMany(vis[App.builder.focusIdx], -5); return;
+    case 'confirm': builderConfirm(); return;
+    case 'cancel': builderCancel(); return;
   }
-  // 2) 选牌后：数字 1-4 / QWER = 在该列打牌或献祭
-  if (App.ui.selectedIid && /^[1-4qwerQWER]$/.test(k)) {
-    let lane;
-    if (/^[1-4]$/.test(k)) lane = parseInt(k, 10) - 1;
-    else lane = 'qwer'.indexOf(k.toLowerCase());
-    if (lane >= 0 && lane < LANES) { e.preventDefault(); App.kb.laneIdx = lane; laneKey(lane); }
-    return;
-  }
-  // 3) 方向键：未选牌→移动手牌光标（仅高亮预览）；已选牌→移动列光标
-  if (k === 'ArrowLeft' || k === 'ArrowRight') {
-    e.preventDefault();
-    if (!App.ui.selectedIid) {
-      if (hand.length) App.kb.handIdx = Math.max(0, Math.min(hand.length - 1, (App.kb.handIdx < 0 ? 0 : App.kb.handIdx) + (k === 'ArrowRight' ? 1 : -1)));
-    } else {
-      App.kb.laneIdx = (App.kb.laneIdx + (k === 'ArrowRight' ? 1 : LANES - 1)) % LANES;
+  renderBuilder();
+}
+
+function builderAdjustMany(id, d) {
+  const step = d > 0 ? 1 : -1;
+  for (let i = 0; i < Math.abs(d); i++) builderAdjust(id, step);
+}
+
+// 表情：本地浮层 + 线上 P2P 转发（房主=A / 挑战者=B）。
+function doEmote(idx) {
+  const em = EMOTES[idx]; if (!em) return;
+  let side = App.me;
+  if (App.mode === 'onlineHost' || App.mode === 'rankedHost') side = 'A';
+  else if (App.mode === 'onlineJoin' || App.mode === 'rankedJoin') side = 'B';
+  UI.showEmote(side, em.icon);
+  try { playSfx('click'); } catch (_) {}
+  if (App.online) App.online.send({ type: 'emote', idx, side });
+}
+
+// ---------- 键位设置面板 ----------
+const KB_GROUPS = [
+  { ctx: 'battle', title: '战斗', items: [
+    { a: 'cursorLeft', l: 'A / ← 移动光标（未选牌移手牌，选中后移列）' },
+    { a: 'cursorRight', l: 'D / → 移动光标' },
+    { a: 'select', l: 'W 选牌 / 放牌（在光标列打出）' },
+    { a: 'cancel', l: 'S / Esc 取消选择' },
+    { a: 'endTurn', l: '空格 / Enter 结束回合' },
+    { a: 'lane1', l: '1 在第 1 列出牌' },
+    { a: 'lane2', l: '2 在第 2 列出牌' },
+    { a: 'lane3', l: '3 在第 3 列出牌' },
+    { a: 'lane4', l: '4 在第 4 列出牌' },
+    { a: 'surrender', l: 'F 投降' },
+    { a: 'peace', l: 'P 求和' },
+    { a: 'emote1', l: 'Q 表情 · 赞 👍' },
+    { a: 'emote2', l: 'E 表情 · 笑 😂' },
+    { a: 'emote3', l: 'R 表情 · 怒 😡' },
+    { a: 'emote4', l: 'T 表情 · 拜托 🙏' },
+    { a: 'emote5', l: 'G 表情 · 火 🔥' },
+    { a: 'emote6', l: 'H 表情 · 骷 💀' },
+  ] },
+  { ctx: 'builder', title: '组卡', items: [
+    { a: 'cursorLeft', l: 'A / ← 左移卡牌焦点' },
+    { a: 'cursorRight', l: 'D / → 右移卡牌焦点' },
+    { a: 'cursorUp', l: 'W / ↑ 上移卡牌焦点' },
+    { a: 'cursorDown', l: 'S / ↓ 下移卡牌焦点' },
+    { a: 'add1', l: '= / + 该卡 +1' },
+    { a: 'sub1', l: '− / − 该卡 −1' },
+    { a: 'add5', l: 'Shift + → 该卡 +5（选卡组快捷）' },
+    { a: 'sub5', l: 'Shift + ← 该卡 −5（选卡组快捷）' },
+    { a: 'confirm', l: 'Enter / 空格 确定并开始' },
+    { a: 'cancel', l: 'Esc 返回菜单' },
+  ] },
+];
+
+function openKeybindSettings() { show('keybindSettings'); renderKeybindSettings(); }
+
+function renderKeybindSettings() {
+  const binds = KB.getBinds();
+  const list = $('keybindList');
+  if (!list) return;
+  let html = '';
+  for (const g of KB_GROUPS) {
+    html += `<div class="kb-group"><div class="kb-group-title">${g.title}</div>`;
+    for (const it of g.items) {
+      const arr = binds[g.ctx][it.a];
+      const label = (arr && arr[0]) ? KB.fmtBind(arr[0]) : '未设置';
+      const cap = App._capturing === g.ctx + ':' + it.a;
+      html += `<div class="kb-row">
+        <span class="kb-label">${it.l}</span>
+        <button class="btn small kb-btn ${cap ? 'capturing' : ''}" data-kbact="rebind" data-ctx="${g.ctx}" data-action="${it.a}">${cap ? '按任意键…' : label}</button>
+      </div>`;
     }
-    render();
-    return;
+    html += `</div>`;
   }
-  // 4) Enter / 空格：未选牌→结束回合；已选牌→在当前列光标打牌 / 献祭
-  if (k === 'Enter' || k === ' ') {
-    e.preventDefault();
-    if (!App.ui.selectedIid) { if (canAct()) act({ type: 'endTurn' }); }
-    else laneKey(Math.max(0, Math.min(LANES - 1, App.kb.laneIdx)));
-    return;
-  }
-  // 5) Esc：取消选牌 / 献祭
-  if (k === 'Escape') {
-    if (App.ui.selectedIid || (App.ui.sacList && App.ui.sacList.length)) {
-      e.preventDefault(); App.ui.selectedIid = null; App.ui.sacList = []; App.kb.laneIdx = 0; App.status = ''; render();
-    }
-  }
-});
+  list.innerHTML = html;
+}
 
 // Auto-join via ?join=ROOM / ?m=OFFER (casual) or ?rjoin=CODE (ranked P2P).
 (function autoJoinFromUrl() {
