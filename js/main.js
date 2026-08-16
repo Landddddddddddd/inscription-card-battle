@@ -60,7 +60,9 @@ function modeLabel() {
 
 function render() {
   if (!App.state) return;
-  UI.renderGame({ state: App.state, me: App.me, isMyTurn: canAct(), ui: App.ui, statusMsg: App.status, modeLabel: modeLabel(), kb: App.kb, kbArmed: !!App.ui.selectedIid && canAct() });
+  const isMy = canAct();
+  UI.renderGame({ state: App.state, me: App.me, isMyTurn: isMy, ui: App.ui, statusMsg: App.status, modeLabel: modeLabel(), kb: App.kb, kbArmed: !!App.ui.selectedIid && canAct() });
+  UI.renderPeace && UI.renderPeace(App.state, App.me, isMy);
   maybeStartTimer();
 }
 
@@ -168,6 +170,13 @@ function applyLocal(action) {
   let r;
   if (action.type === 'play') r = playCard(App.state, App.me, action.iid, action.lane, { sacrifices: action.sacrifices });
   else if (action.type === 'endTurn') r = endTurn(App.state, App.me);
+  else if (action.type === 'surrender' || action.type === 'requestPeace' || action.type === 'respondPeace') {
+    const pendBefore = App.state.peacePending;   // 拒绝前 peacePending 即申请方，用于同屏交回设备
+    r = applyAction(App.state, { ...action, player: App.me });
+    if (r.ok && App.mode === 'hotseat' && (action.type === 'requestPeace' || action.type === 'respondPeace')) {
+      handleHotseatPeaceHandoff(action, pendBefore);
+    }
+  }
   else return;
   if (!r.ok) { App.status = r.reason; render(); return; }
   if (action.type === 'play') {
@@ -180,6 +189,10 @@ function applyLocal(action) {
   App.ui.selectedIid = null; App.ui.sacList = []; App.status = '';
   render();
   if (App.mode === 'tutorial') tutorialCheck(action.type);
+  // 单机/教程：玩家发起求和后，由 AI 自动回应（落后/平局时接受，领先时拒绝）
+  if ((App.mode === 'single' || App.mode === 'tutorial') && action.type === 'requestPeace' && App.state.peacePending === App.me) {
+    scheduleAIPeaceResponse();
+  }
   if (!App.state.over && App.state.currentPlayer === 'B' && (App.mode === 'single' || App.mode === 'tutorial')) runAI();
   checkGameOver();
   // 同屏双人 / 排位赛（同屏）：每次「结束回合 / 攻击」后，把设备交给下一位玩家（防止偷看手牌）。
@@ -188,6 +201,38 @@ function applyLocal(action) {
     const np = App.state.players[App.state.currentPlayer].name;
     UI.showHandoff('请把设备交给 ' + np + '，轮到 ' + np + ' 行动——点击继续');
   }
+}
+
+// 同屏双人：发起/拒绝求和时的设备交接（回应方 = 申请方对手）。
+// 通过 App._peaceRespMe 让 hotseatContinue 把设备交给正确的玩家。
+function handleHotseatPeaceHandoff(action, pendBefore) {
+  if (App.state.over) return;            // 接受求和已平局结束，无需交接
+  if (action.type === 'requestPeace') {
+    const opp = App.me === 'A' ? 'B' : 'A';
+    App._peaceRespMe = opp;
+    UI.showHandoff('请把设备交给 ' + App.state.players[opp].name + '，由其决定是否接受求和——点击继续');
+  } else if (action.type === 'respondPeace' && !action.accept) {
+    const req = pendBefore;             // 拒绝前 peacePending = 申请方
+    if (req && req !== App.me) {
+      App._peaceRespMe = req;
+      UI.showHandoff('请把设备交回 ' + App.state.players[req].name + '，继续其回合——点击继续');
+    }
+  }
+}
+
+// 单机/教程模式下，AI（固定为 B）对玩家求和请求的自动回应。
+function scheduleAIPeaceResponse() {
+  const me = 'B';
+  const aiAhead = (App.state.weights[me] - App.state.weights['A']) > 0; // 天平占优则拒绝，否则接受
+  const accept = !aiAhead;
+  setTimeout(() => {
+    if (!App.state || App.state.over || !App.state.peacePending) return;
+    const r = respondPeace(App.state, me, accept);
+    if (r.ok) {
+      App.status = accept ? '对手接受了求和 —— 平局' : '对手拒绝了求和，对局继续';
+      render(); checkGameOver();
+    }
+  }, 900);
 }
 
 // Send an action. In online mode the host is authoritative (applies + broadcasts);
@@ -314,6 +359,16 @@ function autoEndTurn() {
 
 function checkGameOver() {
   if (!App.state || !App.state.over) return;
+  // 平局（双方同意求和 / 牌库抽干且场面冻结）：不发放奖励、不影响段位。
+  if (!App.state.winner) {
+    if (!App.rewardGiven) {
+      App.rewardGiven = true;
+      UI.hideOnlineLobby();
+      const reason = App.state.peaceAccepted ? '双方同意求和' : '双方均用尽手牌且场面冻结';
+      UI.showGameOver('🤝 平局！（' + reason + '）', '');
+    }
+    return;
+  }
   // 排位赛结算（仅限 PVP）：账户段位跟随本账号「你」的胜负升降，不发放金币。
   // 同屏：固定玩家A；线上 P2P：房主=A、挑战者=B，各自结算自己的段位。
   if ((App.mode === 'ranked' || App.mode === 'rankedHost' || App.mode === 'rankedJoin') && !App.rewardGiven) {
@@ -496,7 +551,13 @@ function startHotseat() {
 // 回合交接：把视角切到刚行动完、轮到的那一方（me = 当前行动方）。
 function hotseatContinue() {
   if (!App.state) return;
-  App.me = App.state.currentPlayer;
+  // 求和交接时，设备应交给「回应方/申请方」而非当前行动玩家。
+  if (App._peaceRespMe) {
+    App.me = App._peaceRespMe;
+    App._peaceRespMe = null;
+  } else {
+    App.me = App.state.currentPlayer;
+  }
   App.ui.selectedIid = null; App.ui.sacList = [];
   UI.hideOverlay();
   render();
@@ -1276,6 +1337,12 @@ function laneKey(lane) {
 // 控制按钮（结束回合 / 菜单 / 教程下一步 / 同屏交接）。
 function ctrlAct(name) {
   if (name === 'endTurn') act({ type: 'endTurn' });
+  else if (name === 'requestPeace') act({ type: 'requestPeace' });
+  else if (name === 'surrender') {
+    if (App.state && !App.state.over && confirm('确定投降认输？此操作不可撤销。')) act({ type: 'surrender' });
+  }
+  else if (name === 'peaceAccept') act({ type: 'respondPeace', accept: true });
+  else if (name === 'peaceDecline') act({ type: 'respondPeace', accept: false });
   else if (name === 'menu') toMenu();
   else if (name === 'tutNext') tutNext();
   else if (name === 'hotseatContinue') hotseatContinue();

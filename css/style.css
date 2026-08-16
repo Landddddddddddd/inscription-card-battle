@@ -449,6 +449,9 @@ html, body {
 /* ---------------- CONTROLS / LOG ---------------- */
 .controls { display: flex; gap: 12px; align-items: center; justify-content: center; padding: 10px; background: #0b0806; border-top: 1px solid var(--line); }
 .status-msg { color: var(--gold); font-size: 13px; min-width: 120px; }
+.peace-bar { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 8px 10px; background: linear-gradient(180deg, #1a2433, #10161f); border-top: 1px solid #2a3a52; }
+.peace-text { color: #cfe0f5; font-size: 13px; }
+.peace-bar .btn.small { padding: 6px 14px; }
 .log { height: 72px; overflow-y: auto; background: #080605; border-top: 1px solid var(--line); padding: 6px 14px; font-size: 12px; color: var(--text-dim); line-height: 1.55; }
 .log .me { color: var(--text); }
 .log > div:last-child { color: var(--gold); }

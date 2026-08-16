@@ -76,6 +76,11 @@ export function createGame(opts = {}) {
     turn: 0,
     winner: null,
     over: false,
+    draw: false,            // 平局标记（双方同意求和 / 牌库抽干且场面冻结）
+    peaceUsed: { A: false, B: false }, // 每方一局仅可申请求和 1 次
+    peacePending: null,     // 当前待回应的求和申请方（'A'/'B'/null）
+    peaceAccepted: false,   // 因双方同意求和而平局
+    surrendered: null,      // 投降方
     log: [],
     // Transient combat log for the renderer: each resolved attack pushes an
     // entry here, and combatSeq bumps so the UI shows damage numbers once.
@@ -94,20 +99,12 @@ export function createGame(opts = {}) {
   return state;
 }
 
-function reshuffle(state, p) {
-  const pl = state.players[p];
-  if (pl.deck.length === 0 && pl.discard.length > 0) {
-    pl.deck = shuffle(pl.discard.slice());
-    pl.discard = [];
-    state.log.push(`${pl.name} 洗牌（弃牌堆重新洗回牌库）`);
-  }
-}
-
+// 注意：本作「卡牌出完了就是出完了，不会再摸」——牌库抽干即止，弃牌堆不洗回。
+// （此前的 reshuffle 循环抽牌逻辑已移除。）
 function drawCard(state, p) {
   const pl = state.players[p];
   if (pl.hand.length >= CONFIG.HAND_LIMIT) return false;
-  if (pl.deck.length === 0) reshuffle(state, p);
-  if (pl.deck.length === 0) return false;
+  if (pl.deck.length === 0) return false;   // 牌库已空 → 不再摸牌（无循环、无疲劳 buff/debuff）
   pl.hand.push(instantiate(pl.deck.pop()));
   return true;
 }
@@ -356,6 +353,54 @@ function processDeaths(state) {
   }
 }
 
+// ---------- 牌库抽干 / 平局判定 ----------
+// 双方都「出完牌」（手牌与牌库皆空）且场上均无可改变天平的攻击单位时，判平局。
+function deckedOut(state, p) {
+  const pl = state.players[p];
+  return pl.hand.length === 0 && pl.deck.length === 0;
+}
+function boardCanAttack(state, side) {
+  // 判断「该方下一回合是否仍能改变天平」——忽略 hasAttacked（每回合开始会重置），
+  // 只看单位是否具备有效攻击力（或毒触）。用于平局/僵局判定，避免「刚攻击过的单位
+  // 被误判为不能再攻击」而误判平局。
+  for (let l = 0; l < lanesOf(state); l++) {
+    const c = state.board[side][l];
+    if (!c) continue;
+    const pw = getAttack(state, side, l) * (c.sigils.includes('double_strike') ? 2 : 1);
+    if (pw > 0 || c.sigils.includes('poison_touch')) return true;
+  }
+  return false;
+}
+function boardCount(state) {
+  let n = 0;
+  for (const s of ['A', 'B']) for (const c of state.board[s]) if (c) n++;
+  return n;
+}
+function maybeDraw(state) {
+  if (state.over) return;
+  if (deckedOut(state, 'A') && deckedOut(state, 'B') && !boardCanAttack(state, 'A') && !boardCanAttack(state, 'B')) {
+    state.over = true; state.winner = null; state.draw = true;
+    state.log.push('双方均已用尽手牌，且场上无可改变天平的单位 —— 平局！');
+  }
+}
+// 胜负相关指标（用于僵局侦测）：分数差模式只看「分数差」；累计模式看双方各自分数。
+function winMetric(state) {
+  const mode = (state.rules && state.rules.winMode) || 'difference';
+  if (mode === 'absolute') return state.weights.A + ':' + state.weights.B;
+  return String(state.weights.A - state.weights.B);
+}
+// 更稳健的「僵局」侦测：双方抽干牌库后，若连续一整轮（A 的回合开始）天平指标与场上单位数
+// 都未变化（例如双方单位都只向天平平推、互相对消，分数差永远拉不开），则胜负无法再分 → 平局。
+function detectStalemate(state) {
+  if (state.over) return;
+  if (!deckedOut(state, 'A') || !deckedOut(state, 'B')) return;
+  const snap = winMetric(state);
+  if (state._snap != null && state._bcnt != null && snap === state._snap && state._bcnt === boardCount(state)) {
+    state.over = true; state.winner = null; state.draw = true;
+    state.log.push('双方均已用尽手牌，且天平与场面连续一轮无变化 —— 平局！');
+  }
+}
+
 function checkWin(state) {
   const W = winScaleOf(state);
   const mode = (state.rules && state.rules.winMode) || 'difference';
@@ -375,6 +420,13 @@ function checkWin(state) {
 
 function beginTurn(state, p) {
   const pl = state.players[p];
+  // 僵局侦测快照：仅在 A 的回合开始记录/比对（代表“一整轮”的跨度）。
+  if (p === 'A') {
+    if (state._snap != null && state._bcnt != null) detectStalemate(state);
+    if (state.over) return;                       // 已判平局，不再开始回合
+    state._snap = winMetric(state);
+    state._bcnt = boardCount(state);
+  }
   if (pl.res === 'energy') {
     // Energy ramps 1→2→3→4→5 and caps at 5, but grows by +1 only on
     // every ENERGY_RAMP_EVERY-th of THIS player's own turns (slows the
@@ -425,8 +477,46 @@ export function endTurn(state, player) {
   resolveAttacks(state, player);
   processDeaths(state);
   checkWin(state);
+  if (!state.over) maybeDraw(state);   // 牌库抽干且场面冻结 → 平局
   if (state.over) return { ok: true };
   beginTurn(state, other(player));
+  return { ok: true };
+}
+
+// ---------- 投降 / 求和（平局）----------
+// 投降：认输，对方直接获胜（仅自己回合可发起）。
+export function surrender(state, player) {
+  if (state.over) return { ok: false, reason: '对局已结束' };
+  state.winner = other(player);
+  state.over = true;
+  state.surrendered = player;
+  state.log.push(`${state.players[player].name} 投降，认输！`);
+  return { ok: true };
+}
+
+// 求和：申请平局。每方一局仅可申请 1 次；已有待处理申请时不可重复申请。
+export function requestPeace(state, player) {
+  if (state.over) return { ok: false, reason: '对局已结束' };
+  if (state.peaceUsed[player]) return { ok: false, reason: '你本局已申请过求和（每局仅 1 次）' };
+  if (state.peacePending) return { ok: false, reason: '已有一方申请求和，等待回应' };
+  state.peaceUsed[player] = true;
+  state.peacePending = player;
+  state.log.push(`${state.players[player].name} 申请求和（平局）`);
+  return { ok: true, by: player };
+}
+
+// 回应求和：仅「非申请方」可回应。接受 → 平局；拒绝 → 清空待处理，对局继续。
+export function respondPeace(state, player, accept) {
+  if (state.over) return { ok: false, reason: '对局已结束' };
+  if (!state.peacePending) return { ok: false, reason: '当前没有待处理的求和' };
+  if (state.peacePending === player) return { ok: false, reason: '不能回应自己的求和' };
+  if (accept) {
+    state.over = true; state.winner = null; state.draw = true; state.peaceAccepted = true;
+    state.log.push('双方同意求和 —— 平局！');
+  } else {
+    state.log.push(`${state.players[player].name} 拒绝了求和`);
+  }
+  state.peacePending = null;
   return { ok: true };
 }
 
@@ -434,6 +524,9 @@ export function applyAction(state, action) {
   switch (action.type) {
     case 'play': return playCard(state, action.player, action.iid, action.lane, { sacrifices: action.sacrifices });
     case 'endTurn': return endTurn(state, action.player);
+    case 'surrender': return surrender(state, action.player);
+    case 'requestPeace': return requestPeace(state, action.player);
+    case 'respondPeace': return respondPeace(state, action.player, action.accept);
     default: return { ok: false, reason: '未知操作' };
   }
 }

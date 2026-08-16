@@ -610,17 +610,64 @@ export function showGameOver(text, reward) {
   el('gameoverText').textContent = text;
   const r = el('gameoverReward'); if (r) r.textContent = reward || '';
   el('gameover').classList.remove('hidden');
-  // celebratory / somber burst
+  // celebratory / somber / neutral burst
   const box = el('gameover').querySelector('.overlay-box');
   if (box) {
     const rect = box.getBoundingClientRect();
     const win = /赢|胜|🏆/.test(text);
+    const draw = /平局/.test(text);
+    const col = win ? ['#ffe08a', '#d9a441', '#fff'] : draw ? ['#9fb4d8', '#5a6b8c', '#fff'] : ['#c0392b', '#6a1a12'];
+    const glyph = win ? '✦' : draw ? '🤝' : '';
     setTimeout(() => burst(rect.left + rect.width / 2, rect.top + rect.height / 2, {
-      count: 24, color: win ? ['#ffe08a', '#d9a441', '#fff'] : ['#c0392b', '#6a1a12'], glyph: win ? '✦' : '', size: 12, spread: 120, grav: 30, life: 1100, glow: 8,
+      count: 24, color: col, glyph, size: 12, spread: 120, grav: 30, life: 1100, glow: 8,
     }), 120);
   }
 }
 export function hideGameOver() { el('gameover').classList.add('hidden'); }
+
+// 求和 / 投降 控件：根据对局状态显示「求和」按钮、投降按钮，以及待处理求和的接受/拒绝条。
+export function renderPeace(state, me, isMyTurn) {
+  const reqBtn = document.querySelector('[data-act="requestPeace"]');
+  const surBtn = document.querySelector('[data-act="surrender"]');
+  const peaceBar = document.getElementById('peaceBar');
+  const peaceText = document.getElementById('peaceText');
+  const acceptBtn = document.querySelector('[data-act="peaceAccept"]');
+  const declineBtn = document.querySelector('[data-act="peaceDecline"]');
+  if (!reqBtn && !surBtn && !peaceBar) return; // 非对局界面
+  const over = !!state.over;
+  const used = state.peaceUsed && state.peaceUsed[me];
+  const pending = state.peacePending;
+  // 求和按钮：仅自己回合、未结束、无待处理、本局未申请过
+  if (reqBtn) {
+    reqBtn.classList.toggle('hidden', over);
+    reqBtn.disabled = !(isMyTurn && !over && !pending && !used);
+    reqBtn.textContent = used ? '🤝 求和(已用)' : '🤝 求和';
+  }
+  if (surBtn) {
+    surBtn.classList.toggle('hidden', over);
+    surBtn.disabled = !(isMyTurn && !over);
+  }
+  // 待处理求和条
+  if (!peaceBar) return;
+  if (!over && pending) {
+    const reqName = state.players[pending].name;
+    if (pending !== me) {
+      // 我是回应方 → 显示接受/拒绝
+      if (peaceText) peaceText.textContent = `${reqName} 申请求和（平局），是否接受？`;
+      peaceBar.classList.remove('hidden');
+      if (acceptBtn) acceptBtn.classList.remove('hidden');
+      if (declineBtn) declineBtn.classList.remove('hidden');
+    } else {
+      // 我是申请方 → 仅提示等待
+      if (peaceText) peaceText.textContent = `你已向 ${state.players[me === 'A' ? 'B' : 'A'].name} 申请求和，等待回应…`;
+      peaceBar.classList.remove('hidden');
+      if (acceptBtn) acceptBtn.classList.add('hidden');
+      if (declineBtn) declineBtn.classList.add('hidden');
+    }
+  } else {
+    peaceBar.classList.add('hidden');
+  }
+}
 
 // ============================================================================
 // DECK BUILDER  (locked cards are shown but not addable)
