@@ -1543,7 +1543,7 @@ function doEmote(idx) {
   if (App.mode === 'onlineHost' || App.mode === 'rankedHost') side = 'A';
   else if (App.mode === 'onlineJoin' || App.mode === 'rankedJoin') side = 'B';
   UI.showEmote(side, em.icon);
-  try { playSfx('click'); } catch (_) {}
+  try { playSfx('emote'); } catch (_) {}
   if (App.online) App.online.send({ type: 'emote', idx, side });
 }
 

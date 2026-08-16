@@ -86,6 +86,7 @@ export const SFX = {
   win()      { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.22, { type: 'triangle', gain: 0.5 }), i * 110)); },
   lose()     { [392, 311, 233].forEach((f, i) => setTimeout(() => tone(f, 0.3, { type: 'sawtooth', gain: 0.4 }), i * 140)); },
   error()    { tone(160, 0.16, { type: 'square', slideTo: 110, gain: 0.3 }); },
+  emote()    { tone(680, 0.08, { type: 'triangle', slideTo: 920, gain: 0.3 }); setTimeout(() => tone(520, 0.07, { type: 'triangle', gain: 0.22 }), 70); },
 };
 
 // Convenience: play by key, e.g. playSfx('hit').
