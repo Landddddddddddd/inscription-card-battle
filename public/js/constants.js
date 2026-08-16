@@ -346,6 +346,7 @@ export const CARDS = {
   // 3 费×3 / 4 费×2 / 0 费×1），仅替换主题化的名字与印记，以保证「消耗秒数」这一
   // 新机制不会破坏五阵营整体平衡（时砂胜率与能量对齐，约 45-50%）。成本 0~4，封顶 5 的秒能预算可覆盖。
   sand_pebble:     { name: '砂砾',   atk: 0, hp: 1, cost: 0, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c2b280', glyph: '砾' },
+  sand_apprentice: { name: '时砂学徒', atk: 1, hp: 1, cost: 2, costType: 'sand', sigils: [],                bloodValue: 1, color: '#d8c48a', glyph: '徒' },
   pendulum:        { name: '钟摆兽', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['double_strike'],  bloodValue: 1, color: '#c9a24a', glyph: '摆' },
   chrono_twin:     { name: '双刻兽', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['double_strike'],  bloodValue: 1, color: '#d0a84a', glyph: '孪' },
   sand_swift:      { name: '流沙隼', atk: 3, hp: 1, cost: 2, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#c8b070', glyph: '隼' },
@@ -418,7 +419,7 @@ export const FACTIONS = {
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
     desc: '时间即是资源：每回合开始获得「秒能」预算（首回合 0，之后每 2 个己方回合 +1、封顶 5），卡牌以「秒」为费召唤，剩余不足则无法打出（不可透支，例如还剩 4 秒时打不出 5 秒的牌）。没有无偿经济、也没有额外成长，全靠这一回合的秒数铺场。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
-    cards: ['sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton'],
+    cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton'],
   },
 };
 
@@ -560,6 +561,15 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.5',
+    date: '2026-08-16',
+    title: '时砂开局即送「新手牌」',
+    items: [
+      '新增时砂新手牌「时砂学徒」（1-1 / 2 秒费 / 时砂生物，主题：初入时间的学徒），并加入时砂卡池与默认卡组。',
+      '对齐魔石阵营的「开局即送」机制：新增 ensureSandStarterInHand，对时砂玩家保证开局手牌里必有一张时砂学徒（即使牌库是别的阵营也会直接送一张）。它像其它 2 秒费时砂牌一样第 1-2 回合因秒能不足而灰显，第 3 回合金能到 2 时即可打出，保证时砂永不缺可发展的时砂生物。数值经无头仿真校准：五阵营 spread 3.2pt（≤10），时砂不再偏强。',
+    ],
+  },
   {
     version: 'v0.7.4',
     date: '2026-08-16',
