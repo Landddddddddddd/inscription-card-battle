@@ -160,7 +160,7 @@ function applyLocal(action) {
   else return;
   if (!r.ok) { App.status = r.reason; render(); return; }
   if (action.type === 'play') {
-    if (action.sacrifices && action.sacrifices.length) playSfx('sacrifice');
+    if (action.sacrifices && action.sacrifices.length) { playSfx('sacrifice'); UI.markSacrifice(action.sacrifices); }
     else playSfx('play');
   }
   App.ui.selectedIid = null; App.ui.sacList = []; App.status = '';
@@ -184,6 +184,7 @@ function act(action) {
     const r = applyAction(App.state, action);
     if (!r.ok) { App.status = r.reason; render(); return; }
     App.ui.selectedIid = null; App.ui.sacList = []; App.status = '';
+    if (action.type === 'play' && action.sacrifices && action.sacrifices.length) UI.markSacrifice(action.sacrifices);
     render();
     if (App.online) App.online.send({ type: 'state', state: App.state });
     checkGameOver();
@@ -245,7 +246,7 @@ function showTutStep() {
   if (!App.tut || !App.tut.steps) { UI.hideOverlay(); return; }
   const step = App.tut.steps[App.tut.step];
   if (!step) { UI.hideOverlay(); return; }
-  UI.showOverlay(step.text, step.need == null);
+  UI.showOverlay(step.text, step.need == null, step);
 }
 function tutorialCheck(t) {
   if (!App.tut || !App.tut.steps) return;
@@ -290,10 +291,10 @@ function buildTutSteps(fac, mods) {
         return { text: `欢迎来到《邪刻》！\n\n【目标】把对方天平的指针压到己方一端即获胜。本局采用「${winModeName(App.rules.winMode)}」胜利方式，目标 ${App.rules.winScale} 分——顶部天平实时显示你与对手的分数。`, need: null };
       case 'play':
         return fac === 'blood'
-          ? { text: '【出牌 · 血肉】点手牌选中一张牌→点空列即可召唤。\n血肉阵营没有任何无偿投放的血肉：所有费用都靠献祭场上已召唤的单位来支付。先把小怪（如「白鼬」免费 0 费或场上已有的单位）召唤/铺到场上，选中要打的牌时，点场上单位把它献祭补足费用，再点空列召唤。', need: 'play' }
-          : { text: `【出牌 · ${F.name}】点手牌选中一张牌→点空列即可召唤。本阵营用「${F.name}」资源（${resDescShort(fac)}），资源够就能召唤。先放一只生物试试。`, need: 'play' };
+          ? { text: '【出牌 · 血肉】点手牌选中一张牌→点空列即可召唤。\n血肉阵营没有任何无偿投放的血肉：所有费用都靠献祭场上已召唤的单位来支付。先把小怪（如「白鼬」免费 0 费或场上已有的单位）召唤/铺到场上，选中要打的牌时，点场上单位把它献祭补足费用，再点空列召唤。', need: 'play', target: '.hand', arrowDir: 'above' }
+          : { text: `【出牌 · ${F.name}】点手牌选中一张牌→点空列即可召唤。本阵营用「${F.name}」资源（${resDescShort(fac)}），资源够就能召唤。先放一只生物试试。`, need: 'play', target: '.hand', arrowDir: 'above' };
       case 'attack':
-        return { text: '【攻击】布置好后点「结束回合 / 攻击」。你的单位发动攻击：同列有敌人则交战，否则直接打对方天平加分。把指针推向你这一端即靠近胜利。现在结束回合试一次。', need: 'endTurn' };
+        return { text: '【攻击】布置好后点「结束回合 / 攻击」。你的单位发动攻击：同列有敌人则交战，否则直接打对方天平加分。把指针推向你这一端即靠近胜利。现在结束回合试一次。', need: 'endTurn', target: '[data-act="endTurn"]', arrowDir: 'above' };
       case 'sigils':
         return { text: sigilsIntro(), need: null };
       case 'faction':
