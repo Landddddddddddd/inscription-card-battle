@@ -186,8 +186,15 @@ export function playCard(state, player, iid, lane, opts = {}) {
   const idx = pl.hand.findIndex((c) => c.iid === iid);
   if (idx < 0) return { ok: false, reason: '手牌中没有这张牌' };
   const card = pl.hand[idx];
-  if (state.board[player][lane]) return { ok: false, reason: '该列已有单位' };
   const pool = poolOf(card);
+  // 血肉牌：被献祭的单位所在列在结算时会被清空，因此允许把新召唤的单位
+  // 直接放在「刚被献祭的格子」上（与其他阵营统一：可放置在刚腾出的那一列）。
+  const laneIsSacrificed = pool === 'blood' && Array.isArray(opts.sacrifices)
+    && opts.sacrifices.some((siid) => {
+      const l = state.board[player].findIndex((c) => c && c.iid === siid);
+      return l === lane;
+    });
+  if (state.board[player][lane] && !laneIsSacrificed) return { ok: false, reason: '该列已有单位' };
   if (pool === 'gem') {
     // Gem cost = required gem colors must be *present on the board* (not consumed).
     const have = availableGems(state, player);
@@ -324,11 +331,12 @@ function processDeaths(state) {
       if (c && c.hp <= 0) {
         state.board[side][lane] = null;
         const pl = state.players[side];
-        // Bones are only generated for the Bone faction (the "Bone Lord" mechanic);
-        // other factions' creatures dying simply go to the discard pile.
+        // 骸骨阵营：己方单位「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 /
+        // 各类致死）都掉落骸骨——死 1 只 +1。事件写入 lastCombat 供 UI 播放「💀 +1🦴」特效。
         if (pl.res === 'bone' && CONFIG.BONE_DEATH_GAIN > 0) {
           pl.bones += CONFIG.BONE_DEATH_GAIN;
           state.log.push(`${c.name} 死亡（获得${CONFIG.BONE_DEATH_GAIN}骸骨）`);
+          if (state.lastCombat) state.lastCombat.push({ boneGain: true, side, lane, amount: CONFIG.BONE_DEATH_GAIN });
         } else {
           state.log.push(`${c.name} 死亡`);
         }
@@ -377,9 +385,10 @@ function beginTurn(state, p) {
     }
     pl.energy = pl.energyMax;
   } else if (pl.res === 'bone') {
-    // Bone: a small passive graveyard drip each turn, ON TOP of the
-    // +1 gained whenever one of your creatures dies.
-    pl.bones = Math.min(CONFIG.BONE_CAP_MAX, pl.bones + CONFIG.BONE_PER_TURN);
+    // 骸骨经济以「死亡掉落」为主（见 BONE_DEATH_GAIN）。再补一个小数兜底滴流：
+    // 每回合累加 BONE_PER_TURN，满 1 才 +1 骸骨——仅防前期断档，不叠加成洪流。
+    pl.boneAcc = (pl.boneAcc || 0) + CONFIG.BONE_PER_TURN;
+    while (pl.boneAcc >= 1) { pl.bones = Math.min(CONFIG.BONE_CAP_MAX, pl.bones + 1); pl.boneAcc -= 1; }
   } else if (pl.res === 'blood') {
     // Blood: a NON-banked per-turn allowance (resets every turn, never carries
     // over — honors "不攒"). It lets blood develop tempo without sacrificing a

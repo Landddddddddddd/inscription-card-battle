@@ -10,8 +10,8 @@ export const CONFIG = {
   ENERGY_CAP: 5,         // energy faction ramp cap: 1,2,3,4,5 then stays at 5
   ENERGY_RAMP_EVERY: 2,   // grow the energy pool every Nth of its own turns (slows late-game flood)
   BONE_CAP_MAX: 12,
-  BONE_PER_TURN: 1,      // passive graveyard drip each turn
-  BONE_DEATH_GAIN: 0,     // bones from creature deaths OFF (bone is now a steady passive-drip faction)
+  BONE_PER_TURN: 0.75,    // 骸骨兜底滴流（小数）：每回合累加，满 1 才 +1 骸骨；与死亡经济叠加后约 50% 胜率，仅防前期断档不叠加成洪流
+  BONE_DEATH_GAIN: 1,     // 骸骨阵营：己方单位「以任何方式死亡」（含 0 费易碎生物攻击后碎裂）每只 +1 骸骨
   BLOOD_PER_TURN: 0,      // 每回合无偿血肉 = 0（用户硬约束：血肉阵营不靠无偿发放，完全靠献祭已召唤单位来获得血肉）。pool 恒为 0，所有 blood 卡费用都由场上单位 bloodValue 支付。平衡由卡牌数值承担。
   // 时砂阵营：秒能预算与能量阵营同构地「爬升」——首回合即 +1（比能量早一回合放量，弥补时砂
   // 没有无偿经济的微弱劣势）、之后每 SAND_RAMP_EVERY 个己方回合再 +1、封顶 SAND_CAP。这样时砂
@@ -400,7 +400,7 @@ export const FACTIONS = {
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
-    desc: '亡灵墓地大军：你的生物死亡时积累骸骨，用骸骨召唤亡灵。用 0 费「枯骨幼犬」免费铺场、送死换取骸骨。',
+    desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，加上每回合 +1 的墓地滴流，用骸骨召唤亡灵。用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
     cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','lich_king','bone_dragon'],
   },
   energy: {
@@ -558,6 +558,17 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.6.8',
+    date: '2026-08-16',
+    title: '机制调整：血肉可占献祭格 · 骸骨改为死亡掉落 · 时砂倒计时归位',
+    items: [
+      '血肉：打出有费血肉牌时，可把新单位直接放在「刚被献祭的格子」上（与其它阵营统一：放在刚腾出的那一列）。选好祭品且血肉够后，该列显示「取代此格 ▲」虚线提示。',
+      '骸骨：资源计算改为「以任何方式死亡的卡牌数」——己方单位阵亡 / 0 费易碎生物攻击后碎裂 / 致死等，每只掉落 1 点骸骨（BONE_DEATH_GAIN=1）；同时去掉每回合无偿滴流，仅保留极轻的兜底累加（约 0.75/回合），避免与死亡经济叠加成洪流。死亡处新增「💀 +1🦴」骨片迸发特效 + 音效。',
+      '时砂：剩余秒数资源统一显示在顶部资源条（与其它阵营召唤条件同位置）；顶栏「⏱」则统一为真实 20 秒回合倒计时（所有阵营一致）。修复了此前 UI 中时砂预算被真实计时器覆盖的 bug。',
+      '无头仿真五阵营（PER=500）：blood 54.9% / bone 48.6% / energy 47.2% / mox 52.1% / sand 47.1%，spread 7.8pt（≤10），平衡达标。',
+    ],
+  },
   {
     version: 'v0.6.7',
     date: '2026-08-16',
