@@ -1187,7 +1187,7 @@ function updateLayoutBtn() {
 }
 
 $('collection').addEventListener('click', (e) => {
-  const tab = e.target.closest('[data-ctab]'); if (tab) { collSetFaction(tab.dataset.ctab); return; }
+  const tab = e.target.closest('[data-ctab]'); if (tab) { if (!FACTIONS[tab.dataset.ctab].comingSoon) collSetFaction(tab.dataset.ctab); return; }
   const sub = e.target.closest('[data-csub]'); if (sub) { showCollSub(sub.dataset.csub); return; }
   const open = e.target.closest('[data-sact="open"]'); if (open) { doDraw(); return; }
   const openGem = e.target.closest('[data-sact="openGem"]'); if (openGem) { doDrawGem(); return; }
@@ -1224,7 +1224,7 @@ $('deckBuilder').addEventListener('click', (e) => {
     UI.renderRulesPanel(App.rules);
     return;
   }
-  const tab = e.target.closest('[data-btab]'); if (tab) { builderSetFaction(tab.dataset.btab); return; }
+  const tab = e.target.closest('[data-btab]'); if (tab) { if (!FACTIONS[tab.dataset.btab].comingSoon) builderSetFaction(tab.dataset.btab); return; }
   const card = e.target.closest('[data-bcard]'); if (card) { builderAdjust(card.dataset.bcard, parseInt(card.dataset.bdelta, 10)); return; }
   const act = e.target.closest('[data-bact]'); if (!act) return;
   if (act.dataset.bact === 'builderCancel') builderCancel();

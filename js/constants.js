@@ -421,6 +421,24 @@ export const FACTIONS = {
     desc: '时间即是资源：每回合开始获得「秒能」预算（首回合 0，之后每 2 个己方回合 +1、封顶 5），卡牌以「秒」为费召唤，剩余不足则无法打出（不可透支，例如还剩 4 秒时打不出 5 秒的牌）。没有无偿经济、也没有额外成长，全靠这一回合的秒数铺场。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
     cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton'],
   },
+  // === 占位阵营（即将推出）：预留第 6 / 7 / 8 阵营插槽，目前 cards 为空、comingSoon:true。
+  // 具体内容（核心召唤机制 / 卡池 / 资源）以后填充；填好后删掉 comingSoon 并把 key 加进
+  // balance_sim.mjs / balance_pairwise.mjs 的硬编码阵营数组即可纳入平衡。
+  f6: {
+    key: 'f6', name: '阵营六', res: 'tbd', color: '#7c8694',
+    desc: '即将推出（敬请期待）。',
+    cards: [], comingSoon: true,
+  },
+  f7: {
+    key: 'f7', name: '阵营七', res: 'tbd', color: '#8a7c94',
+    desc: '即将推出（敬请期待）。',
+    cards: [], comingSoon: true,
+  },
+  f8: {
+    key: 'f8', name: '阵营八', res: 'tbd', color: '#7c9490',
+    desc: '即将推出（敬请期待）。',
+    cards: [], comingSoon: true,
+  },
 };
 
 // Ready-made decks (arrays of card ids), kept for quick-start / AI opponents.
@@ -589,6 +607,16 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.7',
+    date: '2026-08-17',
+    title: '预留「八大阵营」框架空位',
+    items: [
+      '在 FACTIONS 中新增第 6/7/8 阵营的占位插槽（f6 / f7 / f8），cards 为空、标记 comingSoon:true，仅预留数据结构，不实现机制与卡池。',
+      '组卡器 / 收藏页 / 玩法说明均显示「即将推出」灰槽；教程选阵营与所有「能开战」的入口已过滤 comingSoon，占位阵营不会被选中开战，也不进入平衡仿真（平衡脚本为各自硬编码的阵营数组）。',
+      '将来要落地某阵营时：填好该占位的 name / color / 资源机制 / cards，删掉 comingSoon，并把 key 加进 balance_sim.mjs 与 balance_pairwise.mjs 的阵营数组即可。',
+    ],
+  },
   {
     version: 'v0.7.6',
     date: '2026-08-16',

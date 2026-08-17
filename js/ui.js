@@ -686,7 +686,7 @@ export function renderPeace(state, me, isMyTurn) {
 // ============================================================================
 // DECK BUILDER  (locked cards are shown but not addable)
 // ============================================================================
-const FACTION_ORDER = ['blood', 'bone', 'energy', 'mox', 'sand'];
+const FACTION_ORDER = ['blood', 'bone', 'energy', 'mox', 'sand', 'f6', 'f7', 'f8'];
 const costLabel = (t) => (t === 'blood' ? '血' : t === 'bone' ? '骨' : '能');
 
 function miniCostHTML(c) {
@@ -713,7 +713,10 @@ export function renderDeckBuilder(ctx) {
   el('builderDesc').textContent = faction.desc;
   el('factionTabs').innerHTML = FACTION_ORDER.map((k) => {
     const f = FACTIONS[k];
-    return `<button class="ftab ${k === faction.key ? 'active' : ''}" data-btab="${k}" style="--fc:${f.color}">${f.name}</button>`;
+    const soonCls = f.comingSoon ? ' soon' : '';
+    const soonBadge = f.comingSoon ? '<span class="ftab-soon">即将推出</span>' : '';
+    const dis = f.comingSoon ? ' disabled' : '';
+    return `<button class="ftab${soonCls} ${k === faction.key ? 'active' : ''}" data-btab="${k}"${dis} style="--fc:${f.color}">${f.name}${soonBadge}</button>`;
   }).join('');
   // 战斗前选卡组：只展示「已解锁」的卡牌；未解锁的卡仅在「我的收藏」中显示。
   const visibleCards = (unlocked ? faction.cards.filter((id) => unlocked.has(id)) : faction.cards);
@@ -758,7 +761,10 @@ export function renderCollection(ctx) {
   el('collProgress').innerHTML = `已解锁 ${have} / ${allCardIds().length} · <span class="cur-coins">✦ ${profile.coins}</span> <span class="cur-gems">💎 ${profile.gems || 0}</span>`;
   el('collTabs').innerHTML = FACTION_ORDER.map((k) => {
     const f = FACTIONS[k];
-    return `<button class="ftab ${k === faction ? 'active' : ''}" data-ctab="${k}" style="--fc:${f.color}">${f.name}</button>`;
+    const soonCls = f.comingSoon ? ' soon' : '';
+    const soonBadge = f.comingSoon ? '<span class="ftab-soon">即将推出</span>' : '';
+    const dis = f.comingSoon ? ' disabled' : '';
+    return `<button class="ftab${soonCls} ${k === faction ? 'active' : ''}" data-ctab="${k}"${dis} style="--fc:${f.color}">${f.name}${soonBadge}</button>`;
   }).join('');
   const f = FACTIONS[faction];
   el('collGrid').innerHTML = f.cards.map((id) => {
@@ -1106,7 +1112,7 @@ export const TUT_MODULES = [
 export function renderTutSetup(ctx) {
   const { faction, modules, factions } = ctx;
   const fTabs = el('tutFactions'); if (fTabs) {
-    fTabs.innerHTML = Object.keys(factions).map((k) => {
+    fTabs.innerHTML = Object.keys(factions).filter((k) => !factions[k].comingSoon).map((k) => {
       const f = factions[k];
       return `<button class="ftab ${k === faction ? 'active' : ''}" data-tf="${k}" style="--fc:${f.color}">${f.name}</button>`;
     }).join('');
@@ -1147,6 +1153,13 @@ export function changelogHTML() {
 export function howToHTML() {
   const factionCard = (k) => {
     const f = FACTIONS[k];
+    if (f.comingSoon) {
+      return `<div class="ht-faction soon" style="--fc:${f.color}">
+        <div class="ht-fh"><span class="ht-dot" style="background:${f.color}"></span>${f.name}</div>
+        <div class="ht-fd">${f.desc}</div>
+        <div class="ht-fres">资源：敬请期待</div>
+      </div>`;
+    }
     return `<div class="ht-faction" style="--fc:${f.color}">
       <div class="ht-fh"><span class="ht-dot" style="background:${f.color}"></span>${f.name}</div>
       <div class="ht-fd">${f.desc}</div>
@@ -1180,9 +1193,9 @@ export function howToHTML() {
   </div>
 
   <div class="ht-section">
-    <h3 class="ht-h">三、四大阵营</h3>
+    <h3 class="ht-h">三、阵营玩法（5 大阵营已开放 · 3 大阵营即将推出）</h3>
     <p class="ht-p">不同阵营的「资源」与核心机制各不相同，可在新手教程里逐一对练：</p>
-    <div class="ht-factions">${['blood', 'bone', 'energy', 'mox', 'sand'].map(factionCard).join('')}</div>
+    <div class="ht-factions">${['blood', 'bone', 'energy', 'mox', 'sand', 'f6', 'f7', 'f8'].map(factionCard).join('')}</div>
   </div>
 
   <div class="ht-section">
