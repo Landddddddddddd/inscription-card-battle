@@ -159,6 +159,11 @@ html, body {
   background: var(--wood2); color: var(--text); border: 1px solid var(--line2); padding: 8px 16px; box-shadow: 0 2px 0 rgba(0,0,0,.5); transition: .12s; }
 .ftab:hover { border-color: var(--fc); }
 .ftab.active { background: var(--fc); color: #14100a; border-color: #000; font-weight: 700; box-shadow: 0 0 14px var(--fc); }
+.ftab.soon { opacity: .45; cursor: not-allowed; filter: grayscale(.7); }
+.ftab.soon:hover { border-color: var(--fc); box-shadow: none; }
+.ftab-soon { font-size: .62em; margin-left: 5px; letter-spacing: 0; opacity: .85; vertical-align: middle; }
+.ht-faction.soon { opacity: .5; filter: grayscale(.6); }
+.ht-faction.soon .ht-fres { color: #777; }
 
 /* 我的收藏：图鉴 / 抽卡 子标签 */
 .coll-subtabs { display: flex; gap: 10px; justify-content: center; margin: 4px 0 12px; }
