@@ -7,7 +7,7 @@ import { createGame } from './public/js/engine.js';
 import { runAITurn } from './public/js/ai.js';
 import { DECKS, DEFAULT_RULES, CONFIG } from './public/js/constants.js';
 
-const FACTIONS = ['blood', 'bone', 'energy', 'mox', 'sand'];
+const FACTIONS = ['blood', 'bone', 'energy', 'mox', 'sand', 'morale'];
 const PER = parseInt(process.argv[2] || '60', 10);
 const LEVEL = process.argv[3] || 'normal';
 // Optional overrides:
@@ -25,6 +25,14 @@ if (process.argv[5]) {
   if (!Number.isNaN(v) && v >= 0) {
     CONFIG.SAND_RAMP_EVERY = v;
     console.log(`(override SAND_RAMP_EVERY=${v})`);
+  }
+}
+// 军威天平士气折减系数扫描：MSR=0.1 形式（env 覆盖，避免污染 constants.js）
+if (process.env.MSR) {
+  const v = parseFloat(process.env.MSR);
+  if (!Number.isNaN(v) && v >= 0) {
+    CONFIG.MORALE_SCALE_RATE = v;
+    console.log(`(override MORALE_SCALE_RATE=${v})`);
   }
 }
 

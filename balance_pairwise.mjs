@@ -3,7 +3,7 @@ import { createGame } from './public/js/engine.js';
 import { runAITurn } from './public/js/ai.js';
 import { DECKS, DEFAULT_RULES } from './public/js/constants.js';
 
-const FACTIONS = ['blood', 'bone', 'energy', 'mox'];
+const FACTIONS = ['blood', 'bone', 'energy', 'mox', 'sand', 'morale'];
 const PER = parseInt(process.argv[2] || '40', 10);
 const LEVEL = process.argv[3] || 'normal';
 

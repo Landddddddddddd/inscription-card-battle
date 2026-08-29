@@ -57,7 +57,7 @@ export function createGame(opts = {}) {
   const resA = opts.resA || 'blood';
   const resB = opts.resB || 'blood';
     const mkPly = (deck, name, res, key) => {
-    const pl = { name, res, avatar: opts['avatar' + key] || '🜁', deck: shuffle(deck), hand: [], blood: 0, bloodCap: 0, bones: 0, energy: 0, energyMax: 0, energyRamp: 0, mox: 0, seconds: 0, sandBudget: 0, sandRamp: 0, discard: [] };
+    const pl = { name, res, avatar: opts['avatar' + key] || '🜁', deck: shuffle(deck), hand: [], blood: 0, bloodCap: 0, bones: 0, energy: 0, energyMax: 0, energyRamp: 0, mox: 0, seconds: 0, sandBudget: 0, sandRamp: 0, morale: 0, moraleGainThisTurn: 0, moraleScaleFrac: 0, discard: [] };
     initResources(pl);
     return pl;
   };
@@ -94,6 +94,7 @@ export function createGame(opts = {}) {
     ensureZeroCostRatioInHand(state, p);
     if (state.players[p].res === 'mox') ensureMoxGemInHand(state, p);
     if (state.players[p].res === 'sand') ensureSandStarterInHand(state, p);
+    if (state.players[p].res === 'morale') ensureMoraleStarterInHand(state, p);
   }
   beginTurn(state, 'A');
   state.log.push('对局开始！目标是把对方的天平压到顶端。');
@@ -137,6 +138,23 @@ function ensureSandStarterInHand(state, p) {
   if (pl.hand.length >= CONFIG.HAND_LIMIT) {
     const hi = pl.hand.findIndex((c) => c.cardId !== SAND_STARTER);
     if (hi >= 0) pl.deck.push(pl.hand.splice(hi, 1)[0].cardId); // 手牌满则挤掉一张非新手牌回牌库
+  }
+  pl.hand.push(instantiate(id));
+}
+
+// 军威：保证开局手牌里有一张「战鼓手」(war_drummer，0 费军威生物)。
+// 军威士气开局为 0、只能靠「造成伤害」累积，若无 0 费启动卡则第 1 回合必然空过、
+// 永远启动不起来。与 ensureSandStarterInHand 同构：优先从牌库取，牌库没有则直接送。
+function ensureMoraleStarterInHand(state, p) {
+  const pl = state.players[p];
+  const MORALE_STARTER = 'war_drummer';
+  if (!CARDS[MORALE_STARTER]) return;
+  if (pl.hand.some((c) => c.cardId === MORALE_STARTER)) return;
+  const di = pl.deck.findIndex((id) => id === MORALE_STARTER);
+  const id = di >= 0 ? pl.deck.splice(di, 1)[0] : MORALE_STARTER;
+  if (pl.hand.length >= CONFIG.HAND_LIMIT) {
+    const hi = pl.hand.findIndex((c) => c.cardId !== MORALE_STARTER);
+    if (hi >= 0) pl.deck.push(pl.hand.splice(hi, 1)[0].cardId);
   }
   pl.hand.push(instantiate(id));
 }
@@ -257,6 +275,15 @@ export function playCard(state, player, iid, lane, opts = {}) {
       return { ok: false, reason: '剩余秒数不足（需 ' + card.cost + ' 秒，当前 ' + Math.floor(pl.seconds) + ' 秒）' };
     }
     pl.seconds -= card.cost;
+  } else if (pool === 'morale') {
+    // 军威：消耗「士气」(pl.morale) 召唤。士气由「造成伤害」累积：交战（打敌方单位、含致死算
+    // 满血、尖刺反伤）给全额、受 MORALE_GAIN_PER_TURN_CAP；天平（直击空列/飞行越界）给折减
+    // （MORALE_SCALE_RATE=0.22，分数累积）——否则攻击取胜动作既推胜利又滚经济会双重碾压
+    // （初版天平满额导致 88% 失衡）。跨回合累计、封顶 MORALE_CAP、开局 0、无无偿发放。
+    if (pl.morale < card.cost) {
+      return { ok: false, reason: '士气不足（需 ' + card.cost + ' 士气，当前 ' + pl.morale + '）' };
+    }
+    pl.morale -= card.cost;
   } else {
     if (pl[pool] < card.cost) return { ok: false, reason: '资源不足（需' + card.cost + (card.costType === 'bone' ? '骸骨' : '能量') + '）' };
     pl[pool] -= card.cost;
@@ -271,6 +298,35 @@ export function playCard(state, player, iid, lane, opts = {}) {
 // One-directional combat (faithful to Inscryption): ONLY the attacker deals
 // damage. The defender does NOT counterattack — it strikes back on its own
 // turn instead. The only retaliation is the defender's sharp_quills (尖刺).
+// 军威士气累积：由 fight()（交战打敌方单位 + 尖刺反伤，全额）与 resolveAttacks 的
+// 「直击天平」路径（折减 MORALE_SCALE_RATE）共同调用，累加 pl.morale。封顶 MORALE_CAP、
+// 交战受 MORALE_GAIN_PER_TURN_CAP、天平分数累积。其他阵营调用为 no-op（res !== 'morale'），
+// fight / resolveAttacks 可无差别对所有阵营调用。
+function addMorale(state, side, amount, kind) {
+  const pl = state.players[side];
+  if (pl.res !== 'morale' || amount <= 0) return;
+  if (kind === 'scale') {
+    // 天平（取胜动作）伤害：折减系数 MORALE_SCALE_RATE（分数累积，避免整数 floor 吞小伤害），
+    // 形成「稳定细水」——不能给满额，否则攻击取胜动作既推胜利又滚经济会双重碾压
+    // （初版满额天平士气导致 88% 失衡）。交战（打敌方单位）则给满额（忠实「打在对方卡牌上」）。
+    pl.moraleScaleFrac = (pl.moraleScaleFrac || 0) + amount * (CONFIG.MORALE_SCALE_RATE || 0.1);
+    const gain = Math.floor(pl.moraleScaleFrac);
+    if (gain <= 0) return;
+    pl.moraleScaleFrac -= gain;
+    pl.morale = Math.min(CONFIG.MORALE_CAP || 10, pl.morale + gain);
+    if (state.lastCombat) state.lastCombat.push({ moraleGain: true, side, amount: gain });
+  } else {
+    // 交战（打敌方单位 / 尖刺反伤）：满额，受通用每回合获取上限 MORALE_GAIN_PER_TURN_CAP。
+    const cap = CONFIG.MORALE_GAIN_PER_TURN_CAP || 6;
+    const room = Math.max(0, cap - (pl.moraleGainThisTurn || 0));
+    const gain = Math.min(room, amount);
+    if (gain <= 0) return;
+    pl.morale = Math.min(CONFIG.MORALE_CAP || 10, pl.morale + gain);
+    pl.moraleGainThisTurn = (pl.moraleGainThisTurn || 0) + gain;
+    if (state.lastCombat) state.lastCombat.push({ moraleGain: true, side, amount: gain });
+  }
+}
+
 function fight(state, atkSide, atkLane, defSide, defLane) {
   const c = state.board[atkSide][atkLane];
   const d = state.board[defSide][defLane];
@@ -279,13 +335,21 @@ function fight(state, atkSide, atkLane, defSide, defLane) {
   const cAtk = getAttack(state, atkSide, atkLane) * (cDbl ? 2 : 1);
   let dmg = cAtk + (c.sigils.includes('poison_touch') ? 1 : 0); // 毒触：额外+1
   if (d.sigils.includes('armored')) dmg = Math.max(0, dmg - 1); // 厚甲：受击 -1
+  const dHpBefore = d.hp;
   d.hp -= dmg;
   if (c.sigils.includes('death_touch') && dmg > 0) d.hp = 0;    // 致死：任何伤害即死
+  // 军威士气：攻击方「实际造成」的伤害（=防御方损失的生命；致死算满血）累积士气。
+  const actualDmg = Math.max(0, dHpBefore - Math.max(0, d.hp));
+  if (actualDmg > 0) addMorale(state, atkSide, actualDmg);
   if (state.lastCombat) state.lastCombat.push({ side: defSide, lane: defLane, dmg, by: atkSide, dbl: cDbl, death: (c.sigils.includes('death_touch') && dmg > 0) });
   if (d.sigils.includes('sharp_quills')) {            // 尖刺：被攻击时反伤1点（攻击方同样享受厚甲减免）
     let q = 1;
     if (c.sigils.includes('armored')) q = Math.max(0, q - 1);
+    const cHpBefore = c.hp;
     c.hp -= q;
+    // 军威士气：尖刺反伤是防御方造成的伤害，同样累积防御方士气。
+    const actualQ = Math.max(0, cHpBefore - Math.max(0, c.hp));
+    if (actualQ > 0) addMorale(state, defSide, actualQ);
     if (state.lastCombat) state.lastCombat.push({ side: atkSide, lane: atkLane, dmg: q, by: defSide, quill: true });
   }
 }
@@ -311,6 +375,7 @@ function resolveAttacks(state, attacker) {
         didAttack = true;
       } else if (cAir && !dAir) {
         state.weights[attacker] += pw;
+        addMorale(state, attacker, pw, 'scale');  // 军威：天平伤害产士气（受独立低上限约束）
         if (state.lastCombat) state.lastCombat.push({ scale: true, dmg: pw, by: attacker, lane, dbl: c.sigils.includes('double_strike') });
         state.log.push(`${c.name} 飞越攻击，天平 +${pw}`);
         didAttack = true;
@@ -323,6 +388,7 @@ function resolveAttacks(state, attacker) {
       }
     } else {
       state.weights[attacker] += pw;
+      addMorale(state, attacker, pw, 'scale');  // 军威：天平伤害产士气（受独立低上限约束）
       if (state.lastCombat) state.lastCombat.push({ scale: true, dmg: pw, by: attacker, lane, dbl: c.sigils.includes('double_strike') });
       state.log.push(`${c.name} 攻击天平 +${pw}`);
       didAttack = true;
@@ -476,6 +542,9 @@ function beginTurn(state, p) {
     pl.seconds = pl.sandBudget;
   }
   // mox: board-presence gems from Mox creatures — no per-turn regen.
+  // 军威(morale)：士气跨回合累计、不重置；但「每回合获取上限」在己方回合开始时清零，
+  // 使本回合新攒的士气受 MORALE_GAIN_PER_TURN_CAP 约束（已存的士气不受影响）。
+  if (pl.res === 'morale') pl.moraleGainThisTurn = 0;
   // 狂热(frenzy)：每回合开始攻击力 +1（封顶 6）；回复(regen)：每回合开始恢复 1 点生命（不超过上限）。
   for (let l = 0; l < lanesOf(state); l++) {
     const u = state.board[p][l];

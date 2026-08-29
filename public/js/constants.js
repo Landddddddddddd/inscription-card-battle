@@ -18,6 +18,18 @@ export const CONFIG = {
   // 不会首回合铺满 4 列，同时单位数值曲线照搬能量阵营，保证五阵营整体平衡。卡牌以「秒」为费，不可透支。
   SAND_RAMP_EVERY: 2,   // 时砂：每 N 个己方回合 +1 秒能（与能量 ENERGY_RAMP_EVERY 一致）
   SAND_CAP: 5,          // 时砂：秒能预算上限（与能量 ENERGY_CAP 一致）
+  // 军威阵营：士气由「造成伤害」累积（交战打敌方单位给全额 + 尖刺反伤；天平直击给折减），
+  // 跨回合累计、不重置（与血肉「不攒」相反，这是军威特色：前期攒后期爆发）。
+  // 天平（取胜动作）伤害折减产士气——否则攻击天平既推胜利又滚经济会双重碾压（初版满额 88% 失衡）。
+  // MORALE_CAP 防存量无限膨胀；MORALE_GAIN_PER_TURN_CAP 防交战单回合无上限雪球。开局 0、无无偿发放。
+  MORALE_CAP: 10,
+  MORALE_GAIN_PER_TURN_CAP: 6,
+  // 天平（直击空列/飞行越界）伤害产士气的「折减系数」（分数累积，避免整数 floor 吞小伤害）：
+  // 交战（打敌方单位）伤害给全额（1 伤=1 士气，忠实「打在对方卡牌上」），天平伤害只给本系数倍
+  // （忠实「成为得分也攒士气」的意味但压到可平衡）。初版天平给满额导致 88% 失衡（攻击取胜动作
+  // 既推胜利又滚经济双重碾压），故天平士气须是「稳定细水」而非爆发源。
+  // 最终值 0.22 由平衡仿真扫参确定（PER=500：六阵营 spread 5.5pt，各阵营 48–54%）。
+  MORALE_SCALE_RATE: 0.22,
   DECK_MIN: 5,           // deck builder constraints（0 费卡下限：卡组最少 5 张）
   DECK_MAX: 30,
   ZERO_COST_MAX: 15,     // 单张 0 费卡在卡组中的最多重复数（原上限 2，现放宽到 15）
@@ -32,7 +44,7 @@ export const RULE_OPTIONS = {
   lanes:       [3, 4, 5, 6, 7],            // board size (columns per side)
   winMode:     ['difference', 'absolute'],// 胜利方式：分数差 / 累计分数
   drawPerTurn: [1, 2, 3],                  // cards drawn at the start of each turn
-  deckScope:   ['all', 'blood', 'bone', 'energy', 'mox'], // deck restriction
+  deckScope:   ['all', 'blood', 'bone', 'energy', 'mox', 'sand', 'morale'], // deck restriction
 };
 // 胜利目标可自定义的上限（防止异常数值）。
 export const WIN_SCALE_CAP = 200;
@@ -372,6 +384,33 @@ export const CARDS = {
   minute_hand:     { name: '分针',     atk: 3, hp: 3, cost: 2, costType: 'sand', sigils: ['sharp_quills'],   bloodValue: 1, color: '#c9a24a', glyph: '分' },
   brass_automaton: { name: '黄铜傀儡', atk: 3, hp: 3, cost: 2, costType: 'sand', sigils: [],                 bloodValue: 1, color: '#b08d57', glyph: '铜' },
 
+  // ==========================================================================
+  // 军威阵营（morale）：核心创新点 = 召唤方式——消耗「士气」召唤。士气由「交战造成
+  // 伤害」累积（攻击敌方单位 +1/伤害、致死算满血、尖刺反伤同样产士气），跨回合累计、
+  // 存量封顶 MORALE_CAP、单回合获取封顶 MORALE_GAIN_PER_TURN_CAP、开局 0、无无偿发放。
+  // **攻击天平（直击空列/飞行越界）不再产士气**——初版含此导致 88% 失衡（攻击取胜动作
+  // 既推胜利又滚经济双重碾压），改交战伤害后才平衡。用户要求「最廉价单位、费用相对高」，
+  // 故身材压到廉价端（同费比其它阵营略弱），靠「打敌方单位即回本」的正反馈滚雪球。
+  // 0费×1 / 1费×3 / 2费×6 / 3费×3 / 4费×3 + 1 付费神话。
+  war_drummer:      { name: '战鼓手',   atk: 1, hp: 1, cost: 0, costType: 'morale', sigils: [],                bloodValue: 1, color: '#c89a6a', glyph: '鼓' },
+  war_piper:        { name: '战笛手',   atk: 1, hp: 1, cost: 1, costType: 'morale', sigils: ['brittle'],       bloodValue: 1, color: '#c09060', glyph: '笛' },
+  outrider:         { name: '游骑',     atk: 2, hp: 1, cost: 1, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b5754a', glyph: '骑' },
+  scout_raven:      { name: '斥候鸦',   atk: 1, hp: 2, cost: 1, costType: 'morale', sigils: ['airborne'],      bloodValue: 1, color: '#9a8a6a', glyph: '鸦' },
+  spearman:         { name: '矛兵',     atk: 2, hp: 1, cost: 1, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b07040', glyph: '矛' },
+  warhound:         { name: '战犬',     atk: 3, hp: 1, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#a85a2a', glyph: '犬' },
+  pikeman:          { name: '长矛兵',   atk: 1, hp: 3, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#a05a30', glyph: '枪' },
+  drummer_chief:    { name: '鼓长',     atk: 2, hp: 2, cost: 2, costType: 'morale', sigils: ['frenzy'],        bloodValue: 1, color: '#b06030', glyph: '帅' },
+  shield_guard:     { name: '盾卫',     atk: 1, hp: 4, cost: 2, costType: 'morale', sigils: ['armored'],       bloodValue: 1, color: '#9a6a4a', glyph: '盾' },
+  standard_bearer:   { name: '旗手',     atk: 2, hp: 2, cost: 2, costType: 'morale', sigils: ['pack'],          bloodValue: 1, color: '#a05028', glyph: '旗' },
+  archer:           { name: '弩手',     atk: 2, hp: 1, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b8682a', glyph: '弩' },
+  knight_errant:    { name: '游侠骑士', atk: 3, hp: 3, cost: 3, costType: 'morale', sigils: ['armored'],       bloodValue: 1, color: '#9a4a1a', glyph: '侠' },
+  berserker:        { name: '狂战士',   atk: 3, hp: 2, cost: 3, costType: 'morale', sigils: [],                bloodValue: 1, color: '#8a3a14', glyph: '狂' },
+  champion:         { name: '冠军',     atk: 2, hp: 3, cost: 3, costType: 'morale', sigils: ['regen'],         bloodValue: 1, color: '#a05a2a', glyph: '冠' },
+  lancer:           { name: '骑枪兵',   atk: 4, hp: 3, cost: 4, costType: 'morale', sigils: ['double_strike'], bloodValue: 1, color: '#7a3a14', glyph: '刺' },
+  general:          { name: '将军',     atk: 3, hp: 4, cost: 4, costType: 'morale', sigils: [],                bloodValue: 1, color: '#6a2a10', glyph: '将' },
+  war_elephant:    { name: '战象',     atk: 4, hp: 4, cost: 4, costType: 'morale', sigils: ['armored'],       bloodValue: 1, color: '#7a4a1a', glyph: '象' },
+  avatar_of_war:    { name: '战神化身', atk: 5, hp: 5, cost: 5, costType: 'morale', sigils: ['regen','undying'],bloodValue: 2, color: '#d4a040', glyph: '神', premium: true },
+
   // ===================== 神话卡（premium / mythic）=====================
   // 仅可通过魂晶（付费货币）获取：暗夜卡包极低概率掉落 或 直购商店高价购买。
   // 设计原则：比同费用普通卡略强（+1 stat 或多一个印记），但有明确弱点（脆皮/高费/多宝石需求）。
@@ -424,10 +463,10 @@ export const FACTIONS = {
   // === 占位阵营（即将推出）：预留第 6 / 7 / 8 阵营插槽，目前 cards 为空、comingSoon:true。
   // 具体内容（核心召唤机制 / 卡池 / 资源）以后填充；填好后删掉 comingSoon 并把 key 加进
   // balance_sim.mjs / balance_pairwise.mjs 的硬编码阵营数组即可纳入平衡。
-  f6: {
-    key: 'f6', name: '阵营六', res: 'tbd', color: '#7c8694',
-    desc: '即将推出（敬请期待）。',
-    cards: [], comingSoon: true,
+  morale: {
+    key: 'morale', name: '军威', res: 'morale', color: '#b5651d',
+    desc: '军威以「士气」为资源：交战造成伤害（攻击敌方单位、含致死与尖刺反伤）给全额士气（1 伤=1 士气，受单回合获取上限）；攻击天平（直击空列/飞行越界）给折减系数 0.22 的士气（分数累积）。士气跨回合累计、存量封顶 10、单回合获取封顶 4、开局 0、无无偿发放。初版天平满额导致 88% 失衡（攻击取胜动作既推胜利又滚经济双重碾压），改折减后才平衡。士气卡消耗士气召唤——单位身材压到廉价端，靠「打敌方单位即回本」的正反馈滚雪球。',
+    cards: ['war_drummer','war_piper','outrider','scout_raven','spearman','warhound','pikeman','drummer_chief','shield_guard','standard_bearer','archer','knight_errant','berserker','champion','lancer','general','war_elephant','avatar_of_war'],
   },
   f7: {
     key: 'f7', name: '阵营七', res: 'tbd', color: '#8a7c94',
@@ -452,6 +491,7 @@ export const DECKS = {
   energy: FACTIONS.energy.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
   mox:    FACTIONS.mox.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
   sand:   FACTIONS.sand.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
+  morale: FACTIONS.morale.cards.filter(_nonPremium).flatMap((id) => Array(deckCopies(id)).fill(id)),
 };
 
 // Build a default deck for a faction (each card x2, padded to a sane size).
@@ -607,6 +647,18 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.8',
+    date: '2026-08-17',
+    title: '第六阵营「军威」：造成伤害即攒士气',
+    items: [
+      '新阵营「军威(morale)」上线——第六套独立召唤方式：消耗「士气」召唤，士气由「交战造成伤害」累积（攻击敌方单位、含致死算满血、尖刺反伤），跨回合累计、存量封顶 10、单回合获取封顶 4、开局 0、无无偿发放。',
+      '与现有五套召唤方式排他（血肉献祭 / 骸骨死亡 / 能量爬升 / 魔石存在 / 时砂秒数），是第六种：打敌方单位即资源。前期靠 0 费战鼓手造成伤害攒士气启动，中后期靠廉价高性价比单位滚雪球。',
+      '18 张军威卡（0费×1 / 1费×3 / 2费×6 / 3费×3 / 4费×3 + 1 张付费神话「战神化身」），主题=军阵/战鼓/旌旗/战兽；单位身材压到廉价端（同费比其它阵营略弱）。',
+      '引擎：pl.morale 字段、playCard morale 分支、fight() 累积士气（实际交战伤害、致死算满血、尖刺反伤同样产全额）、resolveAttacks() 天平伤害按 MORALE_SCALE_RATE=0.22 折减累积（分数累积 moraleScaleFrac，避免攻击取胜动作既推胜利又滚经济双重碾压——初版天平满额导致 88% 失衡，改折减后六阵营 spread 5.5pt）、beginTurn 重置单回合获取计数、addMorale 按获取上限截断；开局 ensureMoraleStarterInHand 送战鼓手。',
+      '全链路接入：ai canAfford / ui canPlayCard+成本角标「气」+资源条+阵营卡 / main 顶栏士气+resDescShort / profile collection 自动含 / balance_sim+pairwise 阵营数组加 morale。平衡仿真调参至 spread≤10。',
+    ],
+  },
   {
     version: 'v0.7.7',
     date: '2026-08-17',
