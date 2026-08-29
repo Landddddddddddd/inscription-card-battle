@@ -309,6 +309,7 @@ export function canPlayCard(state, me, card) {
     return avail >= card.cost;
   }
   if (card.costType === 'sand') return (pl.seconds || 0) >= card.cost;
+  if (card.costType === 'morale') return (pl.morale || 0) >= card.cost;
   const pool = card.costType === 'bone' ? 'bones' : 'energy';
   return pl[pool] >= card.cost;
 }
@@ -326,7 +327,7 @@ function costBadgeHTML(card) {
     const col = GEMS[card.mox] ? GEMS[card.mox].color : '#aaa';
     return `<div class="cost gem" title="魔石生物"><span class="gpip" style="background:${col}"></span></div>`;
   }
-  const label = card.costType === 'blood' ? '血' : card.costType === 'bone' ? '骨' : card.costType === 'sand' ? '秒' : '能';
+  const label = card.costType === 'blood' ? '血' : card.costType === 'bone' ? '骨' : card.costType === 'sand' ? '秒' : card.costType === 'morale' ? '气' : '能';
   return `<div class="cost ${card.costType}">${card.cost}${label}</div>`;
 }
 
@@ -420,12 +421,16 @@ export function renderGame(ctx) {
   } else if (pl.res === 'sand') {
     const secs = Math.floor(pl.seconds || 0);
     resHTML = `<div class="res sand"><span class="dot"></span>剩余秒数 <span class="val">${secs}</span><span class="cap">s</span></div>`;
+  } else if (pl.res === 'morale') {
+    const m = pl.morale || 0;
+    resHTML = `<div class="res morale"><span class="dot"></span>士气 <span class="val">${m}</span><span class="cap">/${CONFIG.MORALE_CAP}</span></div>`;
   }
   const curRes = {};
   if (pl.res === 'bone') curRes.bone = pl.bones;
   else if (pl.res === 'energy') curRes.energy = pl.energy;
   else if (pl.res === 'mox') curRes.gemTotal = Object.values(counts).reduce((a, b) => a + b, 0);
   else if (pl.res === 'sand') curRes.seconds = Math.floor(pl.seconds || 0);
+  else if (pl.res === 'morale') curRes.morale = pl.morale || 0;
   const prevRes = _prev.res[me] || {};
   let resFlash = false, resGain = null, gemColor = null;
   for (const k in curRes) {
@@ -686,8 +691,8 @@ export function renderPeace(state, me, isMyTurn) {
 // ============================================================================
 // DECK BUILDER  (locked cards are shown but not addable)
 // ============================================================================
-const FACTION_ORDER = ['blood', 'bone', 'energy', 'mox', 'sand', 'f6', 'f7', 'f8'];
-const costLabel = (t) => (t === 'blood' ? '血' : t === 'bone' ? '骨' : '能');
+const FACTION_ORDER = ['blood', 'bone', 'energy', 'mox', 'sand', 'morale', 'f7', 'f8'];
+const costLabel = (t) => (t === 'blood' ? '血' : t === 'bone' ? '骨' : t === 'morale' ? '气' : '能');
 
 function miniCostHTML(c) {
   if (c.costType === 'gem') {
@@ -1163,7 +1168,7 @@ export function howToHTML() {
     return `<div class="ht-faction" style="--fc:${f.color}">
       <div class="ht-fh"><span class="ht-dot" style="background:${f.color}"></span>${f.name}</div>
       <div class="ht-fd">${f.desc}</div>
-      <div class="ht-fres">资源：${k === 'blood' ? '每回合 1 点血肉（不攒、重置）+ 献祭场上单位支付更高费' : k === 'bone' ? '生物死亡掉落骸骨（每只 +1）＋每回合极轻墓地滴流（约 0.75，攒满 1 才 +1）' : k === 'energy' ? '每回合回能（封顶 6，整回满）' : '场上魔石生物提供魔石（不消耗，但死亡即失）'}</div>
+      <div class="ht-fres">资源：${k === 'blood' ? '每回合 1 点血肉（不攒、重置）+ 献祭场上单位支付更高费' : k === 'bone' ? '生物死亡掉落骸骨（每只 +1）＋每回合极轻墓地滴流（约 0.75，攒满 1 才 +1）' : k === 'energy' ? '每回合回能（封顶 6，整回满）' : k === 'morale' ? '交战造成伤害累积士气（攻击敌方单位 +1/伤害、致死算满血、尖刺反伤也产士气；跨回合累计、封顶 10、单回合获取封顶 4、开局 0、无无偿发放）。攻击天平不再产士气。消耗士气召唤' : '场上魔石生物提供魔石（不消耗，但死亡即失）'}</div>
     </div>`;
   };
   const sigRows = Object.keys(SIGILS).map((s) =>

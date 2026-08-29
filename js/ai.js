@@ -21,6 +21,7 @@ function canAfford(state, me, c) {
     return avail >= c.cost;
   }
   if (c.costType === 'sand') return (state.players[me].seconds || 0) >= c.cost;
+  if (c.costType === 'morale') return (state.players[me].morale || 0) >= c.cost;
   const pool = c.costType === 'bone' ? 'bones' : 'energy';
   return state.players[me][pool] >= c.cost;
 }

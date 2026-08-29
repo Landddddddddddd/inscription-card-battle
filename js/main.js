@@ -426,7 +426,7 @@ function tutNext() { if (!App.tut) return; App.tut.step++; showTutStep(); }
 
 // Short description of each faction's resource, used inside tutorial text.
 function resDescShort(fac) {
-  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡掉落骸骨（每只 +1）＋每回合极轻墓地滴流（约 0.75，攒满 1 才 +1）', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「剩余秒数」召唤（不可透支：剩余不足打不出；每回合开始按秒能预算重置，首回合 0、每 2 回合 +1、封顶 5）' }[fac] || '';
+  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡掉落骸骨（每只 +1）＋每回合极轻墓地滴流（约 0.75，攒满 1 才 +1）', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「剩余秒数」召唤（不可透支：剩余不足打不出；每回合开始按秒能预算重置，首回合 0、每 2 回合 +1、封顶 5）', morale: '交战造成伤害即攒「士气」：攻击敌方单位 +1/伤害（致死算满血）、尖刺反伤也产全额士气；攻击天平（直击空列/飞行越界）给折减系数 0.22 的士气（分数累积）。跨回合累计、封顶 10、单回合获取封顶 4、开局 0、无无偿发放。消耗士气召唤——前期靠 0 费战鼓手打敌方单位攒士气启动。' }[fac] || '';
 }
 function sigilsIntro() {
   return '【印记特性】卡牌可能携带「印记」，常见有：\n'
