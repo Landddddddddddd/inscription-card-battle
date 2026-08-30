@@ -281,6 +281,9 @@ export const CARDS = {
   // [daily 2026-08-14] 骨弓手
   bone_archer: { name: '骨弓手', atk: 1, hp: 2, cost: 2, costType: 'bone', sigils: ['airborne'],          bloodValue: 1, color: '#cfcabc', glyph: '弓' },
 
+  // [daily 2026-08-30] 噬魂骨（骸骨阵营首张「致死」印记卡：任何伤害直接斩杀，脆身换血）
+  soul_bone:  { name: '噬魂骨', atk: 2, hp: 2, cost: 3, costType: 'bone', sigils: ['death_touch'],         bloodValue: 1, color: '#cfcabc', glyph: '噬' },
+
   // ===================== ENERGY（能量 · 机械科技主题）=====================
   black_cat:   { name: '电池机偶', atk: 0, hp: 1, cost: 0, costType: 'energy', sigils: [],               bloodValue: 1, color: '#2b3b4b', glyph: '电' },
   magpie:      { name: '磁窃鸟',   atk: 2, hp: 1, cost: 1, costType: 'energy', sigils: [],               bloodValue: 1, color: '#3a3a4a', glyph: '磁' },
@@ -315,6 +318,9 @@ export const CARDS = {
 
   // [daily 2026-08-15] 齿轮犬
   gear_hound:  { name: '齿轮犬', atk: 2, hp: 2, cost: 2, costType: 'energy', sigils: ['frenzy'],            bloodValue: 1, color: '#5a7a9a', glyph: '齿' },
+
+  // [daily 2026-08-30] 回响机（能量阵营首张「不死」印记卡：首次死亡返手牌，2 费 3/2 廉价钢板）
+  echo_droid:  { name: '回响机', atk: 3, hp: 2, cost: 2, costType: 'energy', sigils: ['undying'],            bloodValue: 1, color: '#5a7a9a', glyph: '响' },
 
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
@@ -351,6 +357,9 @@ export const CARDS = {
 
   // [daily 2026-08-15] 熔岩哨
   lava_sentinel: { name: '熔岩哨', atk: 1, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange'],               sigils: ['regen'],         bloodValue: 1, color: '#e07a3a', glyph: '熔' },
+
+  // [daily 2026-08-30] 苔绒精（魔石阵营首张「断尾」印记卡：死亡随机得一只松鼠；需绿魔石）
+  moss_imp:    { name: '苔绒精', atk: 1, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],                 sigils: ['loose_tail'],    bloodValue: 1, color: '#3a9a5a', glyph: '绒' },
 
   // ==========================================================================
   // 时砂阵营（sand）：核心创新点 = 召唤方式——消耗「剩余秒数」召唤，不可透支。
@@ -397,18 +406,18 @@ export const CARDS = {
   outrider:         { name: '游骑',     atk: 2, hp: 1, cost: 1, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b5754a', glyph: '骑' },
   scout_raven:      { name: '斥候鸦',   atk: 1, hp: 2, cost: 1, costType: 'morale', sigils: ['airborne'],      bloodValue: 1, color: '#9a8a6a', glyph: '鸦' },
   spearman:         { name: '矛兵',     atk: 2, hp: 1, cost: 1, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b07040', glyph: '矛' },
-  warhound:         { name: '战犬',     atk: 3, hp: 1, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#a85a2a', glyph: '犬' },
+  warhound:         { name: '战犬',     atk: 2, hp: 1, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#a85a2a', glyph: '犬' },
   pikeman:          { name: '长矛兵',   atk: 1, hp: 3, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#a05a30', glyph: '枪' },
   drummer_chief:    { name: '鼓长',     atk: 2, hp: 2, cost: 2, costType: 'morale', sigils: ['frenzy'],        bloodValue: 1, color: '#b06030', glyph: '帅' },
   shield_guard:     { name: '盾卫',     atk: 1, hp: 4, cost: 2, costType: 'morale', sigils: ['armored'],       bloodValue: 1, color: '#9a6a4a', glyph: '盾' },
   standard_bearer:   { name: '旗手',     atk: 2, hp: 2, cost: 2, costType: 'morale', sigils: ['pack'],          bloodValue: 1, color: '#a05028', glyph: '旗' },
   archer:           { name: '弩手',     atk: 2, hp: 1, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b8682a', glyph: '弩' },
-  knight_errant:    { name: '游侠骑士', atk: 3, hp: 3, cost: 3, costType: 'morale', sigils: ['armored'],       bloodValue: 1, color: '#9a4a1a', glyph: '侠' },
-  berserker:        { name: '狂战士',   atk: 3, hp: 2, cost: 3, costType: 'morale', sigils: [],                bloodValue: 1, color: '#8a3a14', glyph: '狂' },
+  knight_errant:    { name: '游侠骑士', atk: 3, hp: 2, cost: 3, costType: 'morale', sigils: ['armored'],       bloodValue: 1, color: '#9a4a1a', glyph: '侠' },
+  berserker:        { name: '狂战士',   atk: 2, hp: 2, cost: 3, costType: 'morale', sigils: [],                bloodValue: 1, color: '#8a3a14', glyph: '狂' },
   champion:         { name: '冠军',     atk: 2, hp: 3, cost: 3, costType: 'morale', sigils: ['regen'],         bloodValue: 1, color: '#a05a2a', glyph: '冠' },
-  lancer:           { name: '骑枪兵',   atk: 4, hp: 3, cost: 4, costType: 'morale', sigils: ['double_strike'], bloodValue: 1, color: '#7a3a14', glyph: '刺' },
-  general:          { name: '将军',     atk: 3, hp: 4, cost: 4, costType: 'morale', sigils: [],                bloodValue: 1, color: '#6a2a10', glyph: '将' },
-  war_elephant:    { name: '战象',     atk: 4, hp: 4, cost: 4, costType: 'morale', sigils: ['armored'],       bloodValue: 1, color: '#7a4a1a', glyph: '象' },
+  lancer:           { name: '骑枪兵',   atk: 4, hp: 2, cost: 4, costType: 'morale', sigils: ['double_strike'], bloodValue: 1, color: '#7a3a14', glyph: '刺' },
+  general:          { name: '将军',     atk: 3, hp: 3, cost: 4, costType: 'morale', sigils: [],                bloodValue: 1, color: '#6a2a10', glyph: '将' },
+  war_elephant:    { name: '战象',     atk: 4, hp: 3, cost: 4, costType: 'morale', sigils: ['armored'],       bloodValue: 1, color: '#7a4a1a', glyph: '象' },
   avatar_of_war:    { name: '战神化身', atk: 5, hp: 5, cost: 5, costType: 'morale', sigils: ['regen','undying'],bloodValue: 2, color: '#d4a040', glyph: '神', premium: true },
 
   // ===================== 神话卡（premium / mythic）=====================
@@ -443,17 +452,17 @@ export const FACTIONS = {
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，另有极轻的每回合墓地滴流（约 0.75，攒满 1 才 +1，仅防前期断档）。用骸骨召唤亡灵，用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','lich_king','bone_dragon'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','lich_king','bone_dragon'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','omega_core','storm_harrier'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','omega_core','storm_harrier'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','archmage','void_phantom'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','archmage','void_phantom'],
   },
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
@@ -912,6 +921,7 @@ export const CHANGELOG = [
       '2026-08-12 每日新增：刺猬 / 冢卫 / 霜灵',
       '2026-08-14 每日新增：豪猪 / 骨弓手 / 剧毒蜂',
       '2026-08-15 每日新增：水獭 / 齿轮犬 / 熔岩哨',
+      '2026-08-30 每日新增：噬魂骨 / 回响机 / 苔绒精',
     ],
   },
   {
