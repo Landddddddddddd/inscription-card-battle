@@ -321,17 +321,24 @@ function stopTurnTimer() {
 function startTurnTimer(key) {
   stopTurnTimer();
   App.timer.key = key;
-  // 时砂：真实回合时长用全局设置（或默认 20s），用于自动结束回合；
-  // 「秒能」资源预算（CONFIG.SAND_TURN_SECONDS）是另一回事，只随出牌扣减，不随真实时间流逝。
-  const sand = !!App.state && App.state.players[App.state.currentPlayer].res === 'sand';
-  const limit = sand ? (App.turnTime || 20) : App.turnTime;
+  // 时砂：顶栏时钟就是它的「出牌时间」资源（= 引擎在 beginTurn 写入的「爬升预算」pl.seconds）。
+  // 它真实倒计时——每过 1 秒 pl.seconds -1，出牌再额外扣 cost，
+  // 归零则回合自动结束（时间即资源、不可透支）。其它阵营的时钟则是普通思考时限。
+  const st = App.state;
+  const p = st ? st.currentPlayer : 0;
+  const sand = !!(st && st.players[p] && st.players[p].res === 'sand');
+  const limit = sand ? (st.players[p].seconds || 12) : (App.turnTime || 20);
   App.timer.total = limit;
   App.timer.remaining = limit;
   updateTimerDisplay();
   const elT = $('turnTimer'); if (elT) elT.classList.remove('hidden');
   App.timer.id = setInterval(() => {
     App.timer.remaining -= 1;
-    if (App.timer.remaining <= 0) {
+    if (sand && st && st.players[p]) {
+      st.players[p].seconds = Math.max(0, (st.players[p].seconds || 0) - 1);
+    }
+    const done = App.timer.remaining <= 0 || (sand && st && st.players[p] && st.players[p].seconds <= 0);
+    if (done) {
       updateTimerDisplay();
       stopTurnTimer();
       autoEndTurn();
@@ -344,20 +351,24 @@ function maybeStartTimer() {
   const st = App.state;
   if (!st || st.over) { stopTurnTimer(); return; }
   if (App.mode === 'tutorial') { stopTurnTimer(); return; }   // 教程不计时，避免打扰学习
-  const sand = !!st && st.players[st.currentPlayer].res === 'sand';
-  if (!App.turnTime && !sand) { stopTurnTimer(); return; }    // 0 = 关闭时限；但时砂阵营强制启用（用默认 20s 真实回合）
+  const sand = !!(st && st.players[st.currentPlayer] && st.players[st.currentPlayer].res === 'sand');
+  if (!App.turnTime && !sand) { stopTurnTimer(); return; }    // 0 = 关闭时限；但时砂阵营强制启用（用自身爬升预算作真实回合）
   if (!$('overlay').classList.contains('hidden')) { stopTurnTimer(); return; } // 覆盖层（教程/交接）暂停
   if (!isHumanTurn()) { stopTurnTimer(); return; }
   const key = st.currentPlayer + ':' + st.turn;
   if (App.timer.key === key && App.timer.id) return;           // 本回合计时已在跑
   startTurnTimer(key);
 }
-// 顶栏「⏱」统一显示真实回合倒计时（固定 20 秒，所有阵营一致，含时砂）。
-// 时砂的「剩余秒数」资源单独显示在顶部资源条 #resources（与其它阵营的召唤条件同位置）。
+// 顶栏时钟：时砂显示为「出牌 Xs」（= pl.seconds 真实资源，随时间与出牌消耗），
+// 其它阵营显示为「⏱ Xs」（普通思考时限）。两者都是真实倒计时。
 function updateTimerDisplay() {
   const elT = $('turnTimer'); if (!elT) return;
-  const r = Math.max(0, App.timer.remaining);
-  elT.textContent = '⏱ ' + r + 's';
+  const st = App.state;
+  const sand = !!(st && st.players[st.currentPlayer] && st.players[st.currentPlayer].res === 'sand');
+  let r;
+  if (sand) r = Math.max(0, Math.floor(st.players[st.currentPlayer].seconds || 0));
+  else r = Math.max(0, App.timer.remaining);
+  elT.textContent = (sand ? '出牌 ' : '⏱ ') + r + 's';
   elT.classList.toggle('urgent', r <= 5);
 }
 function autoEndTurn() {
@@ -426,7 +437,7 @@ function tutNext() { if (!App.tut) return; App.tut.step++; showTutStep(); }
 
 // Short description of each faction's resource, used inside tutorial text.
 function resDescShort(fac) {
-  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡掉落骸骨（每只 +1）＋每回合极轻墓地滴流（约 0.75，攒满 1 才 +1）', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「剩余秒数」召唤（不可透支：剩余不足打不出；每回合开始按秒能预算重置，首回合 0、每 2 回合 +1、封顶 5）', morale: '交战造成伤害即攒「士气」：攻击敌方单位 +1/伤害（致死算满血）、尖刺反伤也产全额士气；攻击天平（直击空列/飞行越界）给折减系数 0.22 的士气（分数累积）。跨回合累计、封顶 10、单回合获取封顶 4、开局 0、无无偿发放。消耗士气召唤——前期靠 0 费战鼓手打敌方单位攒士气启动。' }[fac] || '';
+  return { blood: '献祭场上单位换血肉（无无偿投放）', bone: '生物死亡掉落骸骨（每只 +1）＋每回合极轻墓地滴流（约 0.75，攒满 1 才 +1）', energy: '每回合回能（封顶 5）', mox: '场上魔石生物提供魔石', sand: '消耗「出牌时间」召唤：每回合开局获得一份出牌时间预算（真实倒计时），随时间流逝与出牌扣减而减少、归零则回合结束；剩余不足打不出对应秒费的牌（不可透支）。时间即资源、不跨回合累计。', morale: '交战造成伤害即攒「士气」：攻击敌方单位 +1/伤害（致死算满血）、尖刺反伤也产全额士气；攻击天平（直击空列/飞行越界）给折减系数 0.22 的士气（分数累积）。跨回合累计、封顶 10、单回合获取封顶 4、开局 0、无无偿发放。消耗士气召唤——前期靠 0 费战鼓手打敌方单位攒士气启动。' }[fac] || '';
 }
 function sigilsIntro() {
   return '【印记特性】卡牌可能携带「印记」，常见有：\n'

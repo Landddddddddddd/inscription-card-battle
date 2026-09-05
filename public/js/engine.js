@@ -57,12 +57,13 @@ export function createGame(opts = {}) {
   const resA = opts.resA || 'blood';
   const resB = opts.resB || 'blood';
     const mkPly = (deck, name, res, key) => {
-    const pl = { name, res, avatar: opts['avatar' + key] || '🜁', deck: shuffle(deck), hand: [], blood: 0, bloodCap: 0, bones: 0, energy: 0, energyMax: 0, energyRamp: 0, mox: 0, seconds: 0, sandBudget: 0, sandRamp: 0, morale: 0, moraleGainThisTurn: 0, moraleScaleFrac: 0, discard: [] };
+    const pl = { name, res, avatar: opts['avatar' + key] || '🜁', deck: shuffle(deck), hand: [], blood: 0, bloodCap: 0, bones: 0, energy: 0, energyMax: 0, energyRamp: 0, mox: 0, seconds: 0, sandTurns: 0, morale: 0, moraleGainThisTurn: 0, moraleScaleFrac: 0, discard: [] };
     initResources(pl);
     return pl;
   };
   const state = {
     rules,
+    turnTime: (typeof opts.turnTime === 'number') ? opts.turnTime : (CONFIG.SAND_FALLBACK || 20),
     players: {
       A: mkPly(deckA, opts.nameA || '玩家A', resA, 'A'),
       B: mkPly(deckB, opts.nameB || '玩家B', resB, 'B'),
@@ -270,9 +271,11 @@ export function playCard(state, player, iid, lane, opts = {}) {
       }
     }
   } else if (pool === 'sand') {
-    // 时砂：消耗「剩余秒数」(pl.seconds) 召唤，不可透支；每回合开始 pl.seconds 重置为当前秒能预算(budget)。
+    // 时砂：消耗「出牌时间」(pl.seconds) 召唤，不可透支。pl.seconds 即本回合真实出牌倒计时
+    // （beginTurn 按爬升预算写入 pl.seconds；main.js 计时器每真实秒 -1；出牌再额外扣 cost；
+    // 归零则回合自动结束）。它是时砂的专属资源时钟，与全局菜单 turnTime 解耦以保证平衡稳定。
     if (pl.seconds < card.cost) {
-      return { ok: false, reason: '剩余秒数不足（需 ' + card.cost + ' 秒，当前 ' + Math.floor(pl.seconds) + ' 秒）' };
+      return { ok: false, reason: '出牌时间不足（需 ' + card.cost + ' 秒，当前 ' + Math.floor(pl.seconds) + ' 秒）' };
     }
     pl.seconds -= card.cost;
   } else if (pool === 'morale') {
@@ -512,11 +515,17 @@ function beginTurn(state, p) {
     state._bcnt = boardCount(state);
   }
   if (pl.res === 'energy') {
-    // Energy ramps 1→2→3→4→5 and caps at 5, but grows by +1 only on
-    // every ENERGY_RAMP_EVERY-th of THIS player's own turns (slows the
-    // late-game board flood). Leftover energy does NOT carry between turns.
-    pl.energyRamp = (pl.energyRamp || 0) + 1;
-    if (pl.energyRamp % CONFIG.ENERGY_RAMP_EVERY === 0) {
+    // 能量爬升 = 「小数滴流」：每回合累加 ENERGY_RAMP_FRAC，满 1 才 +1 能量上限，上限封顶
+    // ENERGY_CAP；每回合能量回满到上限、不跨回合累计。
+    // 旧实现是整数取模（energyRamp % ENERGY_RAMP_EVERY），只能整档跳：每 2 回合 +1
+    // （0,1,1,2,2…）能量只有 44%，每回合 +1（0,1,2,3,4,5）直接飙到 83%，中间无档可停。
+    // 小数滴流把这个「悬崖型」杠杆变成可连续细调的旋钮（默认 0.5，与旧行为完全等价）。
+    const efrac = CONFIG.ENERGY_RAMP_FRAC != null
+      ? CONFIG.ENERGY_RAMP_FRAC
+      : (1 / Math.max(1, CONFIG.ENERGY_RAMP_EVERY || 2));
+    pl.energyAcc = (pl.energyAcc || 0) + efrac;
+    while (pl.energyAcc >= 1) {
+      pl.energyAcc -= 1;
       pl.energyMax = Math.min(CONFIG.ENERGY_CAP, pl.energyMax + 1);
     }
     pl.energy = pl.energyMax;
@@ -532,14 +541,22 @@ function beginTurn(state, p) {
     // sacrificing already-summoned creatures on top of this allowance.
     pl.blood = CONFIG.BLOOD_PER_TURN;
   } else if (pl.res === 'sand') {
-    // 时砂：秒能预算与能量阵营「同构」地爬升——首回合 0，之后每 SAND_RAMP_EVERY 个己方回合
-    // +1，封顶 SAND_CAP（与 ENERGY_RAMP_EVERY / ENERGY_CAP 完全一致）。单位数值曲线也照搬能量
-    // 阵营，因此时砂整体胜率与能量对齐（~45-50%），不会破坏五阵营平衡。卡牌以「秒」为费，不可透支。
-    pl.sandRamp = (pl.sandRamp || 0) + 1;
-    if (pl.sandRamp % CONFIG.SAND_RAMP_EVERY === 0) {
-      pl.sandBudget = Math.min(CONFIG.SAND_CAP, pl.sandBudget + 1);
-    }
-    pl.seconds = pl.sandBudget;
+    // 时砂：pl.seconds 即本回合「出牌时间」= 时砂专属的回合预算。与全局菜单 turnTime 解耦
+    // （否则时砂强弱会随菜单 10/20/30/60 八倍摆动）。它是真实倒计时：main.js 计时器每真实秒
+    // -1、出牌再额外扣 cost，归零则回合结束（autoEndTurn）。不跨回合累计（每回合归零重计、不攒）。
+    // 关键平衡：预算随己方回合数小幅爬升（BASE + 己方回合数×STEP，封顶 CAP）——开局只有 BASE 秒、
+    // 只够打砂砾级弱牌，与「能量阵营能量从 1 爬升」对齐；否则时砂每回合必有真打手戳空列推天平，
+    // 在「分数差 5 分」模式下 3 回合速胜、结构性碾压。爬升是「每回合重计的计划值」而非累计，
+    // 仍满足用户「不跨回合累计」硬约束（时砂越战越从容，但每回合从 BASE 重新流）。
+    pl.sandTurns = (pl.sandTurns || 0) + 1;
+    // 爬升同样用「小数滴流」：预算 = BASE + (己方回合数-1)×SAND_RAMP_FRAC，向下取整、封顶 CAP。
+    // 与能量的整数取模同理，秒数只能整档跳会让时砂变成悬崖（每回合 +1 约 55%，每 2 回合 +1
+    // 直接崩到 17.7%），故保留小数旋钮以便连续细调（默认 1.0 = 每回合 +1）。
+    const sfrac = CONFIG.SAND_RAMP_FRAC != null ? CONFIG.SAND_RAMP_FRAC : 1;
+    pl.seconds = Math.min(
+      CONFIG.SAND_BUDGET_CAP || 5,
+      Math.floor((CONFIG.SAND_BUDGET_BASE || 2) + (pl.sandTurns - 1) * sfrac)
+    );
   }
   // mox: board-presence gems from Mox creatures — no per-turn regen.
   // 军威(morale)：士气跨回合累计、不重置；但「每回合获取上限」在己方回合开始时清零，

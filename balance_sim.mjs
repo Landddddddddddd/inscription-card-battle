@@ -5,27 +5,55 @@
 // Usage: node balance_sim.mjs [perMatchup=60] [level=normal]
 import { createGame } from './public/js/engine.js';
 import { runAITurn } from './public/js/ai.js';
-import { DECKS, DEFAULT_RULES, CONFIG } from './public/js/constants.js';
+import { DECKS, DEFAULT_RULES, CONFIG, CARDS } from './public/js/constants.js';
 
 const FACTIONS = ['blood', 'bone', 'energy', 'mox', 'sand', 'morale'];
 const PER = parseInt(process.argv[2] || '60', 10);
 const LEVEL = process.argv[3] || 'normal';
-// Optional overrides:
-//   node balance_sim.mjs 40 normal 5      -> SAND_CAP=5
-//   node balance_sim.mjs 40 normal 5 1    -> SAND_CAP=5, SAND_RAMP_EVERY=1
+// Optional overrides (sand ramp tuning):
+//   node balance_sim.mjs 40 normal 6      -> SAND_BUDGET_CAP=6 (BASE 2 / STEP 1)
+//   node balance_sim.mjs 40 normal 5 1 2  -> CAP=5 STEP=1 BASE=2
+//   SAND_COST_MUL=1.5 node balance_sim.mjs 40 normal 6  -> sand card costs ×1.5 (cap 20)
 if (process.argv[4]) {
   const v = parseInt(process.argv[4], 10);
   if (!Number.isNaN(v) && v >= 0) {
-    CONFIG.SAND_CAP = v;
-    console.log(`(override SAND_CAP=${v})`);
+    CONFIG.SAND_BUDGET_CAP = v;
+    console.log(`(override SAND_BUDGET_CAP=${v})`);
   }
 }
 if (process.argv[5]) {
   const v = parseInt(process.argv[5], 10);
-  if (!Number.isNaN(v) && v >= 0) {
-    CONFIG.SAND_RAMP_EVERY = v;
-    console.log(`(override SAND_RAMP_EVERY=${v})`);
+  if (!Number.isNaN(v)) { CONFIG.SAND_BUDGET_STEP = v; console.log(`(override SAND_BUDGET_STEP=${v})`); }
+}
+if (process.argv[6]) {
+  const v = parseInt(process.argv[6], 10);
+  if (!Number.isNaN(v)) { CONFIG.SAND_BUDGET_BASE = v; console.log(`(override SAND_BUDGET_BASE=${v})`); }
+}
+if (process.env.SAND_COST_MUL) {
+  const mul = parseFloat(process.env.SAND_COST_MUL);
+  if (!Number.isNaN(mul) && mul > 0) {
+    let n = 0;
+    for (const c of Object.values(CARDS)) {
+      if (c.costType === 'sand') { c.cost = Math.min(20, Math.max(1, Math.round(c.cost * mul))); n++; }
+    }
+    console.log(`(sand cost ×${mul} applied to ${n} cards)`);
   }
+}
+// 爬升「小数滴流」扫描（连续旋钮，替代只能整档跳的整数取模）：
+//   ENERGY_RAMP_FRAC=0.6  -> 能量每回合累加 0.6，满 1 才 +1 上限（0.5 = 旧「每 2 回合 +1」）
+//   SAND_RAMP_FRAC=0.8    -> 时砂预算每秒滴流 0.8（1.0 = 旧「每回合 +1」）
+//   BONE_PER_TURN=0.9     -> 骸骨兜底滴流
+if (process.env.ENERGY_RAMP_FRAC) {
+  const v = parseFloat(process.env.ENERGY_RAMP_FRAC);
+  if (!Number.isNaN(v) && v > 0) { CONFIG.ENERGY_RAMP_FRAC = v; console.log(`(override ENERGY_RAMP_FRAC=${v})`); }
+}
+if (process.env.SAND_RAMP_FRAC) {
+  const v = parseFloat(process.env.SAND_RAMP_FRAC);
+  if (!Number.isNaN(v) && v > 0) { CONFIG.SAND_RAMP_FRAC = v; console.log(`(override SAND_RAMP_FRAC=${v})`); }
+}
+if (process.env.BONE_PER_TURN) {
+  const v = parseFloat(process.env.BONE_PER_TURN);
+  if (!Number.isNaN(v) && v >= 0) { CONFIG.BONE_PER_TURN = v; console.log(`(override BONE_PER_TURN=${v})`); }
 }
 // 军威天平士气折减系数扫描：MSR=0.1 形式（env 覆盖，避免污染 constants.js）
 if (process.env.MSR) {
@@ -41,6 +69,7 @@ function simulate(fa, fb) {
     deckA: DECKS[fa], resA: fa,
     deckB: DECKS[fb], resB: fb,
     rules: DEFAULT_RULES,
+    turnTime: 20, // 时砂「出牌时间」= 真实回合时限（默认 20s）；仿真按最优出牌建模
   });
   let turn = 0;
   const MAX = 300;
