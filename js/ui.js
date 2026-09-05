@@ -418,9 +418,6 @@ export function renderGame(ctx) {
       return `<span class="gpip lg ${n ? 'on' : ''}" style="background:${GEMS[g].color}">${n > 1 ? n : ''}</span>`;
     }).join('');
     resHTML = `<div class="res mox"><span class="dot" style="background:#9a4ad0"></span>魔石 ${pips}</div>`;
-  } else if (pl.res === 'sand') {
-    const secs = Math.floor(pl.seconds || 0);
-    resHTML = `<div class="res sand"><span class="dot"></span>剩余秒数 <span class="val">${secs}</span><span class="cap">s</span></div>`;
   } else if (pl.res === 'morale') {
     const m = pl.morale || 0;
     resHTML = `<div class="res morale"><span class="dot"></span>士气 <span class="val">${m}</span><span class="cap">/${CONFIG.MORALE_CAP}</span></div>`;
@@ -429,7 +426,6 @@ export function renderGame(ctx) {
   if (pl.res === 'bone') curRes.bone = pl.bones;
   else if (pl.res === 'energy') curRes.energy = pl.energy;
   else if (pl.res === 'mox') curRes.gemTotal = Object.values(counts).reduce((a, b) => a + b, 0);
-  else if (pl.res === 'sand') curRes.seconds = Math.floor(pl.seconds || 0);
   else if (pl.res === 'morale') curRes.morale = pl.morale || 0;
   const prevRes = _prev.res[me] || {};
   let resFlash = false, resGain = null, gemColor = null;
