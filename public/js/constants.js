@@ -13,11 +13,16 @@ export const CONFIG = {
   BONE_PER_TURN: 0.75,    // 骸骨兜底滴流（小数）：每回合累加，满 1 才 +1 骸骨；与死亡经济叠加后约 50% 胜率，仅防前期断档不叠加成洪流
   BONE_DEATH_GAIN: 1,     // 骸骨阵营：己方单位「以任何方式死亡」（含 0 费易碎生物攻击后碎裂）每只 +1 骸骨
   BLOOD_PER_TURN: 0,      // 每回合无偿血肉 = 0（用户硬约束：血肉阵营不靠无偿发放，完全靠献祭已召唤单位来获得血肉）。pool 恒为 0，所有 blood 卡费用都由场上单位 bloodValue 支付。平衡由卡牌数值承担。
-  // 时砂阵营：秒能预算与能量阵营同构地「爬升」——首回合即 +1（比能量早一回合放量，弥补时砂
-  // 没有无偿经济的微弱劣势）、之后每 SAND_RAMP_EVERY 个己方回合再 +1、封顶 SAND_CAP。这样时砂
-  // 不会首回合铺满 4 列，同时单位数值曲线照搬能量阵营，保证五阵营整体平衡。卡牌以「秒」为费，不可透支。
-  SAND_RAMP_EVERY: 2,   // 时砂：每 N 个己方回合 +1 秒能（与能量 ENERGY_RAMP_EVERY 一致）
-  SAND_CAP: 5,          // 时砂：秒能预算上限（与能量 ENERGY_CAP 一致）
+  // 时砂阵营：pl.seconds 即本回合「出牌时间」= 时砂专属的回合预算（真实倒计时，见 main.js 计时器）。
+  // 它与全局菜单 turnTime 解耦——若直接等于菜单 10/20/30/60，时砂强弱会随设置八倍摆动（10s 废掉、
+  // 60s 碾压），无法平衡。时砂的「资源」就是出牌倒计时本身（时间即资源、不可透支、不跨回合累计）。
+  // 关键平衡：预算随己方回合数小幅爬升（BASE + 己方回合数×STEP，封顶 CAP），开局只有 BASE 秒、
+  // 只够打砂砾级弱牌，从而与「能量阵营能量从 1 爬升」对齐——否则时砂每回合必有真打手戳空列推
+  // 天平，「分数差 5 分」模式下 3 回合速胜、结构性碾压。爬升是「每回合归零重计的计划值」而非累计，
+  // 仍满足用户「不跨回合累计」硬约束（时砂越战越从容，但每回合从 BASE 重新流）。
+  SAND_BUDGET_BASE: 2,   // 时砂：第 1 个己方回合的「出牌时间」预算（秒）
+  SAND_BUDGET_STEP: 1,   // 时砂：每多一个己方回合，预算 +1 秒
+  SAND_BUDGET_CAP: 5,    // 时砂：预算封顶（秒）；与最高卡费(5秒)对齐，保证全部时砂牌都可打出；菜单 turnTime 仍决定其它阵营思考时限
   // 军威阵营：士气由「造成伤害」累积（交战打敌方单位给全额 + 尖刺反伤；天平直击给折减），
   // 跨回合累计、不重置（与血肉「不攒」相反，这是军威特色：前期攒后期爆发）。
   // 天平（取胜动作）伤害折减产士气——否则攻击天平既推胜利又滚经济会双重碾压（初版满额 88% 失衡）。
@@ -245,6 +250,9 @@ export const CARDS = {
   // [daily 2026-08-15] 水獭
   otter:       { name: '水獭', atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: ['undying'],        bloodValue: 2, color: '#6b4f3a', glyph: '獭' },
 
+  // [daily 2026-09-05] 火蝾螈
+  fire_salamander: { name: '火蝾螈', atk: 1, hp: 1, cost: 1, costType: 'blood', sigils: ['regen'],         bloodValue: 2, color: '#c84a2a', glyph: '蝾' },
+
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
   bone_pup:    { name: '枯骨幼犬', atk: 1, hp: 1, cost: 0, costType: 'bone', sigils: ['brittle'],        bloodValue: 1, color: '#cfcabc', glyph: '骨' },
@@ -284,6 +292,9 @@ export const CARDS = {
   // [daily 2026-08-30] 噬魂骨（骸骨阵营首张「致死」印记卡：任何伤害直接斩杀，脆身换血）
   soul_bone:  { name: '噬魂骨', atk: 2, hp: 2, cost: 3, costType: 'bone', sigils: ['death_touch'],         bloodValue: 1, color: '#cfcabc', glyph: '噬' },
 
+  // [daily 2026-09-05] 哀号幽魂
+  wailing_spirit: { name: '哀号幽魂', atk: 1, hp: 1, cost: 2, costType: 'bone', sigils: ['double_strike'],    bloodValue: 1, color: '#b8c0d8', glyph: '魂' },
+
   // ===================== ENERGY（能量 · 机械科技主题）=====================
   black_cat:   { name: '电池机偶', atk: 0, hp: 1, cost: 0, costType: 'energy', sigils: [],               bloodValue: 1, color: '#2b3b4b', glyph: '电' },
   magpie:      { name: '磁窃鸟',   atk: 2, hp: 1, cost: 1, costType: 'energy', sigils: [],               bloodValue: 1, color: '#3a3a4a', glyph: '磁' },
@@ -321,6 +332,9 @@ export const CARDS = {
 
   // [daily 2026-08-30] 回响机（能量阵营首张「不死」印记卡：首次死亡返手牌，2 费 3/2 廉价钢板）
   echo_droid:  { name: '回响机', atk: 3, hp: 2, cost: 2, costType: 'energy', sigils: ['undying'],            bloodValue: 1, color: '#5a7a9a', glyph: '响' },
+
+  // [daily 2026-09-05] 电弧无人机
+  arc_drone:  { name: '电弧无人机', atk: 3, hp: 2, cost: 3, costType: 'energy', sigils: ['airborne'],         bloodValue: 1, color: '#5a8aba', glyph: '弧' },
 
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
@@ -362,36 +376,39 @@ export const CARDS = {
   moss_imp:    { name: '苔绒精', atk: 1, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],                 sigils: ['loose_tail'],    bloodValue: 1, color: '#3a9a5a', glyph: '绒' },
 
   // ==========================================================================
-  // 时砂阵营（sand）：核心创新点 = 召唤方式——消耗「剩余秒数」召唤，不可透支。
+  // 时砂阵营（sand）：核心创新点 = 召唤方式——消耗「剩余出牌时间」(pl.seconds) 召唤，不可透支。
   // 单位数值曲线 1:1 镜像能量阵营（同费同级、攻防分布完全一致：1 费×7 / 2 费×9 /
   // 3 费×3 / 4 费×2 / 0 费×1），仅替换主题化的名字与印记，以保证「消耗秒数」这一
-  // 新机制不会破坏五阵营整体平衡（时砂胜率与能量对齐，约 45-50%）。成本 0~4，封顶 5 的秒能预算可覆盖。
-  sand_pebble:     { name: '砂砾',   atk: 0, hp: 1, cost: 0, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c2b280', glyph: '砾' },
-  sand_apprentice: { name: '时砂学徒', atk: 1, hp: 1, cost: 2, costType: 'sand', sigils: [],                bloodValue: 1, color: '#d8c48a', glyph: '徒' },
-  pendulum:        { name: '钟摆兽', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['double_strike'],  bloodValue: 1, color: '#c9a24a', glyph: '摆' },
-  chrono_twin:     { name: '双刻兽', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['double_strike'],  bloodValue: 1, color: '#d0a84a', glyph: '孪' },
-  sand_swift:      { name: '流沙隼', atk: 3, hp: 1, cost: 2, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#c8b070', glyph: '隼' },
-  gear_beetle:     { name: '齿甲',   atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['sharp_quills'],    bloodValue: 1, color: '#9a8a4a', glyph: '甲' },
-  sand_panther:    { name: '时影豹', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#a98a4a', glyph: '影' },
-  sand_wisp:       { name: '流沙精', atk: 2, hp: 2, cost: 2, costType: 'sand', sigils: ['poison_touch'],    bloodValue: 1, color: '#b59a4a', glyph: '沙' },
-  clock_hound:     { name: '时犬',   atk: 2, hp: 2, cost: 2, costType: 'sand', sigils: ['frenzy'],          bloodValue: 1, color: '#a98a4a', glyph: '犬' },
-  rewind_owl:      { name: '回溯枭', atk: 3, hp: 2, cost: 2, costType: 'sand', sigils: ['regen'],           bloodValue: 1, color: '#a9b0c0', glyph: '枭' },
-  sand_eagle:      { name: '时涡鹰', atk: 3, hp: 3, cost: 3, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#7fb0c0', glyph: '涡' },
-  chrono_knight:    { name: '时之骑士', atk: 3, hp: 4, cost: 3, costType: 'sand', sigils: ['armored'],       bloodValue: 1, color: '#b8a85a', glyph: '骑' },
-  sand_golem:      { name: '砂岩魔像', atk: 3, hp: 3, cost: 3, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c8b070', glyph: '像' },
-  hourglass_titan: { name: '沙漏泰坦', atk: 4, hp: 4, cost: 4, costType: 'sand', sigils: ['frenzy'],         bloodValue: 1, color: '#e0b03a', glyph: '泰' },
-  chronolord:      { name: '时主',   atk: 5, hp: 4, cost: 4, costType: 'sand', sigils: ['undying','regen'], bloodValue: 1, color: '#d0b060', glyph: '主' },
-  eternal_sand:    { name: '永恒之砂', atk: 5, hp: 6, cost: 6, costType: 'sand', sigils: ['regen','undying'], bloodValue: 1, color: '#ffd24a', glyph: '永', premium: true },
+  // 新机制不会破坏六阵营整体平衡（时砂胜率与能量对齐，约 45-54%）。pl.seconds 每回合开局由
+  // beginTurn 写入「爬升预算」= BASE + 己方回合数×STEP、封顶 CAP（默认 2/1/5 秒），真实流逝
+  // + 出牌扣减都会消耗它，归零则回合结束——时间即资源、不跨回合累计（每回合从 BASE 重计）。
+  // 成本曲线已压到 ≤ CAP(5秒)，保证每张牌在预算内可打出。
+  sand_pebble:     { name: '砂砾',   atk: 0, hp: 1, cost: 2, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c2b280', glyph: '砾' },
+  sand_apprentice: { name: '时砂学徒', atk: 1, hp: 1, cost: 4, costType: 'sand', sigils: [],                bloodValue: 1, color: '#d8c48a', glyph: '徒' },
+  pendulum:        { name: '钟摆兽', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['sharp_quills'],  bloodValue: 1, color: '#c9a24a', glyph: '摆' },
+  chrono_twin:     { name: '双刻兽', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['sharp_quills'],  bloodValue: 1, color: '#d0a84a', glyph: '孪' },
+  sand_swift:      { name: '流沙隼', atk: 2, hp: 1, cost: 3, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#c8b070', glyph: '隼' },
+  gear_beetle:     { name: '齿甲',   atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['sharp_quills'],    bloodValue: 1, color: '#9a8a4a', glyph: '甲' },
+  sand_panther:    { name: '时影豹', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#a98a4a', glyph: '影' },
+  sand_wisp:       { name: '流沙精', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['poison_touch'],    bloodValue: 1, color: '#b59a4a', glyph: '沙' },
+  clock_hound:     { name: '时犬',   atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['frenzy'],          bloodValue: 1, color: '#a98a4a', glyph: '犬' },
+  rewind_owl:      { name: '回溯枭', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['regen'],           bloodValue: 1, color: '#a9b0c0', glyph: '枭' },
+  sand_eagle:      { name: '时涡鹰', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#7fb0c0', glyph: '涡' },
+  chrono_knight:    { name: '时之骑士', atk: 2, hp: 4, cost: 5, costType: 'sand', sigils: ['armored'],       bloodValue: 1, color: '#b8a85a', glyph: '骑' },
+  sand_golem:      { name: '砂岩魔像', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c8b070', glyph: '像' },
+  hourglass_titan: { name: '沙漏泰坦', atk: 3, hp: 4, cost: 5, costType: 'sand', sigils: ['frenzy'],         bloodValue: 1, color: '#e0b03a', glyph: '泰' },
+  chronolord:      { name: '时主',   atk: 4, hp: 4, cost: 5, costType: 'sand', sigils: ['undying','regen'], bloodValue: 1, color: '#d0b060', glyph: '主' },
+  eternal_sand:    { name: '永恒之砂', atk: 4, hp: 6, cost: 5, costType: 'sand', sigils: ['regen','undying'], bloodValue: 1, color: '#ffd24a', glyph: '永', premium: true },
 
   // —— 机械 / 钟表 / 指针 主题卡（v0.7.0 新增，替换 8 张通用砂生物填充卡）——
-  mainspring_mouse: { name: '发条鼠',   atk: 2, hp: 1, cost: 1, costType: 'sand', sigils: ['loose_tail'],    bloodValue: 1, color: '#b08d57', glyph: '鼠' },
-  gear_fly:        { name: '齿轮蝇',   atk: 1, hp: 2, cost: 1, costType: 'sand', sigils: ['airborne'],       bloodValue: 1, color: '#9a8a4a', glyph: '蝇' },
-  escapement:      { name: '擒纵轮',   atk: 2, hp: 2, cost: 1, costType: 'sand', sigils: [],                 bloodValue: 1, color: '#a8985a', glyph: '擒' },
-  hairspring:      { name: '游丝',     atk: 1, hp: 3, cost: 1, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c0c0d0', glyph: '丝' },
-  second_hand:     { name: '秒针',     atk: 2, hp: 1, cost: 1, costType: 'sand', sigils: ['double_strike'], bloodValue: 1, color: '#c9a24a', glyph: '秒' },
-  hour_hand:       { name: '时针',     atk: 2, hp: 3, cost: 1, costType: 'sand', sigils: ['armored'],        bloodValue: 1, color: '#b8a85a', glyph: '时' },
-  minute_hand:     { name: '分针',     atk: 3, hp: 3, cost: 2, costType: 'sand', sigils: ['sharp_quills'],   bloodValue: 1, color: '#c9a24a', glyph: '分' },
-  brass_automaton: { name: '黄铜傀儡', atk: 3, hp: 3, cost: 2, costType: 'sand', sigils: [],                 bloodValue: 1, color: '#b08d57', glyph: '铜' },
+  mainspring_mouse: { name: '发条鼠',   atk: 1, hp: 1, cost: 3, costType: 'sand', sigils: ['loose_tail'],    bloodValue: 1, color: '#b08d57', glyph: '鼠' },
+  gear_fly:        { name: '齿轮蝇',   atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['airborne'],       bloodValue: 1, color: '#9a8a4a', glyph: '蝇' },
+  escapement:      { name: '擒纵轮',   atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: [],                 bloodValue: 1, color: '#a8985a', glyph: '擒' },
+  hairspring:      { name: '游丝',     atk: 1, hp: 3, cost: 4, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c0c0d0', glyph: '丝' },
+  second_hand:     { name: '秒针',     atk: 1, hp: 1, cost: 3, costType: 'sand', sigils: ['airborne'], bloodValue: 1, color: '#c9a24a', glyph: '秒' },
+  hour_hand:       { name: '时针',     atk: 1, hp: 3, cost: 3, costType: 'sand', sigils: ['armored'],        bloodValue: 1, color: '#b8a85a', glyph: '时' },
+  minute_hand:     { name: '分针',     atk: 2, hp: 3, cost: 4, costType: 'sand', sigils: ['sharp_quills'],   bloodValue: 1, color: '#c9a24a', glyph: '分' },
+  brass_automaton: { name: '黄铜傀儡', atk: 2, hp: 3, cost: 4, costType: 'sand', sigils: [],                 bloodValue: 1, color: '#b08d57', glyph: '铜' },
 
   // ==========================================================================
   // 军威阵营（morale）：核心创新点 = 召唤方式——消耗「士气」召唤。士气由「交战造成
@@ -447,17 +464,17 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','blood_titan','vampire_queen'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','blood_titan','vampire_queen'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，另有极轻的每回合墓地滴流（约 0.75，攒满 1 才 +1，仅防前期断档）。用骸骨召唤亡灵，用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','lich_king','bone_dragon'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','lich_king','bone_dragon'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','omega_core','storm_harrier'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','omega_core','storm_harrier'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
@@ -466,7 +483,7 @@ export const FACTIONS = {
   },
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
-    desc: '时间即是资源：每回合开始获得「秒能」预算（首回合 0，之后每 2 个己方回合 +1、封顶 5），卡牌以「秒」为费召唤，剩余不足则无法打出（不可透支，例如还剩 4 秒时打不出 5 秒的牌）。没有无偿经济、也没有额外成长，全靠这一回合的秒数铺场。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
+    desc: '时间即是资源：每回合开局获得一份「出牌时间」预算，它随你的回合数小幅增长（首回合 2 秒，每多一个己方回合 +1 秒、封顶 5 秒）——它是你这一回合真实倒计时的时钟。真实流逝每过 1 秒就少 1 秒，出牌再额外扣掉该牌的「秒费」，归零则回合自动结束。卡牌以「秒」为费、不可透支（例如剩 4 秒打不出 5 秒的牌）。每回合归零重计、不跨回合累计（时砂越战越从容，但每回合从 2 秒重新流）。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
     cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton'],
   },
   // === 占位阵营（即将推出）：预留第 6 / 7 / 8 阵营插槽，目前 cards 为空、comingSoon:true。
@@ -922,6 +939,7 @@ export const CHANGELOG = [
       '2026-08-14 每日新增：豪猪 / 骨弓手 / 剧毒蜂',
       '2026-08-15 每日新增：水獭 / 齿轮犬 / 熔岩哨',
       '2026-08-30 每日新增：噬魂骨 / 回响机 / 苔绒精',
+      '2026-09-05 每日新增：火蝾螈 / 哀号幽魂 / 电弧无人机',
     ],
   },
   {
