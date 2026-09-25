@@ -299,9 +299,9 @@ export const CARDS = {
   // [daily 2026-09-16] 血蛭（1 费 1/2 回复，比火蝾螈多 1 血的廉价回复祭品）
   blood_leech: { name: '血蛭', atk: 1, hp: 2, cost: 1, costType: 'blood', sigils: ['regen'], bloodValue: 2, color: '#6a3a4a', glyph: '蛭' },
   // [daily 2026-09-18] 髓魔（4 费 3/4 厚甲，血肉阵营高费坦克位）
-  marrow_fiend: { name: '髓魔', atk: 4, hp: 4, cost: 4, costType: 'blood', sigils: ['armored'], bloodValue: 2, color: '#5a3a2a', glyph: '髓' },
+  marrow_fiend: { name: '髓魔', atk: 5, hp: 5, cost: 4, costType: 'blood', sigils: ['armored'], bloodValue: 2, color: '#5a3a2a', glyph: '髓' },
   // [daily 2026-09-20] 棘鬃豕（2 费 2/3 尖刺反伤，刺猬的血量上位版）
-  spinemane: { name: '棘鬃豕', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['sharp_quills'], bloodValue: 2, color: '#7a5a2a', glyph: '鬃' },
+  spinemane: { name: '棘鬃豕', atk: 3, hp: 3, cost: 2, costType: 'blood', sigils: ['sharp_quills'], bloodValue: 2, color: '#7a5a2a', glyph: '鬃' },
   // [daily 2026-09-22] 血鹫（3 费 3/2 飞行，秃鹫的成年版）
   blood_vulture: { name: '血鹫', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['airborne'], bloodValue: 2, color: '#6a2a2a', glyph: '鹗' },
 
@@ -443,19 +443,19 @@ export const CARDS = {
   siege_mech: { name: '铆钉兵', atk: 2, hp: 3, cost: 1, costType: 'energy', sigils: [], bloodValue: 1, color: '#6a6a7a', glyph: '攻' },
 
   // [daily 2026-09-12] 伏特兔（1 费 3/1 易碎，能量阵营 1 费爆发位；能量爬升慢，廉价可打之牌最有效）
-  volt_hare: { name: '伏特兔', atk: 3, hp: 1, cost: 1, costType: 'energy', sigils: ['brittle'], bloodValue: 1, color: '#6a7a86', glyph: '伏' },
+  volt_hare: { name: '伏特兔', atk: 3, hp: 2, cost: 1, costType: 'energy', sigils: ['brittle'], bloodValue: 1, color: '#6a7a86', glyph: '伏' },
   // [daily 2026-09-14] 线圈蛇（2 费 2/3 剧毒，剧毒蜂的血量上位版）
-  coil_serpent: { name: '线圈蛇', atk: 3, hp: 3, cost: 2, costType: 'energy', sigils: ['poison_touch'], bloodValue: 1, color: '#4a7a6a', glyph: '圈' },
+  coil_serpent: { name: '线圈蛇', atk: 4, hp: 4, cost: 2, costType: 'energy', sigils: ['poison_touch'], bloodValue: 1, color: '#4a7a6a', glyph: '圈' },
   // [daily 2026-09-16] 特斯拉角羊（3 费 3/3 狂热，能量阵营滚雪球位）
-  tesla_ram: { name: '特斯拉角羊', atk: 3, hp: 4, cost: 3, costType: 'energy', sigils: ['frenzy'], bloodValue: 1, color: '#7a8a9a', glyph: '斯' },
+  tesla_ram: { name: '特斯拉角羊', atk: 4, hp: 4, cost: 3, costType: 'energy', sigils: ['frenzy'], bloodValue: 1, color: '#7a8a9a', glyph: '斯' },
   // [daily 2026-09-18] 日能隼（2 费 2/2 飞行，喷射隼的均衡变体）
-  solar_hawk: { name: '日能隼', atk: 2, hp: 2, cost: 2, costType: 'energy', sigils: ['airborne'], bloodValue: 1, color: '#8a8a5a', glyph: '晟' },
+  solar_hawk: { name: '日能隼', atk: 3, hp: 3, cost: 2, costType: 'energy', sigils: ['airborne'], bloodValue: 1, color: '#8a8a5a', glyph: '晟' },
   // [daily 2026-09-20] 电网哨（3 费 2/4 厚甲，装甲战车的低攻高血变体）
-  grid_sentinel: { name: '电网哨', atk: 3, hp: 4, cost: 3, costType: 'energy', sigils: ['armored'], bloodValue: 1, color: '#5a7a8a', glyph: '栅' },
+  grid_sentinel: { name: '电网哨', atk: 4, hp: 4, cost: 3, costType: 'energy', sigils: ['armored'], bloodValue: 1, color: '#5a7a8a', glyph: '栅' },
   // [daily 2026-09-22] 聚变牛（4 费 4/3 白板，装甲野牛的攻防互换版）
-  fusion_ox: { name: '聚变牛', atk: 4, hp: 4, cost: 4, costType: 'energy', sigils: [], bloodValue: 1, color: '#8a6a4a', glyph: '聚' },
+  fusion_ox: { name: '聚变牛', atk: 5, hp: 5, cost: 4, costType: 'energy', sigils: [], bloodValue: 1, color: '#8a6a4a', glyph: '聚' },
   // [daily 2026-09-24] 脉冲螨（1 费 2/1 不朽，能量阵营廉价续航位）
-  pulse_mite: { name: '脉冲螨', atk: 2, hp: 2, cost: 1, costType: 'energy', sigils: ['undying'], bloodValue: 1, color: '#6a8a7a', glyph: '螨' },
+  pulse_mite: { name: '脉冲螨', atk: 3, hp: 2, cost: 1, costType: 'energy', sigils: ['undying'], bloodValue: 1, color: '#6a8a7a', glyph: '螨' },
 
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
@@ -518,19 +518,19 @@ export const CARDS = {
   moss_ward: { name: '苔鳞卫', atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['green','blue'],              sigils: ['armored'], bloodValue: 1, color: '#5a8a6a', glyph: '藓' },
 
   // [daily 2026-09-13] 琥珀灵（橙 1/3 厚甲，魔石阵营廉价墙位）
-  amber_wisp: { name: '琥珀灵', atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange'],         sigils: ['armored'], bloodValue: 1, color: '#c98a2a', glyph: '珀' },
+  amber_wisp: { name: '琥珀灵', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange'],         sigils: ['armored'], bloodValue: 1, color: '#c98a2a', glyph: '珀' },
   // [daily 2026-09-15] 翡蛛（绿 1/2 致死，魔石阵营首张单绿致死）
-  jade_spider: { name: '翡蛛', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],          sigils: ['death_touch'], bloodValue: 1, color: '#3a8a5a', glyph: '翡' },
+  jade_spider: { name: '翡蛛', atk: 3, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],          sigils: ['death_touch'], bloodValue: 1, color: '#3a8a5a', glyph: '翡' },
   // [daily 2026-09-17] 钴枭（蓝 1/3 飞行，魔石阵营首张飞行墙）
-  cobalt_owl: { name: '钴枭', atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['blue'],           sigils: ['airborne'], bloodValue: 1, color: '#3a5a9a', glyph: '钴' },
+  cobalt_owl: { name: '钴枭', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['blue'],           sigils: ['airborne'], bloodValue: 1, color: '#3a5a9a', glyph: '钴' },
   // [daily 2026-09-19] 曜石豕（橙+绿 2/2 厚甲，符文魔像的减伤变体）
-  obsidian_boar: { name: '曜石豕', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange','green'], sigils: ['armored'], bloodValue: 1, color: '#7a4a2a', glyph: '曜' },
+  obsidian_boar: { name: '曜石豕', atk: 4, hp: 4, cost: 0, costType: 'gem', gemCost: ['orange','green'], sigils: ['armored'], bloodValue: 1, color: '#7a4a2a', glyph: '曜' },
   // [daily 2026-09-21] 汐魔（绿+蓝 2/2 剧毒，奇美拉的带毒变体）
-  tidal_fiend: { name: '汐魔', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['green','blue'],   sigils: ['poison_touch'], bloodValue: 1, color: '#2a7a8a', glyph: '汐' },
+  tidal_fiend: { name: '汐魔', atk: 4, hp: 4, cost: 0, costType: 'gem', gemCost: ['green','blue'],   sigils: ['poison_touch'], bloodValue: 1, color: '#2a7a8a', glyph: '汐' },
   // [daily 2026-09-23] 焱犬（橙+蓝 2/2 狂热，蝎尾狮的狂热变体）
-  ember_hound: { name: '焱犬', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange','blue'],  sigils: ['frenzy'], bloodValue: 1, color: '#d45a2a', glyph: '焱' },
+  ember_hound: { name: '焱犬', atk: 4, hp: 4, cost: 0, costType: 'gem', gemCost: ['orange','blue'],  sigils: ['frenzy'], bloodValue: 1, color: '#d45a2a', glyph: '焱' },
   // [daily 2026-09-24] 棱镜魔像（三色 3/3 白板，大法师之下的三色打手）
-  prism_golem: { name: '棱镜魔像', atk: 4, hp: 4, cost: 0, costType: 'gem', gemCost: ['orange','green','blue'], sigils: [], bloodValue: 1, color: '#9a7aba', glyph: '棱' },
+  prism_golem: { name: '棱镜魔像', atk: 6, hp: 6, cost: 0, costType: 'gem', gemCost: ['orange','green','blue'], sigils: [], bloodValue: 1, color: '#9a7aba', glyph: '棱' },
 
   // ==========================================================================
   // 时砂阵营（sand）：核心创新点 = 召唤方式——消耗「剩余出牌时间」(pl.seconds) 召唤，不可透支。
