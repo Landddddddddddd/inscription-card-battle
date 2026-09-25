@@ -292,6 +292,19 @@ export const CARDS = {
   // [daily 2026-09-11] 刺毛鼠（补跑；1 费尖刺 1/2，廉价挡位兼反伤）
   bristle_rat: { name: '刺毛鼠', atk: 1, hp: 2, cost: 1, costType: 'blood', sigils: ['sharp_quills'], bloodValue: 2, color: '#8a7a5a', glyph: '毛' },
 
+  // [daily 2026-09-12] 血鹿（2 费 2/3 血量型，血肉阵营补一张无印记稳牌）
+  sanguine_fawn: { name: '血鹿', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: [], bloodValue: 2, color: '#8a5a3a', glyph: '鹿' },
+  // [daily 2026-09-14] 血角牛（3 费 3/2 厚甲冲锋，血肉阵营首张 armored 中费）
+  gore_ox: { name: '血角牛', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['armored'], bloodValue: 2, color: '#7a4a2a', glyph: '角' },
+  // [daily 2026-09-16] 血蛭（1 费 1/2 回复，比火蝾螈多 1 血的廉价回复祭品）
+  blood_leech: { name: '血蛭', atk: 1, hp: 2, cost: 1, costType: 'blood', sigils: ['regen'], bloodValue: 2, color: '#6a3a4a', glyph: '蛭' },
+  // [daily 2026-09-18] 髓魔（4 费 3/4 厚甲，血肉阵营高费坦克位）
+  marrow_fiend: { name: '髓魔', atk: 4, hp: 4, cost: 4, costType: 'blood', sigils: ['armored'], bloodValue: 2, color: '#5a3a2a', glyph: '髓' },
+  // [daily 2026-09-20] 棘鬃豕（2 费 2/3 尖刺反伤，刺猬的血量上位版）
+  spinemane: { name: '棘鬃豕', atk: 2, hp: 3, cost: 2, costType: 'blood', sigils: ['sharp_quills'], bloodValue: 2, color: '#7a5a2a', glyph: '鬃' },
+  // [daily 2026-09-22] 血鹫（3 费 3/2 飞行，秃鹫的成年版）
+  blood_vulture: { name: '血鹫', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['airborne'], bloodValue: 2, color: '#6a2a2a', glyph: '鹗' },
+
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
   bone_pup:    { name: '枯骨幼犬', atk: 1, hp: 1, cost: 0, costType: 'bone', sigils: ['brittle'],        bloodValue: 1, color: '#cfcabc', glyph: '骨' },
@@ -351,6 +364,21 @@ export const CARDS = {
 
   // [daily 2026-09-10] 骨刃武士（补跑；3 费 3/3 素白，骸骨阵营同费最高攻，靠死亡经济补数量）
   bone_blade: { name: '骨刃武士', atk: 2, hp: 3, cost: 3, costType: 'bone', sigils: [], bloodValue: 1, color: '#bfb6a4', glyph: '刃' },
+
+  // [daily 2026-09-12] 骨鸫（1 费 1/2 飞行，骸骨阵营廉价骚扰位）
+  bone_thrush: { name: '骨鸫', atk: 1, hp: 1, cost: 1, costType: 'bone', sigils: ['airborne'], bloodValue: 1, color: '#8a8a7a', glyph: '鸫' },
+  // [daily 2026-09-14] 地窟怪（2 费 1/3 剧毒，骸骨阵营首张带毒坦克）
+  crypt_horror: { name: '地窟怪', atk: 1, hp: 2, cost: 2, costType: 'bone', sigils: ['poison_touch'], bloodValue: 1, color: '#6a5a7a', glyph: '窟' },
+  // [daily 2026-09-16] 骸角兽（3 费 2/3 厚甲，骸骨阵营中费减伤位）
+  osseous_ox: { name: '骸角兽', atk: 2, hp: 2, cost: 3, costType: 'bone', sigils: ['armored'], bloodValue: 1, color: '#7a7a6a', glyph: '髅' },
+  // [daily 2026-09-18] 死炽灵（3 费 2/2 飞行，骸骨阵营首张中费飞行）
+  necro_seraph: { name: '死炽灵', atk: 2, hp: 1, cost: 3, costType: 'bone', sigils: ['airborne'], bloodValue: 1, color: '#5a4a6a', glyph: '炽' },
+  // [daily 2026-09-20] 骨孳鼠（1 费 1/1 群聚，骸骨阵营廉价铺场增益）
+  bone_brood: { name: '骨孳鼠', atk: 1, hp: 1, cost: 1, costType: 'bone', sigils: ['pack'], bloodValue: 1, color: '#8a7a6a', glyph: '孳' },
+  // [daily 2026-09-22] 织骨者（3 费 1/3 尖刺，尸壳蟹的血量上位版）
+  crypt_weaver: { name: '织骨者', atk: 1, hp: 2, cost: 3, costType: 'bone', sigils: ['sharp_quills'], bloodValue: 1, color: '#6a6a5a', glyph: '织' },
+  // [daily 2026-09-24] 巨冢像（4 费 3/4 白板巨物，骸骨阵营高费收尾位）
+  tomb_titan: { name: '巨冢像', atk: 3, hp: 3, cost: 4, costType: 'bone', sigils: [], bloodValue: 1, color: '#5a5a4a', glyph: '茔' },
 
   // ===================== ENERGY（能量 · 机械科技主题）=====================
   black_cat:   { name: '电池机偶', atk: 0, hp: 1, cost: 0, costType: 'energy', sigils: [],               bloodValue: 1, color: '#2b3b4b', glyph: '电' },
@@ -414,6 +442,21 @@ export const CARDS = {
   // [daily 2026-09-11] 攻城机甲（补跑；4 费 5/5 素白巨物，能量阵营曲线顶端，给蒸汽蛮牛一个并列选项）
   siege_mech: { name: '铆钉兵', atk: 2, hp: 3, cost: 1, costType: 'energy', sigils: [], bloodValue: 1, color: '#6a6a7a', glyph: '攻' },
 
+  // [daily 2026-09-12] 伏特兔（1 费 3/1 易碎，能量阵营 1 费爆发位；能量爬升慢，廉价可打之牌最有效）
+  volt_hare: { name: '伏特兔', atk: 3, hp: 1, cost: 1, costType: 'energy', sigils: ['brittle'], bloodValue: 1, color: '#6a7a86', glyph: '伏' },
+  // [daily 2026-09-14] 线圈蛇（2 费 2/3 剧毒，剧毒蜂的血量上位版）
+  coil_serpent: { name: '线圈蛇', atk: 3, hp: 3, cost: 2, costType: 'energy', sigils: ['poison_touch'], bloodValue: 1, color: '#4a7a6a', glyph: '圈' },
+  // [daily 2026-09-16] 特斯拉角羊（3 费 3/3 狂热，能量阵营滚雪球位）
+  tesla_ram: { name: '特斯拉角羊', atk: 3, hp: 4, cost: 3, costType: 'energy', sigils: ['frenzy'], bloodValue: 1, color: '#7a8a9a', glyph: '斯' },
+  // [daily 2026-09-18] 日能隼（2 费 2/2 飞行，喷射隼的均衡变体）
+  solar_hawk: { name: '日能隼', atk: 2, hp: 2, cost: 2, costType: 'energy', sigils: ['airborne'], bloodValue: 1, color: '#8a8a5a', glyph: '晟' },
+  // [daily 2026-09-20] 电网哨（3 费 2/4 厚甲，装甲战车的低攻高血变体）
+  grid_sentinel: { name: '电网哨', atk: 3, hp: 4, cost: 3, costType: 'energy', sigils: ['armored'], bloodValue: 1, color: '#5a7a8a', glyph: '栅' },
+  // [daily 2026-09-22] 聚变牛（4 费 4/3 白板，装甲野牛的攻防互换版）
+  fusion_ox: { name: '聚变牛', atk: 4, hp: 4, cost: 4, costType: 'energy', sigils: [], bloodValue: 1, color: '#8a6a4a', glyph: '聚' },
+  // [daily 2026-09-24] 脉冲螨（1 费 2/1 不朽，能量阵营廉价续航位）
+  pulse_mite: { name: '脉冲螨', atk: 2, hp: 2, cost: 1, costType: 'energy', sigils: ['undying'], bloodValue: 1, color: '#6a8a7a', glyph: '螨' },
+
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
   // 其余法术卡 costType='gem'，需场上存在对应颜色的魔石才能召唤（召唤不消耗魔石，
@@ -474,6 +517,21 @@ export const CARDS = {
   // [daily 2026-09-10] 苔鳞卫（补跑；需绿+蓝魔石，1/3 厚甲挡位，双色位里的廉价墙）
   moss_ward: { name: '苔鳞卫', atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['green','blue'],              sigils: ['armored'], bloodValue: 1, color: '#5a8a6a', glyph: '藓' },
 
+  // [daily 2026-09-13] 琥珀灵（橙 1/3 厚甲，魔石阵营廉价墙位）
+  amber_wisp: { name: '琥珀灵', atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange'],         sigils: ['armored'], bloodValue: 1, color: '#c98a2a', glyph: '珀' },
+  // [daily 2026-09-15] 翡蛛（绿 1/2 致死，魔石阵营首张单绿致死）
+  jade_spider: { name: '翡蛛', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'],          sigils: ['death_touch'], bloodValue: 1, color: '#3a8a5a', glyph: '翡' },
+  // [daily 2026-09-17] 钴枭（蓝 1/3 飞行，魔石阵营首张飞行墙）
+  cobalt_owl: { name: '钴枭', atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['blue'],           sigils: ['airborne'], bloodValue: 1, color: '#3a5a9a', glyph: '钴' },
+  // [daily 2026-09-19] 曜石豕（橙+绿 2/2 厚甲，符文魔像的减伤变体）
+  obsidian_boar: { name: '曜石豕', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange','green'], sigils: ['armored'], bloodValue: 1, color: '#7a4a2a', glyph: '曜' },
+  // [daily 2026-09-21] 汐魔（绿+蓝 2/2 剧毒，奇美拉的带毒变体）
+  tidal_fiend: { name: '汐魔', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['green','blue'],   sigils: ['poison_touch'], bloodValue: 1, color: '#2a7a8a', glyph: '汐' },
+  // [daily 2026-09-23] 焱犬（橙+蓝 2/2 狂热，蝎尾狮的狂热变体）
+  ember_hound: { name: '焱犬', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange','blue'],  sigils: ['frenzy'], bloodValue: 1, color: '#d45a2a', glyph: '焱' },
+  // [daily 2026-09-24] 棱镜魔像（三色 3/3 白板，大法师之下的三色打手）
+  prism_golem: { name: '棱镜魔像', atk: 4, hp: 4, cost: 0, costType: 'gem', gemCost: ['orange','green','blue'], sigils: [], bloodValue: 1, color: '#9a7aba', glyph: '棱' },
+
   // ==========================================================================
   // 时砂阵营（sand）：核心创新点 = 召唤方式——消耗「剩余出牌时间」(pl.seconds) 召唤，不可透支。
   // 单位数值曲线 1:1 镜像能量阵营（同费同级、攻防分布完全一致：1 费×7 / 2 费×9 /
@@ -510,13 +568,26 @@ export const CARDS = {
   brass_automaton: { name: '黄铜傀儡', atk: 2, hp: 3, cost: 4, costType: 'sand', sigils: [],                 bloodValue: 1, color: '#b08d57', glyph: '铜' },
 
   // [daily 2026-09-07] 沙钟螺（补跑；3 秒 1/3 慢速挡位，时砂阵营首张纯墙）
-  sand_snail: { name: '沙钟螺', atk: 1, hp: 3, cost: 3, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#c2b184', glyph: '钟' },
+  sand_snail: { name: '沙钟螺', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#c2b184', glyph: '钟' },
 
   // [daily 2026-09-09] 沙羽虫（补跑；4 秒飞行 2/2，齿轮蝇上位版）
   sand_moth: { name: '沙羽虫', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['airborne'],              bloodValue: 1, color: '#cbb27a', glyph: '羽' },
 
   // [daily 2026-09-11] 沙丘兽（补跑；5 秒 3/3 素白中坚，沙漏泰坦之下的平价选项）
   dune_beast: { name: '沙丘兽', atk: 3, hp: 2, cost: 5, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#d2b478', glyph: '丘' },
+
+  // [daily 2026-09-13] 沙蜱（2 秒 1/1 最廉价铺场位）
+  sand_mite: { name: '沙蜱', atk: 1, hp: 1, cost: 2, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#c2b184', glyph: '蜱' },
+  // [daily 2026-09-15] 琉雀（3 秒 1/2 飞行，秒针的血量上位版）
+  glass_finch: { name: '琉雀', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['airborne'],              bloodValue: 1, color: '#8ab0c0', glyph: '琉' },
+  // [daily 2026-09-17] 盘犬（3 秒 2/1 白板，时影豹的低血变体）
+  dial_hound: { name: '盘犬', atk: 2, hp: 1, cost: 3, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#b08d57', glyph: '盘' },
+  // [daily 2026-09-19] 锤卫（4 秒 1/3 厚甲，时针的升费版）
+  pendulum_guard: { name: '锤卫', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['armored'],              bloodValue: 1, color: '#a08a6a', glyph: '砣' },
+  // [daily 2026-09-21] 淤爬者（4 秒 2/2 白板，黄铜傀儡的低血变体）
+  silt_crawler: { name: '淤爬者', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#b0a080', glyph: '淤' },
+  // [daily 2026-09-23] 劫甲（5 秒 2/2 厚甲，时之骑士的低配版）
+  aeon_beetle: { name: '劫甲', atk: 2, hp: 2, cost: 5, costType: 'sand', sigils: ['armored'],              bloodValue: 1, color: '#8f7f5f', glyph: '劫' },
 
   // ==========================================================================
   // 军威阵营（morale）：核心创新点 = 召唤方式——消耗「士气」召唤。士气由「交战造成
@@ -551,6 +622,19 @@ export const CARDS = {
   // [daily 2026-09-10] 盾墙兵（补跑；3 费 2/4 厚身挡位，军威阵营补一张能站住换士气的墙）
   shield_wall:     { name: '盾墙兵',   atk: 2, hp: 4, cost: 3, costType: 'morale', sigils: [],                bloodValue: 1, color: '#8a5a3a', glyph: '墙' },
 
+  // [daily 2026-09-13] 旄卫（1 费 1/2 回复，军威阵营廉价续航位）
+  banner_guard: { name: '旄卫', atk: 1, hp: 2, cost: 1, costType: 'morale', sigils: ['regen'], bloodValue: 1, color: '#a08040', glyph: '旄' },
+  // [daily 2026-09-15] 号角手（1 费 1/2 群聚，军威阵营首张 1 费增益）
+  horn_blower: { name: '号角手', atk: 1, hp: 2, cost: 1, costType: 'morale', sigils: ['pack'], bloodValue: 1, color: '#b08a3a', glyph: '号' },
+  // [daily 2026-09-17] 盾姬（2 费 2/2 厚甲，盾卫的攻防互换版）
+  shield_maiden: { name: '盾姬', atk: 1, hp: 2, cost: 2, costType: 'morale', sigils: ['armored'], bloodValue: 1, color: '#8a7a5a', glyph: '姬' },
+  // [daily 2026-09-19] 前锋（3 费 2/2 狂热，鼓长的升费版）
+  vanguard: { name: '前锋', atk: 2, hp: 1, cost: 3, costType: 'morale', sigils: ['frenzy'], bloodValue: 1, color: '#c06030', glyph: '锋' },
+  // [daily 2026-09-21] 战轺（4 费 3/2 飞行，军威阵营首张飞行高费）
+  war_chariot: { name: '战轺', atk: 2, hp: 2, cost: 4, costType: 'morale', sigils: ['airborne'], bloodValue: 1, color: '#9a6a3a', glyph: '轼' },
+  // [daily 2026-09-23] 老练军士（3 费 2/3 白板，盾墙兵的低血版）
+  veteran_sergeant: { name: '老练军士', atk: 2, hp: 2, cost: 3, costType: 'morale', sigils: [], bloodValue: 1, color: '#7a6a4a', glyph: '练' },
+
   // ===================== 神话卡（premium / mythic）=====================
   // 仅可通过魂晶（付费货币）获取：暗夜卡包极低概率掉落 或 直购商店高价购买。
   // 设计原则：比同费用普通卡略强（+1 stat 或多一个印记），但有明确弱点（脆皮/高费/多宝石需求）。
@@ -578,27 +662,27 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，另有极轻的每回合墓地滴流（约 0.75，攒满 1 才 +1，仅防前期断档）。用骸骨召唤亡灵，用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','amber_beast','thorn_vine','twin_fiend','crimson_eye','flame_shard','frost_ward','moss_ward','archmage','void_phantom'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','amber_beast','thorn_vine','twin_fiend','crimson_eye','flame_shard','frost_ward','moss_ward','archmage','void_phantom','amber_wisp','jade_spider','cobalt_owl','obsidian_boar','tidal_fiend','ember_hound','prism_golem'],
   },
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
     desc: '时间即是资源：每回合开局获得一份「出牌时间」预算，它随你的回合数小幅增长（首回合 2 秒，每多一个己方回合 +1 秒、封顶 5 秒）——它是你这一回合真实倒计时的时钟。真实流逝每过 1 秒就少 1 秒，出牌再额外扣掉该牌的「秒费」，归零则回合自动结束。卡牌以「秒」为费、不可透支（例如剩 4 秒打不出 5 秒的牌）。每回合归零重计、不跨回合累计（时砂越战越从容，但每回合从 2 秒重新流）。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
-    cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton','sand_snail','sand_moth','dune_beast'],
+    cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton','sand_snail','sand_moth','dune_beast','sand_mite','glass_finch','dial_hound','pendulum_guard','silt_crawler','aeon_beetle'],
   },
   // === 占位阵营（即将推出）：预留第 6 / 7 / 8 阵营插槽，目前 cards 为空、comingSoon:true。
   // 具体内容（核心召唤机制 / 卡池 / 资源）以后填充；填好后删掉 comingSoon 并把 key 加进
@@ -606,7 +690,7 @@ export const FACTIONS = {
   morale: {
     key: 'morale', name: '军威', res: 'morale', color: '#b5651d',
     desc: '军威以「士气」为资源：交战造成伤害（攻击敌方单位、含致死与尖刺反伤）给全额士气（1 伤=1 士气，受单回合获取上限）；攻击天平（直击空列/飞行越界）给折减系数 0.22 的士气（分数累积）。士气跨回合累计、存量封顶 10、单回合获取封顶 4、开局 0、无无偿发放。初版天平满额导致 88% 失衡（攻击取胜动作既推胜利又滚经济双重碾压），改折减后才平衡。士气卡消耗士气召唤——单位身材压到廉价端，靠「打敌方单位即回本」的正反馈滚雪球。',
-    cards: ['war_drummer','war_piper','outrider','scout_raven','spearman','warhound','pikeman','drummer_chief','shield_guard','standard_bearer','archer','knight_errant','berserker','champion','lancer','general','war_elephant','shock_trooper','shield_wall','avatar_of_war'],
+    cards: ['war_drummer','war_piper','outrider','scout_raven','spearman','warhound','pikeman','drummer_chief','shield_guard','standard_bearer','archer','knight_errant','berserker','champion','lancer','general','war_elephant','shock_trooper','shield_wall','avatar_of_war','banner_guard','horn_blower','shield_maiden','vanguard','war_chariot','veteran_sergeant'],
   },
   f7: {
     key: 'f7', name: '阵营七', res: 'tbd', color: '#8a7c94',
@@ -1078,6 +1162,19 @@ export const CHANGELOG = [
       '2026-09-09 每日新增（补跑）：重锤机兵 / 沙羽虫 / 血翼蝠',
       '2026-09-10 每日新增（补跑）：骨刃武士 / 苔鳞卫 / 盾墙兵',
       '2026-09-11 每日新增（补跑）：铆钉兵 / 沙丘兽 / 刺毛鼠',
+      '2026-09-12 每日新增（补跑）：血鹿 / 骨鸫 / 伏特兔',
+      '2026-09-13 每日新增（补跑）：琥珀灵 / 沙蜱 / 旄卫',
+      '2026-09-14 每日新增（补跑）：地窟怪 / 线圈蛇 / 血角牛',
+      '2026-09-15 每日新增（补跑）：翡蛛 / 琉雀 / 号角手',
+      '2026-09-16 每日新增（补跑）：骸角兽 / 特斯拉角羊 / 血蛭',
+      '2026-09-17 每日新增（补跑）：钴枭 / 盘犬 / 盾姬',
+      '2026-09-18 每日新增（补跑）：死炽灵 / 日能隼 / 髓魔',
+      '2026-09-19 每日新增（补跑）：曜石豕 / 锤卫 / 前锋',
+      '2026-09-20 每日新增（补跑）：骨孳鼠 / 电网哨 / 棘鬃豕',
+      '2026-09-21 每日新增（补跑）：汐魔 / 淤爬者 / 战轺',
+      '2026-09-22 每日新增（补跑）：织骨者 / 聚变牛 / 血鹫',
+      '2026-09-23 每日新增（补跑）：焱犬 / 劫甲 / 老练军士',
+      '2026-09-24 每日新增：巨冢像 / 脉冲螨 / 棱镜魔像',
     ],
   },
   {
