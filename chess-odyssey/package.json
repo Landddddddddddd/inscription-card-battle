@@ -1,0 +1,10 @@
+{
+  "name": "chess-odyssey",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "残局 · 国际象棋主题战术 Roguelike（零依赖：纯逻辑 + 手写 WebSocket 联机）",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
