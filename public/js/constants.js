@@ -404,6 +404,9 @@ export const CARDS = {
   // [daily 2026-10-03] 裂颅骷（2 费 2/2 易碎，骸骨阵营敢死队：一击即碎换骸骨经济）
   cracked_skull: { name: '裂颅骷', atk: 2, hp: 2, cost: 2, costType: 'bone', sigils: ['brittle'], bloodValue: 1, color: '#cfcabc', glyph: '裂' },
 
+  // [daily 2026-10-04] 墓魇（1 费 1/2 断尾，骸骨阵营廉价生存型骚扰，被击杀可断尾逃生）
+  grave_wraith: { name: '墓魇', atk: 1, hp: 2, cost: 1, costType: 'bone', sigils: ['loose_tail'], bloodValue: 1, color: '#9aa0a8', glyph: '魇' },
+
   // ===================== ENERGY（能量 · 机械科技主题）=====================
   black_cat:   { name: '电池机偶', atk: 0, hp: 1, cost: 0, costType: 'energy', sigils: [],               bloodValue: 1, color: '#2b3b4b', glyph: '电' },
   magpie:      { name: '磁窃鸟',   atk: 2, hp: 1, cost: 1, costType: 'energy', sigils: [],               bloodValue: 1, color: '#3a3a4a', glyph: '磁' },
@@ -493,6 +496,9 @@ export const CARDS = {
   // [daily 2026-10-03] 电刺蜂（2 费 2/2 连击，能量阵营补一张廉价连击位，低于 lynx/mantis 的 3/3 档）
   tesla_wasp: { name: '电刺蜂', atk: 2, hp: 2, cost: 2, costType: 'energy', sigils: ['double_strike'], bloodValue: 1, color: '#4a8a7a', glyph: '蜇' },
 
+  // [daily 2026-10-04] 反应蠕虫（2 费 2/3 回复，能量阵营首张续航体型，每回合自愈 1 点）
+  reactor_slug: { name: '反应蠕虫', atk: 2, hp: 3, cost: 2, costType: 'energy', sigils: ['regen'], bloodValue: 1, color: '#3a8ad0', glyph: '蠕' },
+
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
   // 其余法术卡 costType='gem'，需场上存在对应颜色的魔石才能召唤（召唤不消耗魔石，
@@ -576,6 +582,9 @@ export const CARDS = {
   dusk_idol: { name: '夕晶像', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange','blue'], sigils: [], bloodValue: 1, color: '#6a2a4a', glyph: '夕' },
   // [daily 2026-10-02] 星穹元素（0 费 5/5 三石，棱镜魔像与不灭凤凰之间的档位）
   astral_elemental: { name: '星穹元素', atk: 5, hp: 5, cost: 0, costType: 'gem', gemCost: ['orange','green','blue'], sigils: [], bloodValue: 1, color: '#1a1a2a', glyph: '穹' },
+
+  // [daily 2026-10-04] 霜蚺（0 费 2/3 单蓝石 厚甲，魔石阵营蓝系防御墙，需场上已有蓝魔石）
+  frost_boa: { name: '霜蚺', atk: 2, hp: 3, cost: 0, costType: 'gem', gemCost: ['blue'], sigils: ['armored'], bloodValue: 1, color: '#2a6a9a', glyph: '蚺' },
 
   // ==========================================================================
   // 时砂阵营（sand）：核心创新点 = 召唤方式——消耗「剩余出牌时间」(pl.seconds) 召唤，不可透支。
@@ -730,17 +739,17 @@ export const FACTIONS = {
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，另有极轻的每回合墓地滴流（约 0.75，攒满 1 才 +1，仅防前期断档）。用骸骨召唤亡灵，用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan','tomb_candle','bone_spearman','bone_colossus','death_dirge','cracked_skull'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan','tomb_candle','bone_spearman','bone_colossus','death_dirge','cracked_skull','grave_wraith'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite','cap_toad','crane_ape','overload_rhino','plasma_whale','tesla_wasp'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite','cap_toad','crane_ape','overload_rhino','plasma_whale','tesla_wasp','reactor_slug'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','amber_beast','thorn_vine','twin_fiend','crimson_eye','flame_shard','frost_ward','moss_ward','archmage','void_phantom','amber_wisp','jade_spider','cobalt_owl','obsidian_boar','tidal_fiend','ember_hound','prism_golem','flame_lizard','vine_wraith','dusk_idol','astral_elemental'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','amber_beast','thorn_vine','twin_fiend','crimson_eye','flame_shard','frost_ward','moss_ward','archmage','void_phantom','amber_wisp','jade_spider','cobalt_owl','obsidian_boar','tidal_fiend','ember_hound','prism_golem','flame_lizard','vine_wraith','dusk_idol','astral_elemental','frost_boa'],
   },
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
@@ -1247,6 +1256,7 @@ export const CHANGELOG = [
       '2026-10-01 每日新增（补跑）：血月巨狼 / 亡者挽歌者 / 等离子鲸',
       '2026-10-02 每日新增（补跑）：星穹元素 / 蜃楼 / 金鼓元帅',
       '2026-10-03 每日新增：獠牙兽 / 裂颅骷 / 电刺蜂',
+      '2026-10-04 每日新增：霜蚺 / 墓魇 / 反应蠕虫',
     ],
   },
   {
