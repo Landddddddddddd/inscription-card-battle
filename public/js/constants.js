@@ -340,6 +340,8 @@ export const CARDS = {
   blood_jackal: { name: '血爪豺', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['double_strike'], bloodValue: 2, color: '#9a4a2a', glyph: '豺' },
   // [daily 2026-10-22] 羚甲兽（2 费 3/3 厚甲，血肉阵营中费减伤墙）
   shield_antelope: { name: '羚甲兽', atk: 3, hp: 3, cost: 2, costType: 'blood', sigils: ['armored'], bloodValue: 2, color: '#7a5a3a', glyph: '羚' },
+  // [daily 2026-10-24] 遁狼（2 费 3/2 断尾，血肉阵营廉价逃生位，贴线 bullfrog 3/2）
+  evade_wolf: { name: '遁狼', atk: 3, hp: 2, cost: 2, costType: 'blood', sigils: ['loose_tail'], bloodValue: 2, color: '#8a4a3a', glyph: '遁' },
 
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
@@ -452,6 +454,8 @@ export const CARDS = {
   coffin_rider: { name: '棺柩骑', atk: 2, hp: 2, cost: 2, costType: 'bone', sigils: ['double_strike'], bloodValue: 1, color: '#9a8a7a', glyph: '棺' },
   // [daily 2026-10-23] 残碑卫（3 费 2/3 厚甲，骸骨阵营中费减伤墙）
   stele_ward: { name: '残碑卫', atk: 2, hp: 3, cost: 3, costType: 'bone', sigils: ['armored'], bloodValue: 1, color: '#7a7a6a', glyph: '碑' },
+  // [daily 2026-10-24] 毒蛊（3 费 2/3 毒触，骸骨阵营带毒墙）
+  venom_gu: { name: '毒蛊', atk: 2, hp: 3, cost: 3, costType: 'bone', sigils: ['poison_touch'], bloodValue: 1, color: '#5a7a3a', glyph: '蛊' },
 
   // ===================== ENERGY（能量 · 机械科技主题）=====================
   black_cat:   { name: '电池机偶', atk: 0, hp: 1, cost: 0, costType: 'energy', sigils: [],               bloodValue: 1, color: '#2b3b4b', glyph: '电' },
@@ -563,6 +567,8 @@ export const CARDS = {
   heavy_crossbow: { name: '重装弩', atk: 3, hp: 4, cost: 3, costType: 'energy', sigils: ['armored'], bloodValue: 1, color: '#5a7a86', glyph: '弩' },
   // [daily 2026-10-23] 战列舰（4 费 4/5 白板，能量阵营高费收尾位）
   battleship: { name: '战列舰', atk: 4, hp: 5, cost: 4, costType: 'energy', sigils: [], bloodValue: 1, color: '#5a6a76', glyph: '舰' },
+  // [daily 2026-10-24] 炬机（4 费 4/4 回复，能量阵营高费续航铁卫）
+  torch_bot: { name: '炬机', atk: 4, hp: 4, cost: 4, costType: 'energy', sigils: ['regen'], bloodValue: 1, color: '#7a6a5a', glyph: '炬' },
 
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
@@ -851,17 +857,17 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture','red_fox','blood_owl','wild_lizard','bloodmoon_wolf','tusk_beast','gale_lynx','ironback_boar','civet_dog','muntjac','roe_deer','frenzy_hoof','venom_viper','forest_zhang','blood_jackal','shield_antelope'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture','red_fox','blood_owl','wild_lizard','bloodmoon_wolf','tusk_beast','gale_lynx','ironback_boar','civet_dog','muntjac','roe_deer','frenzy_hoof','venom_viper','forest_zhang','blood_jackal','shield_antelope','evade_wolf'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，另有极轻的每回合墓地滴流（约 0.75，攒满 1 才 +1，仅防前期断档）。用骸骨召唤亡灵，用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan','tomb_candle','bone_spearman','bone_colossus','death_dirge','cracked_skull','grave_wraith','bone_lancer','flying_squirrel','tapir_bone','pixiu_bone','tomb_armor','rot_construct','brittle_lacewing','coffin_rider','stele_ward'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan','tomb_candle','bone_spearman','bone_colossus','death_dirge','cracked_skull','grave_wraith','bone_lancer','flying_squirrel','tapir_bone','pixiu_bone','tomb_armor','rot_construct','brittle_lacewing','coffin_rider','stele_ward','venom_gu'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite','cap_toad','crane_ape','overload_rhino','plasma_whale','tesla_wasp','reactor_slug','volt_sparrow','titan_mech','crystal_drone','blitz_gun','halberd_bot','cell_pig','heavy_crossbow','battleship'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite','cap_toad','crane_ape','overload_rhino','plasma_whale','tesla_wasp','reactor_slug','volt_sparrow','titan_mech','crystal_drone','blitz_gun','halberd_bot','cell_pig','heavy_crossbow','battleship','torch_bot'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
@@ -1391,6 +1397,7 @@ export const CHANGELOG = [
       '2026-10-21 每日新增（补跑）：血爪豺 / 棺柩骑 / 焰甲兽',
       '2026-10-22 每日新增（补跑）：羚甲兽 / 重装弩 / 萃刃灵',
       '2026-10-23 每日新增：残碑卫 / 战列舰 / 瀚海卫',
+      '2026-10-24 每日新增：遁狼 / 毒蛊 / 炬机',
     ],
   },
   {
