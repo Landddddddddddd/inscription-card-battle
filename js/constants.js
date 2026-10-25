@@ -342,6 +342,8 @@ export const CARDS = {
   shield_antelope: { name: '羚甲兽', atk: 3, hp: 3, cost: 2, costType: 'blood', sigils: ['armored'], bloodValue: 2, color: '#7a5a3a', glyph: '羚' },
   // [daily 2026-10-24] 遁狼（2 费 3/2 断尾，血肉阵营廉价逃生位，贴线 bullfrog 3/2）
   evade_wolf: { name: '遁狼', atk: 3, hp: 2, cost: 2, costType: 'blood', sigils: ['loose_tail'], bloodValue: 2, color: '#8a4a3a', glyph: '遁' },
+  // [daily 2026-10-25] 血燕（1 费 2/2 飞行，血肉阵营廉价飞行骚扰位，贴线 viper 攻击向变体的飞行版）
+  blood_swallow: { name: '血燕', atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: ['airborne'], bloodValue: 2, color: '#9a3a3a', glyph: '燕' },
 
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
@@ -569,6 +571,8 @@ export const CARDS = {
   battleship: { name: '战列舰', atk: 4, hp: 5, cost: 4, costType: 'energy', sigils: [], bloodValue: 1, color: '#5a6a76', glyph: '舰' },
   // [daily 2026-10-24] 炬机（4 费 4/4 回复，能量阵营高费续航铁卫）
   torch_bot: { name: '炬机', atk: 4, hp: 4, cost: 4, costType: 'energy', sigils: ['regen'], bloodValue: 1, color: '#7a6a5a', glyph: '炬' },
+  // [daily 2026-10-25] 锯齿机兵（2 费 3/2 尖刺，能量阵营廉价反伤打手，低于 spike_beetle 的 3/2 同档但换印记）
+  saw_mech: { name: '锯齿机兵', atk: 3, hp: 2, cost: 2, costType: 'energy', sigils: ['sharp_quills'], bloodValue: 1, color: '#6a7a6a', glyph: '锷' },
 
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
@@ -681,6 +685,8 @@ export const CARDS = {
   jade_blade_wisp: { name: '萃刃灵', atk: 3, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'], sigils: ['double_strike'], bloodValue: 1, color: '#27ae60', glyph: '萃' },
   // [daily 2026-10-23] 瀚海卫（0 费 单蓝石 3/3 厚甲，魔石阵营蓝系铁卫，需场上已有蓝魔石）
   ocean_ward: { name: '瀚海卫', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['blue'], sigils: ['armored'], bloodValue: 1, color: '#2980b9', glyph: '瀚' },
+  // [daily 2026-10-25] 焰虺（0 费 单橙石 2/2 毒触，魔石阵营橙系毒打手，需场上已有橙魔石）
+  ember_asp: { name: '焰虺', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['orange'], sigils: ['poison_touch'], bloodValue: 1, color: '#e67e22', glyph: '虺' },
 
   // 时砂阵营（sand）：核心创新点 = 召唤方式——消耗「剩余出牌时间」(pl.seconds) 召唤，不可透支。
   // 单位数值曲线 1:1 镜像能量阵营（同费同级、攻防分布完全一致：1 费×7 / 2 费×9 /
@@ -857,7 +863,7 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture','red_fox','blood_owl','wild_lizard','bloodmoon_wolf','tusk_beast','gale_lynx','ironback_boar','civet_dog','muntjac','roe_deer','frenzy_hoof','venom_viper','forest_zhang','blood_jackal','shield_antelope','evade_wolf'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture','red_fox','blood_owl','wild_lizard','bloodmoon_wolf','tusk_beast','gale_lynx','ironback_boar','civet_dog','muntjac','roe_deer','frenzy_hoof','venom_viper','forest_zhang','blood_jackal','shield_antelope','evade_wolf','blood_swallow'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
@@ -867,12 +873,12 @@ export const FACTIONS = {
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite','cap_toad','crane_ape','overload_rhino','plasma_whale','tesla_wasp','reactor_slug','volt_sparrow','titan_mech','crystal_drone','blitz_gun','halberd_bot','cell_pig','heavy_crossbow','battleship','torch_bot'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite','cap_toad','crane_ape','overload_rhino','plasma_whale','tesla_wasp','reactor_slug','volt_sparrow','titan_mech','crystal_drone','blitz_gun','halberd_bot','cell_pig','heavy_crossbow','battleship','torch_bot','saw_mech'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','amber_beast','thorn_vine','twin_fiend','crimson_eye','flame_shard','frost_ward','moss_ward','archmage','void_phantom','amber_wisp','jade_spider','cobalt_owl','obsidian_boar','tidal_fiend','ember_hound','prism_golem','flame_lizard','vine_wraith','dusk_idol','astral_elemental','frost_boa','jade_warden','scorch_wisp','mist_sprite','hail_idol','flame_lance','frost_claw','tide_beast','flame_plate_beast','jade_blade_wisp','ocean_ward'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','amber_beast','thorn_vine','twin_fiend','crimson_eye','flame_shard','frost_ward','moss_ward','archmage','void_phantom','amber_wisp','jade_spider','cobalt_owl','obsidian_boar','tidal_fiend','ember_hound','prism_golem','flame_lizard','vine_wraith','dusk_idol','astral_elemental','frost_boa','jade_warden','scorch_wisp','mist_sprite','hail_idol','flame_lance','frost_claw','tide_beast','flame_plate_beast','jade_blade_wisp','ocean_ward','ember_asp'],
   },
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
@@ -1398,6 +1404,7 @@ export const CHANGELOG = [
       '2026-10-22 每日新增（补跑）：羚甲兽 / 重装弩 / 萃刃灵',
       '2026-10-23 每日新增：残碑卫 / 战列舰 / 瀚海卫',
       '2026-10-24 每日新增：遁狼 / 毒蛊 / 炬机',
+      '2026-10-25 每日新增：血燕 / 锯齿机兵 / 焰虺',
     ],
   },
   {
