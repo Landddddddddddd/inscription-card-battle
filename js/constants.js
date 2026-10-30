@@ -795,6 +795,21 @@ export const CARDS = {
   // [daily 2026-10-12] 永恒沙魂（5 秒 2/4 不死，时砂阵营高费续航墙）
   eternal_sandwraith: { name: '永恒沙魂', atk: 2, hp: 4, cost: 5, costType: 'sand', sigils: ['undying'], bloodValue: 1, color: '#ffd24a', glyph: '魂' },
 
+  // [daily 2026-10-26] 摆轮（3 秒 1/2 头狼，时砂阵营首张「pack」增益位，补齐印记轮换）
+  balance_wheel: { name: '摆轮', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['pack'], bloodValue: 1, color: '#b59a4a', glyph: '轮' },
+  // [daily 2026-10-26] 时刃（4 秒 2/2 连击，时砂阵营首张「double_strike」打手，贴线 minute_hand 同费档）
+  chrono_blade: { name: '时刃', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['double_strike'], bloodValue: 1, color: '#c8b070', glyph: '刻' },
+  // [daily 2026-10-18] 沙矛手（2 秒 2/1 白板，时砂阵营 2 秒进攻位）
+  sand_spearman: { name: '沙矛手', atk: 2, hp: 1, cost: 2, costType: 'sand', sigils: [], bloodValue: 1, color: '#c9b47a', glyph: '矛' },
+  // [daily 2026-10-19] 沙荆苗（2 秒 1/2 尖刺，时砂阵营 2 秒反伤炮灰）
+  sand_thorn: { name: '沙荆苗', atk: 1, hp: 2, cost: 2, costType: 'sand', sigils: ['sharp_quills'], bloodValue: 1, color: '#a8a05a', glyph: '荆' },
+  // [daily 2026-10-26] 时狡兔（3 秒 2/2 断尾，时砂阵营 3 秒逃生位）
+  chrono_hare: { name: '时狡兔', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#c0a870', glyph: '兔' },
+  // [daily 2026-10-28] 日晷巨像（4 秒 3/2 白板，时砂阵营 4 秒进攻位）
+  sundial_colossus: { name: '日晷巨像', atk: 3, hp: 2, cost: 4, costType: 'sand', sigils: [], bloodValue: 1, color: '#b8a05a', glyph: '晷' },
+  // [daily 2026-10-30] 沙蛹（2 秒 1/2 白板，时砂阵营 2 秒挡位）
+  sand_larva: { name: '沙蛹', atk: 1, hp: 2, cost: 2, costType: 'sand', sigils: [], bloodValue: 1, color: '#c2b184', glyph: '蛹' },
+
   // ==========================================================================
   // 军威阵营（morale）：核心创新点 = 召唤方式——消耗「士气」召唤。士气由「交战造成
   // 伤害」累积（攻击敌方单位 +1/伤害、致死算满血、尖刺反伤同样产士气），跨回合累计、
@@ -883,6 +898,16 @@ export const CARDS = {
   flying_spear: { name: '飞槊尉', atk: 3, hp: 3, cost: 4, costType: 'morale', sigils: ['airborne'], bloodValue: 1, color: '#9a6a3a', glyph: '槊' },
   // [daily 2026-10-12] 盾牌兵（2 费 1/3 厚甲，军威阵营廉价墙）
   buckler_soldier: { name: '盾牌兵', atk: 1, hp: 3, cost: 2, costType: 'morale', sigils: ['armored'], bloodValue: 1, color: '#9a6a4a', glyph: '牌' },
+  // [daily 2026-10-26] 毒旗手（2 费 1/2 毒触，军威阵营首张「poison_touch」带毒缠斗位，交战产士气与毒触天然契合）
+  poison_banner: { name: '毒旗手', atk: 1, hp: 2, cost: 2, costType: 'morale', sigils: ['poison_touch'], bloodValue: 1, color: '#8a6a3a', glyph: '瘴' },
+  // [daily 2026-10-18] 军鸽（2 费 2/1 飞行，军威阵营中费飞行骚扰位，斥候鸦的攻击向升费版）
+  war_pigeon: { name: '军鸽', atk: 2, hp: 1, cost: 2, costType: 'morale', sigils: ['airborne'], bloodValue: 1, color: '#b0a090', glyph: '鸽' },
+  // [daily 2026-10-19] 拒马（2 费 1/3 尖刺，军威阵营反伤挡位，营地工事主题）
+  caltrop: { name: '拒马', atk: 1, hp: 3, cost: 2, costType: 'morale', sigils: ['sharp_quills'], bloodValue: 1, color: '#8a6a4a', glyph: '拒' },
+  // [daily 2026-10-27] 塔盾兵（4 费 2/4 厚甲，军威阵营高费铁壁位，盾卫的升费版）
+  tower_shield: { name: '塔盾兵', atk: 2, hp: 4, cost: 4, costType: 'morale', sigils: ['armored'], bloodValue: 1, color: '#7a5a3a', glyph: '塔' },
+  // [daily 2026-10-29] 戟兵（3 费 3/2 白板，军威阵营中费打手，游侠骑士的无甲版）
+  halberdier: { name: '戟兵', atk: 3, hp: 2, cost: 3, costType: 'morale', sigils: [], bloodValue: 1, color: '#a05a2a', glyph: '戟' },
 
 };
 
@@ -911,7 +936,7 @@ export const FACTIONS = {
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
     desc: '时间即是资源：每回合开局获得一份「出牌时间」预算，它随你的回合数小幅增长（首回合 2 秒，每多一个己方回合 +1 秒、封顶 5 秒）——它是你这一回合真实倒计时的时钟。真实流逝每过 1 秒就少 1 秒，出牌再额外扣掉该牌的「秒费」，归零则回合自动结束。卡牌以「秒」为费、不可透支（例如剩 4 秒打不出 5 秒的牌）。每回合归零重计、不跨回合累计（时砂越战越从容，但每回合从 2 秒重新流）。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
-    cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton','sand_snail','sand_moth','dune_beast','sand_mite','glass_finch','dial_hound','pendulum_guard','silt_crawler','aeon_beetle','sand_mote','clepsydra','brass_sundial','mirage','sand_spike','sand_skylark','sandstone_ward','chrono_fury','sand_grit','sand_wingmoth','eternal_sandwraith'],
+    cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton','sand_snail','sand_moth','dune_beast','sand_mite','glass_finch','dial_hound','pendulum_guard','silt_crawler','aeon_beetle','sand_mote','clepsydra','brass_sundial','mirage','sand_spike','sand_skylark','sandstone_ward','chrono_fury','sand_grit','sand_wingmoth','eternal_sandwraith','balance_wheel','chrono_blade'],
   },
   // === 占位阵营（即将推出）：预留第 6 / 7 / 8 阵营插槽，目前 cards 为空、comingSoon:true。
   // 具体内容（核心召唤机制 / 卡池 / 资源）以后填充；填好后删掉 comingSoon 并把 key 加进
@@ -919,7 +944,7 @@ export const FACTIONS = {
   morale: {
     key: 'morale', name: '军威', res: 'morale', color: '#b5651d',
     desc: '军威以「士气」为资源：交战造成伤害（攻击敌方单位、含致死与尖刺反伤）给全额士气（1 伤=1 士气，受单回合获取上限）；攻击天平（直击空列/飞行越界）给折减系数 0.22 的士气（分数累积）。士气跨回合累计、存量封顶 10、单回合获取封顶 4、开局 0、无无偿发放。初版天平满额导致 88% 失衡（攻击取胜动作既推胜利又滚经济双重碾压），改折减后才平衡。士气卡消耗士气召唤——单位身材压到廉价端，靠「打敌方单位即回本」的正反馈滚雪球。',
-    cards: ['war_drummer','war_piper','outrider','scout_raven','spearman','warhound','pikeman','drummer_chief','shield_guard','standard_bearer','archer','knight_errant','berserker','champion','lancer','general','war_elephant','shock_trooper','shield_wall','avatar_of_war','banner_guard','horn_blower','shield_maiden','vanguard','war_chariot','veteran_sergeant','cookfire_soldier','banner_pikeman','ladderman','goldrum_marshal','death_scout','flag_warden','iron_warden','sharp_lancer','medic_soldier','flying_spear','buckler_soldier'],
+    cards: ['war_drummer','war_piper','outrider','scout_raven','spearman','warhound','pikeman','drummer_chief','shield_guard','standard_bearer','archer','knight_errant','berserker','champion','lancer','general','war_elephant','shock_trooper','shield_wall','avatar_of_war','banner_guard','horn_blower','shield_maiden','vanguard','war_chariot','veteran_sergeant','cookfire_soldier','banner_pikeman','ladderman','goldrum_marshal','death_scout','flag_warden','iron_warden','sharp_lancer','medic_soldier','flying_spear','buckler_soldier','poison_banner'],
   },
   f7: {
     key: 'f7', name: '阵营七', res: 'tbd', color: '#8a7c94',
@@ -1433,6 +1458,7 @@ export const CHANGELOG = [
       '2026-10-23 每日新增：残碑卫 / 战列舰 / 瀚海卫',
       '2026-10-24 每日新增：遁狼 / 毒蛊 / 炬机',
       '2026-10-25 每日新增：血燕 / 锯齿机兵 / 焰虺',
+      '2026-10-26 每日新增（补跑）：摆轮 / 时刃 / 毒旗手',
       '2026-10-27 每日新增（补跑）：棘骨卫 / 充能蛙 / 焰尾灵',
       '2026-10-28 每日新增（补跑）：血润兽 / 装甲核心 / 青焰兽',
       '2026-10-29 每日新增（补跑）：原羚 / 双骨将 / 寒毒蛛',
