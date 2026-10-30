@@ -352,7 +352,7 @@ export const CARDS = {
   // [daily 2026-10-29] 原羚（2 费 3/3 群聚，血肉阵营中费增益位）
   plains_antelope: { name: '原羚', atk: 3, hp: 3, cost: 2, costType: 'blood', sigils: ['pack'], bloodValue: 2, color: '#7a5a3a', glyph: '原' },
   // [daily 2026-10-30] 铁兕（4 费 5/4 厚甲，血肉阵营高费推天平位）
-  iron_si: { name: '铁兕', atk: 5, hp: 4, cost: 4, costType: 'blood', sigils: ['armored'], bloodValue: 2, color: '#5a3a2a', glyph: '兕' },
+  iron_si: { name: '铁兕', atk: 4, hp: 4, cost: 4, costType: 'blood', sigils: ['armored'], bloodValue: 2, color: '#5a3a2a', glyph: '兕' },
 
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
@@ -590,14 +590,14 @@ export const CARDS = {
   // [daily 2026-10-25] 锯齿机兵（2 费 3/2 尖刺，能量阵营廉价反伤打手，低于 spike_beetle 的 3/2 同档但换印记）
   saw_mech: { name: '锯齿机兵', atk: 3, hp: 2, cost: 2, costType: 'energy', sigils: ['sharp_quills'], bloodValue: 1, color: '#6a7a6a', glyph: '锷' },
   // [daily 2026-10-19] 火花犬（1 费 2/1 狂热，能量阵营廉价滚雪球位，齿轮犬的低费版）
-  spark_hound: { name: '火花犬', atk: 2, hp: 1, cost: 1, costType: 'energy', sigils: ['frenzy'], bloodValue: 1, color: '#b58a3a', glyph: '花' },
+  spark_hound: { name: '火花犬', atk: 2, hp: 2, cost: 1, costType: 'energy', sigils: ['frenzy'], bloodValue: 1, color: '#b58a3a', glyph: '花' },
 
   // [daily 2026-10-27] 充能蛙（1 费 2/2 回复，能量阵营廉价续航位）
-  charge_mech_frog: { name: '充能蛙', atk: 2, hp: 2, cost: 1, costType: 'energy', sigils: ['regen'], bloodValue: 1, color: '#2a8a6a', glyph: '蛙' },
+  charge_mech_frog: { name: '充能蛙', atk: 3, hp: 2, cost: 1, costType: 'energy', sigils: ['regen'], bloodValue: 1, color: '#2a8a6a', glyph: '蛙' },
   // [daily 2026-10-28] 装甲核心（3 费 3/3 厚甲，能量阵营中费铁卫）
-  armor_core: { name: '装甲核心', atk: 3, hp: 3, cost: 3, costType: 'energy', sigils: ['armored'], bloodValue: 1, color: '#5a7a86', glyph: '核' },
+  armor_core: { name: '装甲核心', atk: 4, hp: 3, cost: 3, costType: 'energy', sigils: ['armored'], bloodValue: 1, color: '#5a7a86', glyph: '核' },
   // [daily 2026-10-30] 窜鼠机（1 费 2/1 断尾，能量阵营廉价逃生位）
-  flee_mech_mouse: { name: '窜鼠机', atk: 2, hp: 1, cost: 1, costType: 'energy', sigils: ['loose_tail'], bloodValue: 1, color: '#6a6a7a', glyph: '窜' },
+  flee_mech_mouse: { name: '窜鼠机', atk: 2, hp: 2, cost: 1, costType: 'energy', sigils: ['loose_tail'], bloodValue: 1, color: '#6a6a7a', glyph: '窜' },
 
   // ===================== MOX（魔石）=====================
   // 魔石体系：魔石生物(ruby/emerald/sapphire) 免费上场，在场时提供对应颜色的魔石；
@@ -738,9 +738,9 @@ export const CARDS = {
   clock_hound:     { name: '时犬',   atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['frenzy'],          bloodValue: 1, color: '#a98a4a', glyph: '犬' },
   rewind_owl:      { name: '回溯枭', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['regen'],           bloodValue: 1, color: '#a9b0c0', glyph: '枭' },
   sand_eagle:      { name: '时涡鹰', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#7fb0c0', glyph: '涡' },
-  chrono_knight:    { name: '时之骑士', atk: 2, hp: 4, cost: 5, costType: 'sand', sigils: ['armored'],       bloodValue: 1, color: '#b8a85a', glyph: '骑' },
+  chrono_knight:    { name: '时之骑士', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['armored'],       bloodValue: 1, color: '#b8a85a', glyph: '骑' },
   sand_golem:      { name: '砂岩魔像', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c8b070', glyph: '像' },
-  hourglass_titan: { name: '沙漏泰坦', atk: 3, hp: 4, cost: 5, costType: 'sand', sigils: ['frenzy'],         bloodValue: 1, color: '#e0b03a', glyph: '泰' },
+  hourglass_titan: { name: '沙漏泰坦', atk: 3, hp: 3, cost: 5, costType: 'sand', sigils: ['frenzy'],         bloodValue: 1, color: '#e0b03a', glyph: '泰' },
   chronolord:      { name: '时主',   atk: 3, hp: 4, cost: 5, costType: 'sand', sigils: ['undying','regen'], bloodValue: 1, color: '#d0b060', glyph: '主' },
   eternal_sand:    { name: '永恒之砂', atk: 4, hp: 6, cost: 5, costType: 'sand', sigils: ['regen','undying'], bloodValue: 1, color: '#ffd24a', glyph: '永', premium: true },
 
@@ -789,7 +789,7 @@ export const CARDS = {
   // [daily 2026-10-08] 砂隼（3 秒 2/1 飞行，时砂阵营飞行骚扰位）
   sand_skylark: { name: '砂隼', atk: 2, hp: 1, cost: 3, costType: 'sand', sigils: ['airborne'], bloodValue: 1, color: '#c8b070', glyph: '隼' },
   // [daily 2026-10-09] 砂岩卫（5 秒 3/3 厚甲，时砂阵营高费铁卫）
-  sandstone_ward: { name: '砂岩卫', atk: 3, hp: 3, cost: 5, costType: 'sand', sigils: ['armored'], bloodValue: 1, color: '#b8a85a', glyph: '岩' },
+  sandstone_ward: { name: '砂岩卫', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['armored'], bloodValue: 1, color: '#b8a85a', glyph: '岩' },
   // [daily 2026-10-10] 时砂怒兽（3 秒 2/2 狂热，时砂阵营滚雪球位）
   chrono_fury: { name: '时砂怒兽', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['frenzy'], bloodValue: 1, color: '#e0b03a', glyph: '怒' },
   // [daily 2026-10-11] 砂砾精（2 秒 1/1 断尾，时砂阵营廉价铺场位）
@@ -797,20 +797,20 @@ export const CARDS = {
   // [daily 2026-10-11] 砂翼蛾（4 秒 1/2 飞行，时砂阵营飞行续航位）
   sand_wingmoth: { name: '砂翼蛾', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['airborne'], bloodValue: 1, color: '#9a8a4a', glyph: '翼' },
   // [daily 2026-10-12] 永恒沙魂（5 秒 2/4 不死，时砂阵营高费续航墙）
-  eternal_sandwraith: { name: '永恒沙魂', atk: 2, hp: 4, cost: 5, costType: 'sand', sigils: ['undying'], bloodValue: 1, color: '#ffd24a', glyph: '魂' },
+  eternal_sandwraith: { name: '永恒沙魂', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['undying'], bloodValue: 1, color: '#ffd24a', glyph: '魂' },
 
   // [daily 2026-10-26] 摆轮（3 秒 1/2 头狼，时砂阵营首张「pack」增益位，补齐印记轮换）
-  balance_wheel: { name: '摆轮', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['pack'], bloodValue: 1, color: '#b59a4a', glyph: '轮' },
+  balance_wheel: { name: '摆轮', atk: 1, hp: 1, cost: 3, costType: 'sand', sigils: ['pack'], bloodValue: 1, color: '#b59a4a', glyph: '轮' },
   // [daily 2026-10-26] 时刃（4 秒 2/2 连击，时砂阵营首张「double_strike」打手，贴线 minute_hand 同费档）
-  chrono_blade: { name: '时刃', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['double_strike'], bloodValue: 1, color: '#c8b070', glyph: '刻' },
+  chrono_blade: { name: '时刃', atk: 2, hp: 1, cost: 4, costType: 'sand', sigils: ['double_strike'], bloodValue: 1, color: '#c8b070', glyph: '刻' },
   // [daily 2026-10-18] 沙矛手（2 秒 2/1 白板，时砂阵营 2 秒进攻位）
-  sand_spearman: { name: '沙矛手', atk: 2, hp: 1, cost: 2, costType: 'sand', sigils: [], bloodValue: 1, color: '#c9b47a', glyph: '矛' },
+  sand_spearman: { name: '沙矛手', atk: 1, hp: 1, cost: 2, costType: 'sand', sigils: [], bloodValue: 1, color: '#c9b47a', glyph: '矛' },
   // [daily 2026-10-19] 沙荆苗（2 秒 1/2 尖刺，时砂阵营 2 秒反伤炮灰）
   sand_thorn: { name: '沙荆苗', atk: 1, hp: 2, cost: 2, costType: 'sand', sigils: ['sharp_quills'], bloodValue: 1, color: '#a8a05a', glyph: '荆' },
   // [daily 2026-10-26] 时狡兔（3 秒 2/2 断尾，时砂阵营 3 秒逃生位）
-  chrono_hare: { name: '时狡兔', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#c0a870', glyph: '兔' },
+  chrono_hare: { name: '时狡兔', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#c0a870', glyph: '兔' },
   // [daily 2026-10-28] 日晷巨像（4 秒 3/2 白板，时砂阵营 4 秒进攻位）
-  sundial_colossus: { name: '日晷巨像', atk: 3, hp: 2, cost: 4, costType: 'sand', sigils: [], bloodValue: 1, color: '#b8a05a', glyph: '晷' },
+  sundial_colossus: { name: '日晷巨像', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: [], bloodValue: 1, color: '#b8a05a', glyph: '晷' },
   // [daily 2026-10-30] 沙蛹（2 秒 1/2 白板，时砂阵营 2 秒挡位）
   sand_larva: { name: '沙蛹', atk: 1, hp: 2, cost: 2, costType: 'sand', sigils: [], bloodValue: 1, color: '#c2b184', glyph: '蛹' },
 
@@ -911,7 +911,7 @@ export const CARDS = {
   // [daily 2026-10-27] 塔盾兵（4 费 2/4 厚甲，军威阵营高费铁壁位，盾卫的升费版）
   tower_shield: { name: '塔盾兵', atk: 2, hp: 4, cost: 4, costType: 'morale', sigils: ['armored'], bloodValue: 1, color: '#7a5a3a', glyph: '塔' },
   // [daily 2026-10-29] 戟兵（3 费 3/2 白板，军威阵营中费打手，游侠骑士的无甲版）
-  halberdier: { name: '戟兵', atk: 3, hp: 2, cost: 3, costType: 'morale', sigils: [], bloodValue: 1, color: '#a05a2a', glyph: '戟' },
+  halberdier: { name: '戟兵', atk: 3, hp: 3, cost: 3, costType: 'morale', sigils: [], bloodValue: 1, color: '#a05a2a', glyph: '戟' },
 
 };
 
