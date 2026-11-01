@@ -16,7 +16,9 @@ export const CONFIG = {
   // 实测响应：0.50→44.2% / 0.60→44.3% / 0.65→45.4% /[断崖] / 0.70→57.3% / 0.75→59.5% / 1.00→83%。
   // 断崖成因是「第 3 回合能否凑满 2 能量」——提前一回合拍出 2 费 3/3 双重打击（猞猁/螳螂）
   // 就会滚雪球。故取断崖前最高可用档 0.65（配合 BONE_PER_TURN=0.85，六阵营 spread ≈8.4pt）。
-  ENERGY_RAMP_FRAC: 0.65,
+  // 2026-11-01 复核（时砂顶费 5→4 秒后）：0.65→45.3% / 0.67→53.4% / 0.68→52.3% / 0.69→54.6%，
+  // 能量长期垫底（44–45%）是 spread 的另一半来源，故上调至 0.68（断崖 0.70 之前）。
+  ENERGY_RAMP_FRAC: 0.68,
   BONE_CAP_MAX: 12,
   BONE_PER_TURN: 0.85,    // 骸骨兜底滴流（小数）：每回合累加，满 1 才 +1 骸骨。与死亡经济叠加后约 50%
                           // 胜率，仅防前期断档不叠加成洪流。0.75→0.85（+0.1）用于补回骸骨因每日新增
@@ -32,7 +34,11 @@ export const CONFIG = {
   // 仍满足用户「不跨回合累计」硬约束（时砂越战越从容，但每回合从 BASE 重新流）。
   SAND_BUDGET_BASE: 2,   // 时砂：第 1 个己方回合的「出牌时间」预算（秒）
   SAND_BUDGET_STEP: 1,   // 时砂：每次爬升 +1 秒
-  SAND_BUDGET_CAP: 5,    // 时砂：预算封顶（秒）；与最高卡费(5秒)对齐，保证全部时砂牌都可打出；菜单 turnTime 仍决定其它阵营思考时限
+  SAND_BUDGET_CAP: 4,    // 时砂：预算封顶（秒）；与最高卡费(4秒)对齐，保证全部时砂牌都可打出；菜单 turnTime 仍决定其它阵营思考时限
+  // 机制级平衡修正（2026-11-01）：上限由 5 秒降为 4 秒，原 11 张 5 秒牌全部降至 4 秒并同步削身材。
+  // 依据：sand 的结构性优势是「出牌不献祭、不靠死亡/击杀积资源、顶费位能直接打出高费身材」，
+  // 数值微调（削 9 张 + 补 energy 3 张）只换来 -2.2pt，说明瓶颈在顶费档而非单卡数值。
+  // 降顶费后 sand 的收尾回合与其他阵营「4 费」对齐，5 秒位那批「5 费级身材」不再存在。
   // 时砂预算爬升同样用「小数滴流」：预算 = BASE + (己方回合数-1)×SAND_RAMP_FRAC，向下取整、封顶 CAP。
   // 实测秒数是「悬崖型」杠杆：每回合 +1（2,3,4,5,5…）时砂约 55%，每 2 回合 +1（2,3,3,4,4,5…）
   // 直接崩到 17.7%——因为本作强正反馈（落后一张牌→被吃→更落后）且秒数只能整秒跳。
@@ -49,6 +55,8 @@ export const CONFIG = {
   // （忠实「成为得分也攒士气」的意味但压到可平衡）。初版天平给满额导致 88% 失衡（攻击取胜动作
   // 既推胜利又滚经济双重碾压），故天平士气须是「稳定细水」而非爆发源。
   // 最终值 0.22 由平衡仿真扫参确定（PER=500：六阵营 spread 5.5pt，各阵营 48–54%）。
+  // 2026-11-01 复核：曾试 0.24/0.26/0.28/0.34 四档，0.26 起军威即跳到 58%，0.34 飙到 65%
+  // （同为悬崖型：整数取整吞掉小数后跨阈值），0.24 仅 +0.4pt 纯噪声，故维持 0.22 不动。
   MORALE_SCALE_RATE: 0.22,
   DECK_MIN: 5,           // deck builder constraints（0 费卡下限：卡组最少 5 张）
   DECK_MAX: 30,
@@ -752,12 +760,12 @@ export const CARDS = {
   sand_wisp:       { name: '流沙精', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['poison_touch'],    bloodValue: 1, color: '#b59a4a', glyph: '沙' },
   clock_hound:     { name: '时犬',   atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['frenzy'],          bloodValue: 1, color: '#a98a4a', glyph: '犬' },
   rewind_owl:      { name: '回溯枭', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['regen'],           bloodValue: 1, color: '#a9b0c0', glyph: '枭' },
-  sand_eagle:      { name: '时涡鹰', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#7fb0c0', glyph: '涡' },
-  chrono_knight:    { name: '时之骑士', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['armored'],       bloodValue: 1, color: '#b8a85a', glyph: '骑' },
-  sand_golem:      { name: '砂岩魔像', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c8b070', glyph: '像' },
-  hourglass_titan: { name: '沙漏泰坦', atk: 3, hp: 3, cost: 5, costType: 'sand', sigils: ['frenzy'],         bloodValue: 1, color: '#e0b03a', glyph: '泰' },
-  chronolord:      { name: '时主',   atk: 3, hp: 4, cost: 5, costType: 'sand', sigils: ['undying','regen'], bloodValue: 1, color: '#d0b060', glyph: '主' },
-  eternal_sand:    { name: '永恒之砂', atk: 4, hp: 6, cost: 5, costType: 'sand', sigils: ['regen','undying'], bloodValue: 1, color: '#ffd24a', glyph: '永', premium: true },
+  sand_eagle:      { name: '时涡鹰', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['airborne'],        bloodValue: 1, color: '#7fb0c0', glyph: '涡' },
+  chrono_knight:    { name: '时之骑士', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['armored'],       bloodValue: 1, color: '#b8a85a', glyph: '骑' },
+  sand_golem:      { name: '砂岩魔像', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['regen'],          bloodValue: 1, color: '#c8b070', glyph: '像' },
+  hourglass_titan: { name: '沙漏泰坦', atk: 1, hp: 3, cost: 4, costType: 'sand', sigils: ['frenzy'],         bloodValue: 1, color: '#e0b03a', glyph: '泰' },
+  chronolord:      { name: '时主',   atk: 1, hp: 3, cost: 4, costType: 'sand', sigils: ['undying','regen'], bloodValue: 1, color: '#d0b060', glyph: '主' },
+  eternal_sand:    { name: '永恒之砂', atk: 2, hp: 3, cost: 4, costType: 'sand', sigils: ['regen','undying'], bloodValue: 1, color: '#ffd24a', glyph: '永', premium: true },
 
   // —— 机械 / 钟表 / 指针 主题卡（v0.7.0 新增，替换 8 张通用砂生物填充卡）——
   mainspring_mouse: { name: '发条鼠',   atk: 1, hp: 1, cost: 3, costType: 'sand', sigils: ['loose_tail'],    bloodValue: 1, color: '#b08d57', glyph: '鼠' },
@@ -776,7 +784,7 @@ export const CARDS = {
   sand_moth: { name: '沙羽虫', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['airborne'],              bloodValue: 1, color: '#cbb27a', glyph: '羽' },
 
   // [daily 2026-09-11] 沙丘兽（补跑；5 秒 3/3 素白中坚，沙漏泰坦之下的平价选项）
-  dune_beast: { name: '沙丘兽', atk: 3, hp: 2, cost: 5, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#d2b478', glyph: '丘' },
+  dune_beast: { name: '沙丘兽', atk: 2, hp: 3, cost: 4, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#d2b478', glyph: '丘' },
 
   // [daily 2026-09-13] 沙蜱（2 秒 1/1 最廉价铺场位）
   sand_mite: { name: '沙蜱', atk: 1, hp: 1, cost: 2, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#c2b184', glyph: '蜱' },
@@ -789,7 +797,7 @@ export const CARDS = {
   // [daily 2026-09-21] 淤爬者（4 秒 2/2 白板，黄铜傀儡的低血变体）
   silt_crawler: { name: '淤爬者', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#b0a080', glyph: '淤' },
   // [daily 2026-09-23] 劫甲（5 秒 2/2 厚甲，时之骑士的低配版）
-  aeon_beetle: { name: '劫甲', atk: 2, hp: 2, cost: 5, costType: 'sand', sigils: ['armored'],              bloodValue: 1, color: '#8f7f5f', glyph: '劫' },
+  aeon_beetle: { name: '劫甲', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['armored'],              bloodValue: 1, color: '#8f7f5f', glyph: '劫' },
 
   // [daily 2026-09-26] 沙粒灵（2 秒 1/1 断尾，时砂阵营 2 秒铺场位）
   sand_mote: { name: '沙粒灵', atk: 1, hp: 1, cost: 2, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#d8c48a', glyph: '粒' },
@@ -798,13 +806,13 @@ export const CARDS = {
   // [daily 2026-09-30] 黄铜日晷（4 秒 2/2 回复，时砂阵营 4 秒续航位）
   brass_sundial: { name: '黄铜日晷', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['regen'], bloodValue: 1, color: '#b59a4a', glyph: '晷' },
   // [daily 2026-10-02] 蜃楼（5 秒 3/3 断尾，时砂阵营 5 秒收尾位）
-  mirage: { name: '蜃楼', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#9a8a4a', glyph: '蜃' },
+  mirage: { name: '蜃楼', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#9a8a4a', glyph: '蜃' },
   // [daily 2026-10-07] 砂棘（3 秒 2/2 尖刺，时砂阵营反伤挡位）
   sand_spike: { name: '砂棘', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['sharp_quills'], bloodValue: 1, color: '#c9a24a', glyph: '棘' },
   // [daily 2026-10-08] 砂隼（3 秒 2/1 飞行，时砂阵营飞行骚扰位）
   sand_skylark: { name: '砂隼', atk: 2, hp: 1, cost: 3, costType: 'sand', sigils: ['airborne'], bloodValue: 1, color: '#c8b070', glyph: '隼' },
   // [daily 2026-10-09] 砂岩卫（5 秒 3/3 厚甲，时砂阵营高费铁卫）
-  sandstone_ward: { name: '砂岩卫', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['armored'], bloodValue: 1, color: '#b8a85a', glyph: '岩' },
+  sandstone_ward: { name: '砂岩卫', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['armored'], bloodValue: 1, color: '#b8a85a', glyph: '岩' },
   // [daily 2026-10-10] 时砂怒兽（3 秒 2/2 狂热，时砂阵营滚雪球位）
   chrono_fury: { name: '时砂怒兽', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['frenzy'], bloodValue: 1, color: '#e0b03a', glyph: '怒' },
   // [daily 2026-10-11] 砂砾精（2 秒 1/1 断尾，时砂阵营廉价铺场位）
@@ -812,7 +820,7 @@ export const CARDS = {
   // [daily 2026-10-11] 砂翼蛾（4 秒 1/2 飞行，时砂阵营飞行续航位）
   sand_wingmoth: { name: '砂翼蛾', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['airborne'], bloodValue: 1, color: '#9a8a4a', glyph: '翼' },
   // [daily 2026-10-12] 永恒沙魂（5 秒 2/4 不死，时砂阵营高费续航墙）
-  eternal_sandwraith: { name: '永恒沙魂', atk: 2, hp: 3, cost: 5, costType: 'sand', sigils: ['undying'], bloodValue: 1, color: '#ffd24a', glyph: '魂' },
+  eternal_sandwraith: { name: '永恒沙魂', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['undying'], bloodValue: 1, color: '#ffd24a', glyph: '魂' },
 
   // [daily 2026-10-26] 摆轮（3 秒 1/2 头狼，时砂阵营首张「pack」增益位，补齐印记轮换）
   balance_wheel: { name: '摆轮', atk: 1, hp: 1, cost: 3, costType: 'sand', sigils: ['pack'], bloodValue: 1, color: '#b59a4a', glyph: '轮' },
@@ -1147,6 +1155,19 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.11',
+    date: '2026-11-01',
+    title: '机制级平衡：时砂顶费 5 秒→4 秒（11 张 5 秒卡全部降档）+ 能量爬升上调',
+    items: [
+      '时砂机制：SAND_BUDGET_CAP 5→4（预算曲线 2,3,4,4,4…）。出牌时间上限即顶费，此后时砂不再存在「5 秒位」——收尾回合与其他阵营的 4 费对齐。',
+      '原 11 张 5 秒卡全部降到 4 秒并同步削身材（合计约 −12 点属性）：时涡鹰 2/3→2/2（飞行）、时之骑士 2/3→2/2（厚甲）、砂岩魔像 2/3→2/2（回复）、沙漏泰坦 2/3→1/3（狂热）、时主 2/3→1/3（不死+回复）、永恒之砂 4/6→2/3（回复+不死）、沙丘兽 3/2→2/3（改为耐久向白板）、劫甲 2/2 保持（厚甲）、蜃楼 2/3→2/2（断尾）、砂岩卫 2/3→2/2（厚甲）、永恒沙魂 2/3→2/2（不死）。',
+      '能量：ENERGY_RAMP_FRAC 0.65→0.68（仍是断崖 0.70 之前的最高可用档）。能量长期是六阵营地板（44–45%），是 spread 的另一半来源。',
+      '平衡仿真（normal，perMatchup=400 × 5 轮 ≈ 12 万局）：spread 13.8pt → 11.6pt；时砂 58.6% → 55.9%、能量 44.8% → 52.7%、骸骨 46.6% → 44.3%、血肉 51.4% → 50.5%、魔石 52.1% → 51.0%、军威 46.5% → 45.5%。',
+      '未达 ≤10pt 的剩余差距集中在单组对阵：时砂 vs 骸骨 157%/43%。时砂的优势不是单卡数值（削 3 张顶档卡攻击仅 −0.2pt），而是「出牌不献祭、不靠死亡/击杀积资源」对「需积累资源」阵营的结构性压制；再把时砂整体攻−1 会让它直接崩到 24%，故本轮不继续压。',
+      '同时记录一条实测悬崖表（供后续调参参考）：时砂预算封顶 CAP=2→10.3% / 3→54.8% / 4→61.4% / 5→59.6% / 6→60.9%；预算爬升系数 ≥1.0 为 58.9%，一旦 <1.0 就崩到 33–34%——秒数只能整秒跳，1.0 与 0.9 之间没有中间档。军威士气折减系数 0.22→0.24 无变化、0.26 起跳到 58%、0.34 达 65%，同样是悬崖。',
+    ],
+  },
   {
     version: 'v0.7.10',
     date: '2026-10-30',
