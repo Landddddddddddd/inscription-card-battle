@@ -57,7 +57,10 @@ export const CONFIG = {
   // 最终值 0.22 由平衡仿真扫参确定（PER=500：六阵营 spread 5.5pt，各阵营 48–54%）。
   // 2026-11-01 复核：曾试 0.24/0.26/0.28/0.34 四档，0.26 起军威即跳到 58%，0.34 飙到 65%
   // （同为悬崖型：整数取整吞掉小数后跨阈值），0.24 仅 +0.4pt 纯噪声，故维持 0.22 不动。
-  MORALE_SCALE_RATE: 0.22,
+  // 2026-11-01 二次复核（时砂顶费降 4 秒后）：0.22 时军威 46.1%、0.235 时 46.1%（同一平台区），
+  // 0.22~0.245 这一整段军威都在 45.7~47.8 之间小幅摆动，0.25 才跨阈值跳到 58.6%。取平台上沿
+  // 0.235（离断崖 0.25 留 0.015 余量），把军威从地板抬进 45–55 区间，且不触断崖。
+  MORALE_SCALE_RATE: 0.235,
   DECK_MIN: 5,           // deck builder constraints（0 费卡下限：卡组最少 5 张）
   DECK_MAX: 30,
   ZERO_COST_MAX: 15,     // 单张 0 费卡在卡组中的最多重复数（原上限 2，现放宽到 15）
@@ -482,12 +485,17 @@ export const CARDS = {
   // [daily 2026-10-24] 毒蛊（3 费 2/3 毒触，骸骨阵营带毒墙）
   venom_gu: { name: '毒蛊', atk: 2, hp: 3, cost: 3, costType: 'bone', sigils: ['poison_touch'], bloodValue: 1, color: '#5a7a3a', glyph: '蛊' },
 
-  // [daily 2026-10-27] 棘骨卫（2 费 1/3 尖刺，骸骨阵营廉价反伤挡位）
-  thorn_bone_ward: { name: '棘骨卫', atk: 1, hp: 3, cost: 2, costType: 'bone', sigils: ['sharp_quills'], bloodValue: 1, color: '#9a8a7a', glyph: '棘' },
-  // [daily 2026-10-29] 双骨将（4 费 2/3 连击，骸骨阵营高费连击位）
-  twin_bone_general: { name: '双骨将', atk: 2, hp: 3, cost: 4, costType: 'bone', sigils: ['double_strike'], bloodValue: 1, color: '#7a7a6a', glyph: '将' },
-  // [daily 2026-10-30] 碎骨刺（2 费 2/1 易碎，骸骨阵营敢死队：一击即碎换骸骨经济）
-  shatter_bone_spike: { name: '碎骨刺', atk: 2, hp: 1, cost: 2, costType: 'bone', sigils: ['brittle'], bloodValue: 1, color: '#cfcabc', glyph: '碎' },
+  // [daily 2026-10-27] 棘骨卫（1 费 1/3 尖刺，骸骨阵营廉价反伤挡位）
+  // 2026-11-01 平衡：2 费→1 费。骸骨在第 2 回合才有 1 骸骨（BONE_PER_TURN=0.85），1 费挡位让
+  // 它把滴流立刻换成场上单位，而不是捏着牌空过——这是把骸骨从 43.8%（六阵营地板）拉回 47% 的关键。
+  thorn_bone_ward: { name: '棘骨卫', atk: 1, hp: 3, cost: 1, costType: 'bone', sigils: ['sharp_quills'], bloodValue: 1, color: '#9a8a7a', glyph: '棘' },
+  // [daily 2026-10-29] 双骨将（3 费 2/3 连击，骸骨阵营中费连击位）
+  // 2026-11-01 平衡：4 费→3 费（同费档已有棺柩骑 2/2 连击，此处为「更高身材 +1 费」的稳定升级位）。
+  twin_bone_general: { name: '双骨将', atk: 2, hp: 3, cost: 3, costType: 'bone', sigils: ['double_strike'], bloodValue: 1, color: '#7a7a6a', glyph: '将' },
+  // [daily 2026-10-30] 碎骨刺（1 费 2/1 易碎，骸骨阵营敢死队：一击即碎换骸骨经济）
+  // 2026-11-01 平衡：2 费→1 费（易碎自毁本身返还 1 骸骨，1 费档让「先落后再靠死亡经济翻」的
+  // 骸骨曲线在前期不至于空过）。
+  shatter_bone_spike: { name: '碎骨刺', atk: 2, hp: 1, cost: 1, costType: 'bone', sigils: ['brittle'], bloodValue: 1, color: '#cfcabc', glyph: '碎' },
 
   // [daily 2026-10-31] 唤骨魁（4 费 3/4 不灭，骸骨阵营高费复活终结位）
   bone_kui: { name: '唤骨魁', atk: 3, hp: 4, cost: 4, costType: 'bone', sigils: ['undying'], bloodValue: 1, color: '#5a4a5a', glyph: '魁' },
@@ -834,8 +842,10 @@ export const CARDS = {
   chrono_hare: { name: '时狡兔', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#c0a870', glyph: '兔' },
   // [daily 2026-10-28] 日晷巨像（4 秒 3/2 白板，时砂阵营 4 秒进攻位）
   sundial_colossus: { name: '日晷巨像', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: [], bloodValue: 1, color: '#b8a05a', glyph: '晷' },
-  // [daily 2026-10-30] 沙蛹（2 秒 1/2 白板，时砂阵营 2 秒挡位）
-  sand_larva: { name: '沙蛹', atk: 1, hp: 2, cost: 2, costType: 'sand', sigils: [], bloodValue: 1, color: '#c2b184', glyph: '蛹' },
+  // [daily 2026-10-30] 沙蛹（3 秒 1/2 白板，时砂阵营挡位）
+  // 2026-11-01 平衡：2 秒→3 秒。顶费降到 4 秒后，时砂唯一还留在 2 秒档的牌就是它；2 秒档意味着
+  // 「第 1 回合就能白嫖一个挡位」，把 2 秒档整体收掉（时砂最低费改为 3 秒），前期节奏与其他阵营对齐。
+  sand_larva: { name: '沙蛹', atk: 1, hp: 2, cost: 3, costType: 'sand', sigils: [], bloodValue: 1, color: '#c2b184', glyph: '蛹' },
 
   // ==========================================================================
   // 军威阵营（morale）：核心创新点 = 召唤方式——消耗「士气」召唤。士气由「交战造成
@@ -965,7 +975,7 @@ export const FACTIONS = {
   },
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
-    desc: '时间即是资源：每回合开局获得一份「出牌时间」预算，它随你的回合数小幅增长（首回合 2 秒，每多一个己方回合 +1 秒、封顶 5 秒）——它是你这一回合真实倒计时的时钟。真实流逝每过 1 秒就少 1 秒，出牌再额外扣掉该牌的「秒费」，归零则回合自动结束。卡牌以「秒」为费、不可透支（例如剩 4 秒打不出 5 秒的牌）。每回合归零重计、不跨回合累计（时砂越战越从容，但每回合从 2 秒重新流）。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
+    desc: '时间即是资源：每回合开局获得一份「出牌时间」预算，它随你的回合数小幅增长（首回合 2 秒，每多一个己方回合 +1 秒、封顶 4 秒）——它是你这一回合真实倒计时的时钟。真实流逝每过 1 秒就少 1 秒，出牌再额外扣掉该牌的「秒费」，归零则回合自动结束。卡牌以「秒」为费、不可透支（例如剩 3 秒打不出 4 秒的牌）。每回合归零重计、不跨回合累计（时砂越战越从容，但每回合从 2 秒重新流）。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
     cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton','sand_snail','sand_moth','dune_beast','sand_mite','glass_finch','dial_hound','pendulum_guard','silt_crawler','aeon_beetle','sand_mote','clepsydra','brass_sundial','mirage','sand_spike','sand_skylark','sandstone_ward','chrono_fury','sand_grit','sand_wingmoth','eternal_sandwraith','balance_wheel','chrono_blade','sand_spearman','sand_thorn','chrono_hare','sundial_colossus','sand_larva'],
   },
   // === 占位阵营（即将推出）：预留第 6 / 7 / 8 阵营插槽，目前 cards 为空、comingSoon:true。
@@ -1155,6 +1165,20 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.12',
+    date: '2026-11-01',
+    title: '六阵营平衡收敛：spread 13.3 → 6.3pt（六阵营全部落 45–55%）',
+    items: [
+      '本轮在上一条（v0.7.11 时砂顶费 5→4 秒 + 能量爬升 0.68）基础上收尾：disk 实测 10.3pt，尚未达 ≤10，且地板从时砂换成了骸骨（43.8%，被时砂 151% / 军威 82% / 能量 79% 三向压制）。',
+      '军威：MORALE_SCALE_RATE 0.22 → 0.235。0.22~0.245 这段是同一平台区（军威 45.7~47.8%），0.25 才跨阈值跳到 58.6%，故取平台上沿并把军威从地板抬进区间，离断崖留 0.015 余量。',
+      '骸骨（均为 10-27~10-30 新卡，仅动费用、不动身材）：棘骨卫 2 费→1 费、碎骨刺 2 费→1 费、双骨将 4 费→3 费。骸骨第 2 回合才靠 BONE_PER_TURN=0.85 拿到 1 骸骨，1 费挡位让它能立刻把滴流换成场上单位而不是空过——这是把骸骨 43.8% → 47.7% 的唯一有效杠杆（实测：骸骨 3 张卡「全废」或「各 +1 属性」对胜率影响 <0.5pt，只有降费有效）。',
+      '时砂（10-30 新卡）：沙蛹 2 秒→3 秒。顶费降到 4 秒后它成了时砂唯一留在 2 秒档的牌，「第 1 回合白嫖挡位」让时砂前期仍快半拍；收掉 2 秒档后时砂 54.1% → 52.8%。',
+      '平衡仿真（normal，perMatchup=200 × 3 轮，共 21600 局）：spread 13.3pt → 6.3pt（三轮 7.6 / 5.6 / 6.5，单轮最大 7.6 ≤10）。六阵营：血肉 50.5% / 骸骨 47.7% / 能量 52.3% / 魔石 50.3% / 时砂 52.8% / 军威 46.4%。',
+      '仿真工具：balance_sim.mjs 支持 REPEAT=N（多轮取均值，抹掉骰子噪声）与 MORALE_SCALE_RATE / ENERGY_RAMP_FRAC / BONE_PER_TURN / SAND_RAMP_FRAC / SAND_BUDGET_* 的 env 覆盖，仅在 env 存在时生效、默认行为不变。',
+      '已知残留：时砂 vs 骸骨 146%/54% 是结构性对位（时砂「出牌不献祭、不靠积累」天克骸骨「先落后再靠死亡经济翻」），单靠数值无法磨平，但对全局 spread 已不再是瓶颈。悬崖型杠杆实测汇总：SAND_RAMP_FRAC 1.0→0.95 时砂 58.9%→33.8%、ENERGY_RAMP_FRAC 0.65→0.68 能量 44.8%→52.8%（0.667 即跨档）、BONE_PER_TURN 0.85~0.99 全在 46% 而 1.0 直接 68%（第 1 回合有没有骸骨）、MORALE_GAIN_PER_TURN_CAP / MORALE_CAP 任何微调都把军威翻到 65%。',
+    ],
+  },
   {
     version: 'v0.7.11',
     date: '2026-11-01',
