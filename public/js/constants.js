@@ -262,7 +262,11 @@ export const CARDS = {
   // 新增：印记演示卡（狂热 / 回复）
   warg:        { name: '战狼',   atk: 2, hp: 2, cost: 2, costType: 'blood', sigils: ['frenzy'],        bloodValue: 2, color: '#9a5a3a', glyph: '战' },
   rat_king:    { name: '鼠王',   atk: 1, hp: 3, cost: 2, costType: 'blood', sigils: ['regen'],         bloodValue: 2, color: '#8a7a6a', glyph: '王' },
-  berserker:   { name: '狂战士', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['frenzy','double_strike'], bloodValue: 2, color: '#b5241f', glyph: '狂' },
+  // 2026-11-01 修复重复 id：本卡原 id 为 `berserker`，与军威阵营的 `berserker`（狂战士 3 费 2/2）在
+  // 同一对象字面量里撞键——后者字面位置靠后、静默覆盖了本卡，导致血肉阵营一直从血池里拿到一张
+  // costType='morale' 的军威卡。现改名 `blood_berserker` 并同步 FACTIONS.blood 引用与稀有度表；
+  // 军威那张保留 `berserker` 不变，因此运行时与既有存档（localStorage 里存的是 id 数组）行为不变。
+  blood_berserker: { name: '血怒武士', atk: 3, hp: 2, cost: 3, costType: 'blood', sigils: ['frenzy','double_strike'], bloodValue: 2, color: '#b5241f', glyph: '怒' },
 
   // [daily 2026-08-09] 重甲獾
   armored_badger: { name: '重甲獾', atk: 2, hp: 1, cost: 2, costType: 'blood', sigils: ['armored'],        bloodValue: 2, color: '#6b5a4a', glyph: '獾' },
@@ -325,7 +329,8 @@ export const CARDS = {
   // [daily 2026-10-01] 血月巨狼（4 费 5/4 狂热，血肉阵营高费推天平位）
   bloodmoon_wolf: { name: '血月巨狼', atk: 4, hp: 4, cost: 4, costType: 'blood', sigils: ['frenzy'], bloodValue: 2, color: '#2b2b3a', glyph: '月' },
 
-  // [daily 2026-10-03] 獠牙兽（3 费 3/3 连击，血肉阵营中费连击打手，补 berserker 被同名键覆盖后的空缺）
+  // [daily 2026-10-03] 獠牙兽（3 费 3/3 连击，血肉阵营中费连击打手。原本是为补 `berserker`
+  // 被同名键覆盖后的空缺而加；2026-11-01 撞键已修复为 blood_berserker，本卡按既有平衡保留不撤）
   tusk_beast: { name: '獠牙兽', atk: 3, hp: 3, cost: 3, costType: 'blood', sigils: ['double_strike'], bloodValue: 2, color: '#9a3a2a', glyph: '獠' },
 
   // [daily 2026-10-05] 疾风猞（2 费 2/3 飞行，血肉阵营首张 2/3 飞行挡位）
@@ -956,7 +961,7 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture','red_fox','blood_owl','wild_lizard','bloodmoon_wolf','tusk_beast','gale_lynx','ironback_boar','civet_dog','muntjac','roe_deer','frenzy_hoof','venom_viper','forest_zhang','blood_jackal','shield_antelope','evade_wolf','blood_swallow','sanguine_ox','plains_antelope','iron_si','mountain_goat','plague_hound','thornback_boar'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','blood_berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture','red_fox','blood_owl','wild_lizard','bloodmoon_wolf','tusk_beast','gale_lynx','ironback_boar','civet_dog','muntjac','roe_deer','frenzy_hoof','venom_viper','forest_zhang','blood_jackal','shield_antelope','evade_wolf','blood_swallow','sanguine_ox','plains_antelope','iron_si','mountain_goat','plague_hound','thornback_boar'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
@@ -1053,7 +1058,9 @@ const RARITY_OVERRIDE = {
   imp: 'common', python: 'common', griffin: 'common', // mox: 3 generators + 1 payoff per color
   // New sigil demo cards are common so they're immediately playable & testable:
   viper_king: 'common', bone_warden: 'common', armor_tank: 'common', soul_reaper: 'common',
-  warg: 'common', rat_king: 'common', berserker: 'common',
+  // blood_berserker 是 3 费卡，按下方默认公式会判成 epic（图鉴标紫 + 抽卡按史诗计价），
+  // 但它与改名前的 `berserker` 是同一张基础卡，故显式钉回 common 以保持经济与展示不变。
+  warg: 'common', rat_king: 'common', berserker: 'common', blood_berserker: 'common',
   // Mythic (premium) cards — only obtainable via Soul Crystals (魂晶)
   blood_titan: 'mythic', vampire_queen: 'mythic',
   lich_king: 'mythic', bone_dragon: 'mythic',
@@ -1165,6 +1172,20 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.13',
+    date: '2026-11-01',
+    title: '修复 berserker 重复 id（血肉卡组里一直混着一张军威卡）',
+    items: [
+      '缺陷本质：CARDS 是单个对象字面量，`berserker` 这个键被定义了两次——血肉版（狂战士 3 费 3/2 狂热+连击，bloodValue 2，第 265 行）与军威版（狂战士 3 费 2/2 白板，bloodValue 1，第 870 行）。JS 对象字面量遇到重复键是「后者静默覆盖前者」，不报错、不告警，所以血肉那张从上线起就从未生效过。',
+      '实际后果（比「看不见」更糟）：FACTIONS.blood.cards 里引用的 `berserker` 解析到的是军威版，也就是说血肉阵营的卡池里长期挂着一张 costType=\'morale\' 的军威卡——组卡界面能选、能上场，但它吃的是军威规则。',
+      '修复方式：血肉那张改名为 `blood_berserker`、中文名改「血怒武士」（避免与军威的「狂战士」重名）、glyph 改「怒」；同步更新 FACTIONS.blood.cards 引用与 RARITY_OVERRIDE。军威那张保留 `berserker` 原 id 不变。之所以让军威这张保留原名，是因为覆盖关系里它才是运行时实际生效的那个——这样修复后运行时表现与所有既有存档（localStorage 里存的是 id 数组）完全一致，不会让任何人的卡组里凭空少一张卡或换成另一张。',
+      '稀有度：`blood_berserker` 是 3 费卡，按 rarityOf 的默认公式会判成 epic（图鉴标紫、抽卡按史诗计价），而它与改名前的 `berserker` 是同一张基础卡，故在 RARITY_OVERRIDE 里显式钉回 common，保持经济与展示不变。',
+      '平衡影响（血肉卡池终于拿到真正的 3/2 狂热+连击而非 3 费 2/2 白板）：blood 50.2% → 51.4%。修复后复测（normal，perMatchup=400 × 5 轮，共 72000 局）：spread 7.3pt（单轮 7.0 / 7.6 / 7.6 / 7.9 / 8.7，最大 8.7 ≤10），六阵营 血肉 51.4% / 骸骨 46.7% / 能量 52.6% / 魔石 50.6% / 时砂 53.0% / 军威 45.7%——仍在达标区间，无需额外配平。',
+      '回归校验（22 项全过）：CARDS 内 346 个键无重复；六阵营引用无悬空 id；新增「各阵营卡组无跨阵营 costType 串味」检查（修复前此项会命中 blood↔berserker(morale)，现为 none）；全库 346 张卡中文名唯一；全部卡牌 sigils 均存在；两张卡稀有度均为 common 且在新号基础解锁池内。',
+      '顺带记录：`獠牙兽`（2026-10-03 每日卡）当初就是为了补这个「被覆盖的空缺」才加的 3 费 3/3 连击。撞键修复后本可撤掉，但它在平衡链路里已存在多轮、撤掉会动 blood 曲线，故保留不动，仅订正其注释里的因果描述。',
+    ],
+  },
   {
     version: 'v0.7.12',
     date: '2026-11-01',
