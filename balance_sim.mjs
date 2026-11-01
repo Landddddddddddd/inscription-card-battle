@@ -55,14 +55,30 @@ if (process.env.BONE_PER_TURN) {
   const v = parseFloat(process.env.BONE_PER_TURN);
   if (!Number.isNaN(v) && v >= 0) { CONFIG.BONE_PER_TURN = v; console.log(`(override BONE_PER_TURN=${v})`); }
 }
-// 军威天平士气折减系数扫描：MSR=0.1 形式（env 覆盖，避免污染 constants.js）
-if (process.env.MSR) {
-  const v = parseFloat(process.env.MSR);
+// 军威天平士气折减系数扫描：MSR=0.24 或 MORALE_SCALE_RATE=0.24（env 覆盖，避免污染 constants.js）
+const MSR_RAW = process.env.MORALE_SCALE_RATE ?? process.env.MSR;
+if (MSR_RAW) {
+  const v = parseFloat(MSR_RAW);
   if (!Number.isNaN(v) && v >= 0) {
     CONFIG.MORALE_SCALE_RATE = v;
     console.log(`(override MORALE_SCALE_RATE=${v})`);
   }
 }
+// 时砂预算三旋钮的 env 版（与 argv 4/5/6 等价，便于批量扫参时拼环境变量）：
+if (process.env.SAND_BUDGET_CAP) {
+  const v = parseInt(process.env.SAND_BUDGET_CAP, 10);
+  if (!Number.isNaN(v) && v >= 0) { CONFIG.SAND_BUDGET_CAP = v; console.log(`(override SAND_BUDGET_CAP=${v})`); }
+}
+if (process.env.SAND_BUDGET_STEP) {
+  const v = parseInt(process.env.SAND_BUDGET_STEP, 10);
+  if (!Number.isNaN(v) && v >= 0) { CONFIG.SAND_BUDGET_STEP = v; console.log(`(override SAND_BUDGET_STEP=${v})`); }
+}
+if (process.env.SAND_BUDGET_BASE) {
+  const v = parseInt(process.env.SAND_BUDGET_BASE, 10);
+  if (!Number.isNaN(v) && v >= 0) { CONFIG.SAND_BUDGET_BASE = v; console.log(`(override SAND_BUDGET_BASE=${v})`); }
+}
+// 多轮平均：REPEAT=3 时重复整套循环并把各阵营胜率取均值（消除骰子噪声，用于精扫/验收）。
+const REPEAT = Math.max(1, parseInt(process.env.REPEAT || '1', 10) || 1);
 
 function simulate(fa, fb) {
   const state = createGame({
@@ -93,20 +109,42 @@ const matrix = {};
 for (const fa of FACTIONS) for (const fb of FACTIONS) matrix[fa + '>' + fb] = { w: 0, g: 0 };
 
 let games = 0;
-for (const fa of FACTIONS) {
-  for (const fb of FACTIONS) {
-    for (let i = 0; i < PER; i++) {
-      const w = simulate(fa, fb); // fa is A, fb is B
-      games++;
-      factionGames[fa]++; factionGames[fb]++;
-      if (w === 'A') { factionWins[fa]++; matrix[fa + '>' + fb].w++; }
-      else if (w === 'B') { factionWins[fb]++; matrix[fb + '>' + fa].w++; }
-      matrix[fa + '>' + fb].g++;
+const perRep = [];
+for (let rep = 0; rep < REPEAT; rep++) {
+  const w0 = {}, g0 = {};
+  for (const f of FACTIONS) { w0[f] = factionWins[f]; g0[f] = factionGames[f]; }
+  for (const fa of FACTIONS) {
+    for (const fb of FACTIONS) {
+      for (let i = 0; i < PER; i++) {
+        const w = simulate(fa, fb); // fa is A, fb is B
+        games++;
+        factionGames[fa]++; factionGames[fb]++;
+        if (w === 'A') { factionWins[fa]++; matrix[fa + '>' + fb].w++; }
+        else if (w === 'B') { factionWins[fb]++; matrix[fb + '>' + fa].w++; }
+        matrix[fa + '>' + fb].g++;
+      }
     }
+  }
+  if (REPEAT > 1) {
+    let b = 0, w = 1;
+    const row = {};
+    for (const f of FACTIONS) {
+      const r = (factionWins[f] - w0[f]) / (factionGames[f] - g0[f]);
+      row[f] = r;
+      if (r > b) b = r;
+      if (r < w) w = r;
+    }
+    perRep.push({ row, spread: (b - w) * 100 });
+    console.log(`[rep ${rep + 1}/${REPEAT}] spread=${((b - w) * 100).toFixed(1)}pt  ` +
+      FACTIONS.map(f => `${f} ${(row[f] * 100).toFixed(1)}%`).join(' / '));
   }
 }
 
-console.log(`Level=${LEVEL}  perMatchup=${PER}  totalGames=${games}`);
+console.log(`Level=${LEVEL}  perMatchup=${PER}  repeat=${REPEAT}  totalGames=${games}`);
+if (REPEAT > 1) {
+  const maxSp = Math.max(...perRep.map(r => r.spread));
+  console.log(`per-repeat spread: ${perRep.map(r => r.spread.toFixed(1)).join(' / ')} (max ${maxSp.toFixed(1)}pt)`);
+}
 console.log('--- Faction win rates (participation denominator) ---');
 let best = 0, worst = 1;
 const wr = {};
