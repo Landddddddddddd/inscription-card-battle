@@ -755,9 +755,9 @@ export const CARDS = {
   // 单位数值曲线 1:1 镜像能量阵营（同费同级、攻防分布完全一致：1 费×7 / 2 费×9 /
   // 3 费×3 / 4 费×2 / 0 费×1），仅替换主题化的名字与印记，以保证「消耗秒数」这一
   // 新机制不会破坏六阵营整体平衡（时砂胜率与能量对齐，约 45-54%）。pl.seconds 每回合开局由
-  // beginTurn 写入「爬升预算」= BASE + 己方回合数×STEP、封顶 CAP（默认 2/1/5 秒），真实流逝
+  // beginTurn 写入「爬升预算」= BASE + 己方回合数×STEP、封顶 CAP（默认 2/1/4 秒），真实流逝
   // + 出牌扣减都会消耗它，归零则回合结束——时间即资源、不跨回合累计（每回合从 BASE 重计）。
-  // 成本曲线已压到 ≤ CAP(5秒)，保证每张牌在预算内可打出。
+  // 成本曲线已压到 ≤ CAP(4秒)，保证每张牌在预算内可打出。
   sand_pebble:     { name: '砂砾',   atk: 0, hp: 1, cost: 2, costType: 'sand', sigils: [],                  bloodValue: 1, color: '#c2b280', glyph: '砾' },
   sand_apprentice: { name: '时砂学徒', atk: 1, hp: 1, cost: 4, costType: 'sand', sigils: [],                bloodValue: 1, color: '#d8c48a', glyph: '徒' },
   pendulum:        { name: '钟摆兽', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['sharp_quills'],  bloodValue: 1, color: '#c9a24a', glyph: '摆' },
@@ -791,7 +791,7 @@ export const CARDS = {
   // [daily 2026-09-09] 沙羽虫（补跑；4 秒飞行 2/2，齿轮蝇上位版）
   sand_moth: { name: '沙羽虫', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['airborne'],              bloodValue: 1, color: '#cbb27a', glyph: '羽' },
 
-  // [daily 2026-09-11] 沙丘兽（补跑；5 秒 3/3 素白中坚，沙漏泰坦之下的平价选项）
+  // [daily 2026-09-11] 沙丘兽（补跑；4 秒 2/3 素白中坚，沙漏泰坦之下的平价选项）
   dune_beast: { name: '沙丘兽', atk: 2, hp: 3, cost: 4, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#d2b478', glyph: '丘' },
 
   // [daily 2026-09-13] 沙蜱（2 秒 1/1 最廉价铺场位）
@@ -804,7 +804,7 @@ export const CARDS = {
   pendulum_guard: { name: '锤卫', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['armored'],              bloodValue: 1, color: '#a08a6a', glyph: '砣' },
   // [daily 2026-09-21] 淤爬者（4 秒 2/2 白板，黄铜傀儡的低血变体）
   silt_crawler: { name: '淤爬者', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: [],                       bloodValue: 1, color: '#b0a080', glyph: '淤' },
-  // [daily 2026-09-23] 劫甲（5 秒 2/2 厚甲，时之骑士的低配版）
+  // [daily 2026-09-23] 劫甲（4 秒 2/2 厚甲，时之骑士的低配版）
   aeon_beetle: { name: '劫甲', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['armored'],              bloodValue: 1, color: '#8f7f5f', glyph: '劫' },
 
   // [daily 2026-09-26] 沙粒灵（2 秒 1/1 断尾，时砂阵营 2 秒铺场位）
@@ -813,13 +813,13 @@ export const CARDS = {
   clepsydra: { name: '漏刻', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: [], bloodValue: 1, color: '#c9a24a', glyph: '漏' },
   // [daily 2026-09-30] 黄铜日晷（4 秒 2/2 回复，时砂阵营 4 秒续航位）
   brass_sundial: { name: '黄铜日晷', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['regen'], bloodValue: 1, color: '#b59a4a', glyph: '晷' },
-  // [daily 2026-10-02] 蜃楼（5 秒 3/3 断尾，时砂阵营 5 秒收尾位）
+  // [daily 2026-10-02] 蜃楼（4 秒 2/2 断尾，时砂阵营收尾位）
   mirage: { name: '蜃楼', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#9a8a4a', glyph: '蜃' },
   // [daily 2026-10-07] 砂棘（3 秒 2/2 尖刺，时砂阵营反伤挡位）
   sand_spike: { name: '砂棘', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['sharp_quills'], bloodValue: 1, color: '#c9a24a', glyph: '棘' },
   // [daily 2026-10-08] 砂隼（3 秒 2/1 飞行，时砂阵营飞行骚扰位）
   sand_skylark: { name: '砂隼', atk: 2, hp: 1, cost: 3, costType: 'sand', sigils: ['airborne'], bloodValue: 1, color: '#c8b070', glyph: '隼' },
-  // [daily 2026-10-09] 砂岩卫（5 秒 3/3 厚甲，时砂阵营高费铁卫）
+  // [daily 2026-10-09] 砂岩卫（4 秒 2/2 厚甲，时砂阵营高费铁卫）
   sandstone_ward: { name: '砂岩卫', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['armored'], bloodValue: 1, color: '#b8a85a', glyph: '岩' },
   // [daily 2026-10-10] 时砂怒兽（3 秒 2/2 狂热，时砂阵营滚雪球位）
   chrono_fury: { name: '时砂怒兽', atk: 2, hp: 2, cost: 3, costType: 'sand', sigils: ['frenzy'], bloodValue: 1, color: '#e0b03a', glyph: '怒' },
@@ -827,7 +827,7 @@ export const CARDS = {
   sand_grit: { name: '砂砾精', atk: 1, hp: 1, cost: 2, costType: 'sand', sigils: ['loose_tail'], bloodValue: 1, color: '#d8c48a', glyph: '砾' },
   // [daily 2026-10-11] 砂翼蛾（4 秒 1/2 飞行，时砂阵营飞行续航位）
   sand_wingmoth: { name: '砂翼蛾', atk: 1, hp: 2, cost: 4, costType: 'sand', sigils: ['airborne'], bloodValue: 1, color: '#9a8a4a', glyph: '翼' },
-  // [daily 2026-10-12] 永恒沙魂（5 秒 2/4 不死，时砂阵营高费续航墙）
+  // [daily 2026-10-12] 永恒沙魂（4 秒 2/2 不死，时砂阵营高费续航墙）
   eternal_sandwraith: { name: '永恒沙魂', atk: 2, hp: 2, cost: 4, costType: 'sand', sigils: ['undying'], bloodValue: 1, color: '#ffd24a', glyph: '魂' },
 
   // [daily 2026-10-26] 摆轮（3 秒 1/2 头狼，时砂阵营首张「pack」增益位，补齐印记轮换）
