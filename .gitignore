@@ -12,3 +12,7 @@ Thumbs.db
 # Local env / secrets
 .env
 .env.*
+
+# Daily-automation run reports (generated artifacts, not part of the shipped game)
+每日卡牌更新_*.md
+每日卡片更新_*.md
