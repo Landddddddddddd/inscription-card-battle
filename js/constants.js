@@ -379,6 +379,9 @@ export const CARDS = {
   // [daily 2026-11-02] 赤鬃狼（1 费 2/2 狂热，血肉阵营廉价滚雪球打手，贴线 spark_hound 1费2/2狂热先例）
   crimson_mane: { name: '赤鬃狼', atk: 2, hp: 2, cost: 1, costType: 'blood', sigils: ['frenzy'], bloodValue: 2, color: '#a03a2a', glyph: '鬣' },
 
+  // [daily 2026-11-04] 赤纹虎（2 费 3/3 断尾，血肉阵营中费逃生打手，贴线 crimson_mane 的攻击向升格版：更稳的身材换断尾脱险）
+  sanguine_tiger: { name: '赤纹虎', atk: 3, hp: 3, cost: 2, costType: 'blood', sigils: ['loose_tail'], bloodValue: 2, color: '#a8402a', glyph: '虎' },
+
   // ===================== BONE（骸骨 · 亡灵墓地主题）=====================
   // 骸骨阵营的 0 费起手牌：免费铺场充当炮灰，死亡后即可积累骸骨（骸骨只从生物死亡获得）。
   bone_pup:    { name: '枯骨幼犬', atk: 1, hp: 1, cost: 0, costType: 'bone', sigils: ['brittle'],        bloodValue: 1, color: '#cfcabc', glyph: '骨' },
@@ -513,6 +516,9 @@ export const CARDS = {
 
   // [daily 2026-11-03] 墓鸦（4 费 2/3 致死，骸骨阵营高费定点清除位，贴线 soul_bone 致死位但增费提血）
   grave_crow: { name: '墓鸦', atk: 2, hp: 3, cost: 4, costType: 'bone', sigils: ['death_touch'], bloodValue: 1, color: '#6a6a5a', glyph: '鸹' },
+
+  // [daily 2026-11-04] 骨冢卫（2 费 1/3 厚甲，骸骨阵营廉价减伤墙，送死返骸骨的同时拖延对手节奏）
+  ossuary_guard: { name: '骨冢卫', atk: 1, hp: 3, cost: 2, costType: 'bone', sigils: ['armored'], bloodValue: 1, color: '#cfcabc', glyph: '龛' },
 
   // ===================== ENERGY（能量 · 机械科技主题）=====================
   black_cat:   { name: '电池机偶', atk: 0, hp: 1, cost: 0, costType: 'energy', sigils: [],               bloodValue: 1, color: '#2b3b4b', glyph: '电' },
@@ -972,6 +978,9 @@ export const CARDS = {
   // [daily 2026-11-03] 翠纹蟾（0 费 单绿石 1/3 毒触，魔石阵营绿系防守位，对标 venom_gu 攻防互换）
   jade_toad: { name: '翠纹蟾', atk: 1, hp: 3, cost: 0, costType: 'gem', gemCost: ['green'], sigils: ['poison_touch'], bloodValue: 1, color: '#2a7a4a', glyph: '纹' },
 
+  // [daily 2026-11-04] 蓝晶牙（0 费 单蓝石 2/2 毒触，魔石阵营蓝系带毒打手，对标 demon 的橙系毒触位但换蓝石）
+  sapphire_fang: { name: '蓝晶牙', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['blue'], sigils: ['poison_touch'], bloodValue: 1, color: '#2a4a8a', glyph: '璋' },
+
 };
 
 // Faction metadata + the card pool the deck builder offers for each faction.
@@ -979,12 +988,12 @@ export const FACTIONS = {
   blood: {
     key: 'blood', name: '血肉', res: 'blood', color: '#b5341f',
     desc: '每回合获得 1 点「当回合血肉」（不攒、回合开始重置，可单独召唤 1 费牌）。更高费用的血肉牌需在当回合血肉基础上，额外献祭场上已召唤的单位来支付。0 费牌可直接打出，作为铺场与祭品。',
-    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','blood_berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture','red_fox','blood_owl','wild_lizard','bloodmoon_wolf','tusk_beast','gale_lynx','ironback_boar','civet_dog','muntjac','roe_deer','frenzy_hoof','venom_viper','forest_zhang','blood_jackal','shield_antelope','evade_wolf','blood_swallow','sanguine_ox','plains_antelope','iron_si','mountain_goat','plague_hound','thornback_boar','crimson_mane'],
+    cards: ['squirrel','stoat','raven','mole','beaver','adder','raccoon','opossum','wolf','bullfrog','vulture','cougar','dire_wolf','hound','skunk','great_white','warthog','bear','wolf_cub','field_mouse','toad','shrew','hawk','ferret','viper_king','warg','rat_king','blood_berserker','armored_badger','hedgehog','porcupine','otter','fire_salamander','pangolin','giant_croc','mongoose','kite','pack_leader','blood_boar','blood_bat','bristle_rat','blood_titan','vampire_queen','sanguine_fawn','gore_ox','blood_leech','marrow_fiend','spinemane','blood_vulture','red_fox','blood_owl','wild_lizard','bloodmoon_wolf','tusk_beast','gale_lynx','ironback_boar','civet_dog','muntjac','roe_deer','frenzy_hoof','venom_viper','forest_zhang','blood_jackal','shield_antelope','evade_wolf','blood_swallow','sanguine_ox','plains_antelope','iron_si','mountain_goat','plague_hound','thornback_boar','crimson_mane','sanguine_tiger'],
   },
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，另有极轻的每回合墓地滴流（约 0.75，攒满 1 才 +1，仅防前期断档）。用骸骨召唤亡灵，用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan','tomb_candle','bone_spearman','bone_colossus','death_dirge','cracked_skull','grave_wraith','bone_lancer','flying_squirrel','tapir_bone','pixiu_bone','tomb_armor','rot_construct','brittle_lacewing','coffin_rider','stele_ward','venom_gu','thorn_bone_ward','twin_bone_general','shatter_bone_spike','bone_kui','shroud_monk','grave_crow'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan','tomb_candle','bone_spearman','bone_colossus','death_dirge','cracked_skull','grave_wraith','bone_lancer','flying_squirrel','tapir_bone','pixiu_bone','tomb_armor','rot_construct','brittle_lacewing','coffin_rider','stele_ward','venom_gu','thorn_bone_ward','twin_bone_general','shatter_bone_spike','bone_kui','shroud_monk','grave_crow','ossuary_guard'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
@@ -994,7 +1003,7 @@ export const FACTIONS = {
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
     desc: '魔石体系：上场「魔石生物」(红玉/翡翠/蓝宝) 即可获得对应颜色的魔石。法术卡需要场上存在对应颜色的魔石才能召唤——魔石不消耗，但魔石生物一旦死亡就会失去该魔石。',
-    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','amber_beast','thorn_vine','twin_fiend','crimson_eye','flame_shard','frost_ward','moss_ward','archmage','void_phantom','amber_wisp','jade_spider','cobalt_owl','obsidian_boar','tidal_fiend','ember_hound','prism_golem','flame_lizard','vine_wraith','dusk_idol','astral_elemental','frost_boa','jade_warden','scorch_wisp','mist_sprite','hail_idol','flame_lance','frost_claw','tide_beast','flame_plate_beast','jade_blade_wisp','ocean_ward','ember_asp','flame_tail_wisp','jade_flame_beast','frost_venom_spider','verdant_fang','frost_needle','jade_toad'],
+    cards: ['ruby_mox','emerald_mox','sapphire_mox','imp','panther','python','demon','basilisk','chimera','golem','manticore','griffin','phoenix','sprite','wisp','breeze','ember','soul_reaper','frost_assassin','stone_scale','frostling','lava_sentinel','moss_imp','amber_beast','thorn_vine','twin_fiend','crimson_eye','flame_shard','frost_ward','moss_ward','archmage','void_phantom','amber_wisp','jade_spider','cobalt_owl','obsidian_boar','tidal_fiend','ember_hound','prism_golem','flame_lizard','vine_wraith','dusk_idol','astral_elemental','frost_boa','jade_warden','scorch_wisp','mist_sprite','hail_idol','flame_lance','frost_claw','tide_beast','flame_plate_beast','jade_blade_wisp','ocean_ward','ember_asp','flame_tail_wisp','jade_flame_beast','frost_venom_spider','verdant_fang','frost_needle','jade_toad','sapphire_fang'],
   },
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
@@ -1586,6 +1595,7 @@ export const CHANGELOG = [
       '2026-11-01 每日新增：棘刺野猪 / 毒针机 / 霜镝卫',
       '2026-11-02 每日新增（补跑）：赤鬃狼 / 殓布僧 / 弹射螺机',
       '2026-11-03 每日新增：翠纹蟾 / 墓鸦 / 陀螺卫',
+      '2026-11-04 每日新增：赤纹虎 / 骨冢卫 / 蓝晶牙',
     ],
   },
   {
