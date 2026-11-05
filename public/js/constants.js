@@ -1017,7 +1017,7 @@ export const FACTIONS = {
   sand: {
     key: 'sand', name: '时砂', res: 'sand', color: '#e0b03a',
     desc: '时间即是资源：每回合开局获得一份「出牌时间」预算，它随你的回合数小幅增长（首回合 2 秒，每多一个己方回合 +1 秒、封顶 4 秒）——它是你这一回合真实倒计时的时钟。真实流逝每过 1 秒就少 1 秒，出牌再额外扣掉该牌的「秒费」，归零则回合自动结束。卡牌以「秒」为费、不可透支（例如剩 3 秒打不出 4 秒的牌）。每回合归零重计、不跨回合累计（时砂越战越从容，但每回合从 2 秒重新流）。主题：时钟机械、指针（时针/分针/秒针）、齿轮、发条、擒纵、游丝、沙漏、流沙与时光生物。',
-    cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton','sand_snail','sand_moth','dune_beast','sand_mite','glass_finch','dial_hound','pendulum_guard','silt_crawler','aeon_beetle','sand_mote','clepsydra','brass_sundial','mirage','sand_spike','sand_skylark','sandstone_ward','chrono_fury','sand_grit','sand_wingmoth','eternal_sandwraith','balance_wheel','chrono_blade','sand_spearman','sand_thorn','chrono_hare','sundial_colossus','sand_larva'],
+    cards: ['sand_apprentice','sand_pebble','pendulum','chrono_twin','sand_swift','gear_beetle','sand_panther','sand_wisp','clock_hound','rewind_owl','sand_eagle','chrono_knight','sand_golem','hourglass_titan','chronolord','mainspring_mouse','gear_fly','escapement','hairspring','second_hand','hour_hand','minute_hand','brass_automaton','sand_snail','sand_moth','dune_beast','sand_mite','glass_finch','dial_hound','pendulum_guard','silt_crawler','aeon_beetle','sand_mote','clepsydra','brass_sundial','mirage','sand_spike','sand_skylark','sandstone_ward','chrono_fury','sand_grit','sand_wingmoth','eternal_sand','eternal_sandwraith','balance_wheel','chrono_blade','sand_spearman','sand_thorn','chrono_hare','sundial_colossus','sand_larva'],
   },
   // === 占位阵营（即将推出）：预留第 6 / 7 / 8 阵营插槽，目前 cards 为空、comingSoon:true。
   // 具体内容（核心召唤机制 / 卡池 / 资源）以后填充；填好后删掉 comingSoon 并把 key 加进
@@ -1208,6 +1208,19 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.14',
+    date: '2026-11-05',
+    title: '修复永恒之砂（eternal_sand）没进时砂卡池',
+    items: [
+      '缺陷本质：神话卡 `eternal_sand`（永恒之砂，时砂 4 费 2/3 再生+不灭）在 CARDS 里有完整定义、在 art.js 里也有 premium 视觉配置，但 `FACTIONS.sand.cards` 的 id 列表里从来没有它。全库 10 张 premium 卡里，其余 9 张都在各自阵营卡池内，只有它是孤儿。',
+      '实际后果：时砂阵营的组卡界面永远筛不出这张卡，AI 也永远不会选它——也就是说它虽然写在卡表里、图鉴里查得到，但对战里从来不存在。',
+      '成因推测：v0.7.12 的「时砂顶费 5 秒→4 秒」改造中，11 张 5 秒卡逐张降档并整体重写了沙阵营卡池那一行，这一张在重写时被漏掉（同批其余 10 张均在池内）。',
+      '修复方式：把 `eternal_sand` 补进 `FACTIONS.sand.cards`，位置放在 `eternal_sandwraith` 之前，让「永恒之砂 / 永恒沙魂」两张永恒系卡相邻。不动数值、不动稀有度、不动印记。',
+      '平衡影响：沙池 50→51 张，稀释作用极小。3 轮 × 每对位 200 局实测：单轮 spread 7.4 / 7.4 / 8.0，均值 7.4pt，时砂 53.0%，六阵营 51.8~53.9 与 45.4~45.9 两簇，仍在 ≤10pt 容差内，无需配平。',
+      '顺带建立的守卫：新增「孤儿卡扫描」——遍历 CARDS 全量 id 与所有 FACTIONS 卡池并集求差，任何不在任何池内的卡都报警。这条正是本 bug 的根症状，修复前命中 1 张，修复后为 0。',
+    ],
+  },
   {
     version: 'v0.7.13',
     date: '2026-11-01',
