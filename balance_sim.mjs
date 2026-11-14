@@ -51,6 +51,19 @@ if (process.env.SAND_RAMP_FRAC) {
   const v = parseFloat(process.env.SAND_RAMP_FRAC);
   if (!Number.isNaN(v) && v > 0) { CONFIG.SAND_RAMP_FRAC = v; console.log(`(override SAND_RAMP_FRAC=${v})`); }
 }
+// 时砂预算模式（O2 原型）：SAND_BUDGET_MODE=board 启用「场上单位数挂钩」
+if (process.env.SAND_BUDGET_MODE) {
+  CONFIG.SAND_BUDGET_MODE = process.env.SAND_BUDGET_MODE;
+  console.log(`(override SAND_BUDGET_MODE=${CONFIG.SAND_BUDGET_MODE})`);
+}
+if (process.env.SAND_BOARD_BONUS_MAX) {
+  const v = parseInt(process.env.SAND_BOARD_BONUS_MAX, 10);
+  if (!Number.isNaN(v)) { CONFIG.SAND_BOARD_BONUS_MAX = v; console.log(`(override SAND_BOARD_BONUS_MAX=${v})`); }
+}
+if (process.env.SAND_BUDGET_FLOOR) {
+  const v = parseInt(process.env.SAND_BUDGET_FLOOR, 10);
+  if (!Number.isNaN(v)) { CONFIG.SAND_BUDGET_FLOOR = v; console.log(`(override SAND_BUDGET_FLOOR=${v})`); }
+}
 if (process.env.BONE_PER_TURN) {
   const v = parseFloat(process.env.BONE_PER_TURN);
   if (!Number.isNaN(v) && v >= 0) { CONFIG.BONE_PER_TURN = v; console.log(`(override BONE_PER_TURN=${v})`); }
@@ -156,14 +169,17 @@ for (const f of FACTIONS) {
   console.log(`${f.padEnd(7)} ${(r * 100).toFixed(1)}%  (${factionWins[f]}/${factionGames[f]})`);
 }
 console.log(`spread: ${((best - worst) * 100).toFixed(1)} pts (target ≤ ~10)`);
-console.log('--- Pairwise (row beats col, as A) ---');
+console.log('--- Pairwise 对称胜率（row 对 col，双向座位合并，%) ---');
+// 口径修正（2026-11-14）：matrix[fa>fb].w 在两个配对方向都会被累加（fa 作 A 赢、fa 作 B 赢），
+// 而 .g 只统计「fa 作 A」那一个方向的对局数。因此正确的胜率 = w / (2*g)，而不是 w / g。
+// 旧写法把数值放大了约 2 倍（sand 138% ≈ 真实 69%），是本项目长期误读成对值的根源。
 for (const fa of FACTIONS) {
   let row = fa.padEnd(7);
   for (const fb of FACTIONS) {
     const m = matrix[fa + '>' + fb];
-    const r = m.g ? (m.w / m.g * 100).toFixed(0) : '-';
+    const r = m.g ? (m.w / (2 * m.g) * 100).toFixed(0) : '-';
     row += ' ' + r.padStart(4) + '%';
   }
   console.log(row);
 }
-console.log('cols = opponent-as-B; diagonal meaningless');
+console.log('cols = 对手阵营；对角恒 50%（同阵营内战不计强弱）；只需读上三角，下三角为互补值');
