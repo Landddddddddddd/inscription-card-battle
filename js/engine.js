@@ -549,14 +549,30 @@ function beginTurn(state, p) {
     // 在「分数差 5 分」模式下 3 回合速胜、结构性碾压。爬升是「每回合重计的计划值」而非累计，
     // 仍满足用户「不跨回合累计」硬约束（时砂越战越从容，但每回合从 BASE 重新流）。
     pl.sandTurns = (pl.sandTurns || 0) + 1;
-    // 爬升同样用「小数滴流」：预算 = BASE + (己方回合数-1)×SAND_RAMP_FRAC，向下取整、封顶 CAP。
-    // 与能量的整数取模同理，秒数只能整档跳会让时砂变成悬崖（每回合 +1 约 55%，每 2 回合 +1
-    // 直接崩到 17.7%），故保留小数旋钮以便连续细调（默认 1.0 = 每回合 +1）。
-    const sfrac = CONFIG.SAND_RAMP_FRAC != null ? CONFIG.SAND_RAMP_FRAC : 1;
-    pl.seconds = Math.min(
-      CONFIG.SAND_BUDGET_CAP || 5,
-      Math.floor((CONFIG.SAND_BUDGET_BASE || 2) + (pl.sandTurns - 1) * sfrac)
-    );
+    const sandMode = CONFIG.SAND_BUDGET_MODE || 'turn';
+    if (sandMode === 'board') {
+      // O2 原型（2026-11-14）：预算与「场上时砂单位数」挂钩，而非随回合自动爬升。
+      // 时砂的无条件前置资源在短局中压过骸骨/军威的条件后置资源；改为 board 后，
+      // 对手清掉时砂单位即可压低其下回合预算，补上原本缺失的反制闭环。
+      const onBoard = state.board[p].slice(0, lanesOf(state)).filter(Boolean).length;
+      const bonusCap = CONFIG.SAND_BOARD_BONUS_MAX != null ? CONFIG.SAND_BOARD_BONUS_MAX : 2;
+      pl.seconds = Math.min(
+        CONFIG.SAND_BUDGET_CAP || 4,
+        Math.max(
+          CONFIG.SAND_BUDGET_FLOOR || 2,
+          (CONFIG.SAND_BUDGET_BASE || 2) + Math.min(bonusCap, onBoard)
+        )
+      );
+    } else {
+      // 爬升同样用「小数滴流」：预算 = BASE + (己方回合数-1)×SAND_RAMP_FRAC，向下取整、封顶 CAP。
+      // 与能量的整数取模同理，秒数只能整档跳会让时砂变成悬崖（每回合 +1 约 55%，每 2 回合 +1
+      // 直接崩到 17.7%），故保留小数旋钮以便连续细调（默认 1.0 = 每回合 +1）。
+      const sfrac = CONFIG.SAND_RAMP_FRAC != null ? CONFIG.SAND_RAMP_FRAC : 1;
+      pl.seconds = Math.min(
+        CONFIG.SAND_BUDGET_CAP || 5,
+        Math.floor((CONFIG.SAND_BUDGET_BASE || 2) + (pl.sandTurns - 1) * sfrac)
+      );
+    }
   }
   // mox: board-presence gems from Mox creatures — no per-turn regen.
   // 军威(morale)：士气跨回合累计、不重置；但「每回合获取上限」在己方回合开始时清零，
