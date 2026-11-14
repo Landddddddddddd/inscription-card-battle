@@ -89,4 +89,20 @@ console.log('\n阵营均胜率（对其它 5 阵营的对称均值）:');
 for (const a of sorted) console.log(`  ${a.padEnd(8)} ${means[a].toFixed(1).padStart(5)}%`);
 console.log(`极差 spread: ${(means[sorted[0]] - means[sorted[sorted.length - 1]]).toFixed(1)}pt  (${sorted[0]} ${means[sorted[0]].toFixed(1)} / ${sorted[sorted.length - 1]} ${means[sorted[sorted.length - 1]].toFixed(1)})`);
 
+// ---- 验收判定（2026-11-14 起生效：极化设计标准）----
+// 背景：时砂被证实是「反慢速快攻」阵营——克 grind 系（骸骨/军威），惧爆发系（血肉/能量）。
+// 这类极化是设计特色而非缺陷，因此不再追「每对 = 50%」，改为两条可量化门槛：
+//   ① 每阵营均胜率落在 50 ± 6pt（六个阵营都不能是好签或坏签）
+//   ② 任一单对阵偏离 50% 不超过 20pt（允许仇恨对位，但不允许 7:3 的碾压局）
+// 注：①等价于 spread ≤ 12pt；②是新增项，防止「均胜率都合格但某两阵营 75:25」被漏掉。
+const TOL_MEAN = 6, TOL_PAIR = 20;
+const worstMean = sorted.reduce((w, a) => Math.abs(means[a] - 50) > Math.abs(means[w] - 50) ? a : w, sorted[0]);
+const meanDev = Math.abs(means[worstMean] - 50);
+const okMean = meanDev <= TOL_MEAN;
+const okPair = maxDev <= TOL_PAIR;
+console.log('\n验收（极化设计标准）:');
+console.log(`  ① 阵营均胜率 50±${TOL_MEAN}pt ..... ${okMean ? 'PASS' : 'FAIL'}  最差 ${worstMean} ${means[worstMean].toFixed(1)}%（偏离 ${(means[worstMean] - 50 >= 0 ? '+' : '')}${(means[worstMean] - 50).toFixed(1)}）`);
+console.log(`  ② 最大单对阵偏离 ≤${TOL_PAIR}pt .... ${okPair ? 'PASS' : 'FAIL'}  ${maxDev.toFixed(1)}pt (${maxPair})`);
+console.log(`  判定: ${okMean && okPair ? 'PASS ✅' : 'FAIL ❌'}`);
+
 console.log('注：对称矩阵中 A vs B 与 B vs A 互补（和为 100），只需读上三角。');

@@ -168,7 +168,13 @@ for (const f of FACTIONS) {
   if (r < worst) worst = r;
   console.log(`${f.padEnd(7)} ${(r * 100).toFixed(1)}%  (${factionWins[f]}/${factionGames[f]})`);
 }
-console.log(`spread: ${((best - worst) * 100).toFixed(1)} pts (target ≤ ~10)`);
+// 验收标准（2026-11-14 起）：极化设计标准，不再追「每对 = 50%」。
+//   ① 每阵营均胜率 ∈ 50±6pt（等价 spread ≤ 12pt）
+//   ② 任一单对阵偏离 50% ≤ 20pt（见下方成对表）
+const worstF = FACTIONS.reduce((w, f) => Math.abs(wr[f] - 0.5) > Math.abs(wr[w] - 0.5) ? f : w, FACTIONS[0]);
+const meanOk = Math.abs(wr[worstF] - 0.5) * 100 <= 6;
+console.log(`spread: ${((best - worst) * 100).toFixed(1)} pts (① 均值门槛: 50±6 → spread ≤12)`);
+console.log(`① 阵营均胜率 50±6pt: ${meanOk ? 'PASS' : 'FAIL'}  最差 ${worstF} ${(wr[worstF] * 100).toFixed(1)}%`);
 console.log('--- Pairwise 对称胜率（row 对 col，双向座位合并，%) ---');
 // 口径修正（2026-11-14）：matrix[fa>fb].w 在两个配对方向都会被累加（fa 作 A 赢、fa 作 B 赢），
 // 而 .g 只统计「fa 作 A」那一个方向的对局数。因此正确的胜率 = w / (2*g)，而不是 w / g。
