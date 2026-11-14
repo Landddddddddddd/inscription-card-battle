@@ -44,6 +44,14 @@ export const CONFIG = {
   // 直接崩到 17.7%——因为本作强正反馈（落后一张牌→被吃→更落后）且秒数只能整秒跳。
   // 保留小数旋钮以便连续细调（1.0 = 每回合 +1；0.8 → 2,2,3,4,4,5…）。
   SAND_RAMP_FRAC: 1.0,
+  // 时砂预算模式（2026-11-14 新增，O2 原型；默认 'turn' 保持原行为）：
+  //   'turn'  = 原「随己方回合数自动爬升」：2,3,4,4…（无条件前置经济）
+  //   'board' = 「与场上时砂单位数挂钩」：BASE + min(BOARD_BONUS_MAX, 场上时砂单位数)，夹在 [FLOOR, CAP]
+  // 动机：无条件前置资源在「分差 5」短局中压过骸骨/军威的条件后置资源（双向平均 70%/63.5%）。
+  // board 模式让「清掉时砂单位」直接压低其下回合预算，补上缺失的反制闭环；不触碰 SAND_RAMP_FRAC。
+  SAND_BUDGET_MODE: 'turn',
+  SAND_BOARD_BONUS_MAX: 2,   // board 模式：场上每 1 个时砂单位 +1 秒，最多 +2
+  SAND_BUDGET_FLOOR: 2,      // board 模式：预算下限（防止被清场后塌陷成死循环）
   // 军威阵营：士气由「造成伤害」累积（交战打敌方单位给全额 + 尖刺反伤；天平直击给折减），
   // 跨回合累计、不重置（与血肉「不攒」相反，这是军威特色：前期攒后期爆发）。
   // 天平（取胜动作）伤害折减产士气——否则攻击天平既推胜利又滚经济会双重碾压（初版满额 88% 失衡）。
@@ -550,6 +558,9 @@ export const CARDS = {
   // [daily 2026-11-08] 骨茸兽（2 费 2/3 回复，骸骨阵营续航中坚——弱阵营给高于均值卡：把 rot_construct 的回复身板下沉到 2 费，让骸骨靠死亡经济翻盘时有一张能反复站场的黏性单位）
   bone_rong: { name: '骨茸兽', atk: 2, hp: 3, cost: 2, costType: 'bone', sigils: ['regen'], bloodValue: 1, color: '#7a8a6a', glyph: '茸' },
 
+  // [daily 2026-11-09] 噬髓蛆（1 费 1/2 死亡接触，骸骨阵营最廉价换血位——骸骨长期偏弱，按「弱阵营给均值偏上」给一张 1 费就能白换任意身材的单位）
+  marrow_grub: { name: '噬髓蛆', atk: 1, hp: 2, cost: 1, costType: 'bone', sigils: ['death_touch'], bloodValue: 1, color: '#8a9a7a', glyph: '髓' },
+
   // [daily 2026-11-10] 骨翼蜂（1 费 1/1 飞行，骸骨阵营 0 费起手外的首个 1 费飞行，送死返骸骨同时压制对空）
   bone_wing_wasp: { name: '骨翼蜂', atk: 1, hp: 1, cost: 1, costType: 'bone', sigils: ['airborne'], bloodValue: 1, color: '#9a8a7a', glyph: '蜻' },
 
@@ -706,6 +717,9 @@ export const CARDS = {
 
   // [daily 2026-11-08] 蚀电蜂（1 费 2/1 毒触，能量阵营廉价带毒骚扰——能量偏强故给保守身板：1 费打出即可能送掉，但毒触能延续交战收益）
   energy_shi: { name: '蚀电蜂', atk: 2, hp: 1, cost: 1, costType: 'energy', sigils: ['poison_touch'], bloodValue: 1, color: '#4a8a6a', glyph: '蚀' },
+
+  // [daily 2026-11-09] 引弧针（1 费 1/2 双重打击，能量阵营最廉价二次打击位，贴线「费1→1/2」：能量历史偏强，故不加攻只给连击做换血交换）
+  arc_needle: { name: '引弧针', atk: 1, hp: 2, cost: 1, costType: 'energy', sigils: ['double_strike'], bloodValue: 1, color: '#4a7a9a', glyph: '弧' },
 
   // [daily 2026-11-10] 蚀毒螺机（2 费 3/2 毒触，能量阵营中费带毒打手，贴线 venom_bee 2费2/2毒触的攻击升格版：能量偏强故给中性强度）
   venom_coil_mech: { name: '蚀毒螺机', atk: 3, hp: 2, cost: 2, costType: 'energy', sigils: ['poison_touch'], bloodValue: 1, color: '#4a8a3a', glyph: '蚣' },
@@ -1041,6 +1055,23 @@ export const CARDS = {
   // [daily 2026-10-29] 戟兵（3 费 3/2 白板，军威阵营中费打手，游侠骑士的无甲版）
   halberdier: { name: '戟兵', atk: 3, hp: 3, cost: 3, costType: 'morale', sigils: [], bloodValue: 1, color: '#a05a2a', glyph: '戟' },
 
+  // ===== [balance 2026-11-14] 军威补强包（5 张）=====
+  // 背景：军威卡池长期停在 42 张（血肉已 81 张），且 5 费只有 1 张 premium「战神化身」，
+  // 4 费仅 7 张——顶费断层导致军威后期只能靠中费堆叠，胜率从 45.7% 缓降到 45.1%。
+  // 本包按「补顶费 + 补曲线空档」设计，不引入新机制、不新增印记，全部沿用既有 sigil。
+  // 边境哨兵（1 费 2/1 回复，军威廉价续航位；游骑 2/1 白板的+回复版）
+  border_sentry: { name: '边境哨兵', atk: 2, hp: 1, cost: 1, costType: 'morale', sigils: ['regen'], bloodValue: 1, color: '#b07040', glyph: '境' },
+  // 披甲旗手（2 费 2/2 厚甲，军威中费攻守兼备位；盾牌兵 1/3 的攻向变体）
+  armored_bearer: { name: '披甲旗手', atk: 2, hp: 2, cost: 2, costType: 'morale', sigils: ['armored'], bloodValue: 1, color: '#9a6a4a', glyph: '披' },
+  // 长枪队（3 费 3/3 尖刺，军威中费反伤打手；戟兵 3/3 白板的+尖刺版）
+  spear_column: { name: '长枪队', atk: 3, hp: 3, cost: 3, costType: 'morale', sigils: ['sharp_quills'], bloodValue: 1, color: '#a84a20', glyph: '列' },
+  // 旗阵长（4 费 4/4 群聚，军威高费主力；金鼓元帅 3/3 群聚的攻击向上位）
+  phalanx_captain: { name: '旗阵长', atk: 4, hp: 4, cost: 4, costType: 'morale', sigils: ['pack'], bloodValue: 1, color: '#8a3a14', glyph: '阵' },
+  // 重装旗督（5 费 4/5 厚甲，军威首个非 premium 顶费墙；填 5 费只有战神化身的断层）
+  banner_lord: { name: '重装旗督', atk: 4, hp: 5, cost: 5, costType: 'morale', sigils: ['armored'], bloodValue: 2, color: '#7a3a14', glyph: '督' },
+  // [daily 2026-11-09] 掌旗兵（2 费 2/3 群聚，军威阵营中费站场枢纽——军威胜率垫底，按「弱阵营给均值偏上」把旗卫的群聚身板上调一格）
+  banner_bearer: { name: '掌旗兵', atk: 2, hp: 3, cost: 2, costType: 'morale', sigils: ['pack'], bloodValue: 1, color: '#a8481a', glyph: '纛' },
+
   // [daily 2026-10-31] 翠牙兽（0 费 单绿石 2/2 连击，魔石阵营绿系连击位）
   verdant_fang: { name: '翠牙兽', atk: 2, hp: 2, cost: 0, costType: 'gem', gemCost: ['green'], sigils: ['double_strike'], bloodValue: 1, color: '#2a7a4a', glyph: '牙' },
 
@@ -1074,12 +1105,12 @@ export const FACTIONS = {
   bone: {
     key: 'bone', name: '骸骨', res: 'bone', color: '#9aa0a8',
     desc: '亡灵墓地大军：你的生物「以任何方式死亡」（交战阵亡 / 0 费易碎生物攻击后碎裂 / 致死等）每只掉落 1 点骸骨，另有极轻的每回合墓地滴流（约 0.75，攒满 1 才 +1，仅防前期断档）。用骸骨召唤亡灵，用 0 费「枯骨幼犬」免费铺场、送死换骸骨。',
-    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan','tomb_candle','bone_spearman','bone_colossus','death_dirge','cracked_skull','grave_wraith','bone_lancer','flying_squirrel','tapir_bone','pixiu_bone','tomb_armor','rot_construct','brittle_lacewing','coffin_rider','stele_ward','venom_gu','thorn_bone_ward','twin_bone_general','shatter_bone_spike','bone_kui','shroud_monk','grave_crow','ossuary_guard','bone_grub','corpse_knight','bone_rong','bone_wing_wasp','rot_vine','twin_jaw_bone','grave_plate_beast'],
+    cards: ['bone_pup','rat','cat','spider','bat','skeleton','corpse','crab','scorpion','zombie','black_widow','turtle','bone_hound','geck','lizard','snail','moth','beetle','bonesnake','bone_warden','grave_moss','tomb_guard','bone_archer','soul_bone','wailing_spirit','ghoul','gravedigger','carrion_beast','dread_knight','crypt_bear','bone_blade','lich_king','bone_dragon','bone_thrush','crypt_horror','osseous_ox','necro_seraph','bone_brood','crypt_weaver','tomb_titan','tomb_candle','bone_spearman','bone_colossus','death_dirge','cracked_skull','grave_wraith','bone_lancer','flying_squirrel','tapir_bone','pixiu_bone','tomb_armor','rot_construct','brittle_lacewing','coffin_rider','stele_ward','venom_gu','thorn_bone_ward','twin_bone_general','shatter_bone_spike','bone_kui','shroud_monk','grave_crow','ossuary_guard','bone_grub','corpse_knight','bone_rong','bone_wing_wasp','rot_vine','twin_jaw_bone','grave_plate_beast','marrow_grub'],
   },
   energy: {
     key: 'energy', name: '能量', res: 'energy', color: '#3a8ad0',
     desc: '机械军团：能量每回合从 1 点爬升至 6 点封顶、整回满，指挥钢铁与电路组成的战争机器。',
-    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite','cap_toad','crane_ape','overload_rhino','plasma_whale','tesla_wasp','reactor_slug','volt_sparrow','titan_mech','crystal_drone','blitz_gun','halberd_bot','cell_pig','heavy_crossbow','battleship','torch_bot','saw_mech','charge_mech_frog','armor_core','flee_mech_mouse','spark_hound','venom_needle_bot','bolt_thrower','gyro_guard','bulwark_mech','energy_sentry_bee','energy_bastion','energy_shi','venom_coil_mech','glide_drone','heavy_mantis_mech','ratchet_guard'],
+    cards: ['black_cat','magpie','fennec','peacock','lynx','mantis','falcon','ram','grey_jaguar','eagle','bison','bull','ant','cricket','sparrow','newt','weasel','armor_tank','spike_beetle','repair_mech','venom_bee','gear_hound','echo_droid','arc_drone','swarm_bot','execution_droid','boom_bot','steel_warden','rail_rhino','hammer_mech','siege_mech','omega_core','storm_harrier','volt_hare','coil_serpent','tesla_ram','solar_hawk','grid_sentinel','fusion_ox','pulse_mite','cap_toad','crane_ape','overload_rhino','plasma_whale','tesla_wasp','reactor_slug','volt_sparrow','titan_mech','crystal_drone','blitz_gun','halberd_bot','cell_pig','heavy_crossbow','battleship','torch_bot','saw_mech','charge_mech_frog','armor_core','flee_mech_mouse','spark_hound','venom_needle_bot','bolt_thrower','gyro_guard','bulwark_mech','energy_sentry_bee','energy_bastion','energy_shi','venom_coil_mech','glide_drone','heavy_mantis_mech','ratchet_guard','arc_needle'],
   },
   mox: {
     key: 'mox', name: '魔石', res: 'mox', color: '#9a4ad0',
@@ -1097,7 +1128,7 @@ export const FACTIONS = {
   morale: {
     key: 'morale', name: '军威', res: 'morale', color: '#b5651d',
     desc: '军威以「士气」为资源：交战造成伤害（攻击敌方单位、含致死与尖刺反伤）给全额士气（1 伤=1 士气，受单回合获取上限）；攻击天平（直击空列/飞行越界）给折减系数 0.22 的士气（分数累积）。士气跨回合累计、存量封顶 10、单回合获取封顶 4、开局 0、无无偿发放。初版天平满额导致 88% 失衡（攻击取胜动作既推胜利又滚经济双重碾压），改折减后才平衡。士气卡消耗士气召唤——单位身材压到廉价端，靠「打敌方单位即回本」的正反馈滚雪球。',
-    cards: ['war_drummer','war_piper','outrider','scout_raven','spearman','warhound','pikeman','drummer_chief','shield_guard','standard_bearer','archer','knight_errant','berserker','champion','lancer','general','war_elephant','shock_trooper','shield_wall','avatar_of_war','banner_guard','horn_blower','shield_maiden','vanguard','war_chariot','veteran_sergeant','cookfire_soldier','banner_pikeman','ladderman','goldrum_marshal','death_scout','flag_warden','iron_warden','sharp_lancer','medic_soldier','flying_spear','buckler_soldier','poison_banner','war_pigeon','caltrop','tower_shield','halberdier'],
+    cards: ['war_drummer','war_piper','outrider','scout_raven','spearman','warhound','pikeman','drummer_chief','shield_guard','standard_bearer','archer','knight_errant','berserker','champion','lancer','general','war_elephant','shock_trooper','shield_wall','avatar_of_war','banner_guard','horn_blower','shield_maiden','vanguard','war_chariot','veteran_sergeant','cookfire_soldier','banner_pikeman','ladderman','goldrum_marshal','death_scout','flag_warden','iron_warden','sharp_lancer','medic_soldier','flying_spear','buckler_soldier','poison_banner','war_pigeon','caltrop','tower_shield','halberdier','border_sentry','armored_bearer','spear_column','phalanx_captain','banner_lord','banner_bearer'],
   },
   f7: {
     key: 'f7', name: '阵营七', res: 'tbd', color: '#8a7c94',
