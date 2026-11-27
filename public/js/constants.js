@@ -66,9 +66,11 @@ export const CONFIG = {
   // 2026-11-01 复核：曾试 0.24/0.26/0.28/0.34 四档，0.26 起军威即跳到 58%，0.34 飙到 65%
   // （同为悬崖型：整数取整吞掉小数后跨阈值），0.24 仅 +0.4pt 纯噪声，故维持 0.22 不动。
   // 2026-11-01 二次复核（时砂顶费降 4 秒后）：0.22 时军威 46.1%、0.235 时 46.1%（同一平台区），
-  // 0.22~0.245 这一整段军威都在 45.7~47.8 之间小幅摆动，0.25 才跨阈值跳到 58.6%。取平台上沿
-  // 0.235（离断崖 0.25 留 0.015 余量），把军威从地板抬进 45–55 区间，且不触断崖。
-  MORALE_SCALE_RATE: 0.235,
+  // 0.22~0.245 这一整段军威都在 45.7~47.8 之间小幅摆动，0.25 才跨阈值跳到 58.6%。
+  // 2026-11-27 三次复核（极化设计标准上线后）：pairwise 口径下军威 42.7% 跌破 44 下限，0.235→0.244
+  // 抬回 44.6%；0.245 与 0.243 差异在骰子噪声内（pairwise 不支持 REPEAT，单轮判定不可靠，
+  // 最终以 balance_sim REPEAT=8 × perMatchup=200 = 19200 局/阵营验收）。0.244 离断崖 0.25 留 0.006 余量。
+  MORALE_SCALE_RATE: 0.244,
   DECK_MIN: 5,           // deck builder constraints（0 费卡下限：卡组最少 5 张）
   DECK_MAX: 30,
   ZERO_COST_MAX: 15,     // 单张 0 费卡在卡组中的最多重复数（原上限 2，现放宽到 15）
@@ -436,7 +438,7 @@ export const CARDS = {
   cat:         { name: '墓园妖猫', atk: 1, hp: 1, cost: 1, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#c9a96a', glyph: '猫' },
   spider:      { name: '墓穴蛛',   atk: 1, hp: 1, cost: 1, costType: 'bone', sigils: [],    bloodValue: 1, color: '#4a3a4a', glyph: '蜘' },
   bat:         { name: '骨翼蝠',   atk: 1, hp: 1, cost: 1, costType: 'bone', sigils: ['airborne'],       bloodValue: 1, color: '#3a2b3a', glyph: '蝠' },
-  skeleton:    { name: '骷髅武士', atk: 2, hp: 1, cost: 2, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#d8d8d0', glyph: '骷' },
+  skeleton:    { name: '骷髅武士', atk: 2, hp: 2, cost: 2, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#d8d8d0', glyph: '骷' },
   corpse:      { name: '腐尸',     atk: 1, hp: 3, cost: 2, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#6a7a5a', glyph: '尸' },
   crab:        { name: '尸壳蟹',   atk: 1, hp: 2, cost: 2, costType: 'bone', sigils: ['sharp_quills'],  bloodValue: 1, color: '#c06a4a', glyph: '蟹' },
   scorpion:    { name: '毒骨蝎',   atk: 2, hp: 1, cost: 2, costType: 'bone', sigils: ['poison_touch'],  bloodValue: 1, color: '#a06a2a', glyph: '蝎' },
@@ -451,7 +453,7 @@ export const CARDS = {
   snail:       { name: '墓螺',   atk: 1, hp: 2, cost: 1, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#9a8a7a', glyph: '螺' },
   moth:        { name: '尸蛾',   atk: 1, hp: 1, cost: 1, costType: 'bone', sigils: ['airborne'],       bloodValue: 1, color: '#6a5a6a', glyph: '蛾' },
   beetle:      { name: '甲虫',   atk: 1, hp: 2, cost: 1, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#5a6a3a', glyph: '甲' },
-  bonesnake:   { name: '骨蛇',   atk: 2, hp: 1, cost: 2, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#8a9a7a', glyph: '蛇' },
+  bonesnake:   { name: '骨蛇',   atk: 2, hp: 2, cost: 2, costType: 'bone', sigils: [],                 bloodValue: 1, color: '#8a9a7a', glyph: '蛇' },
 
   // 新增：印记演示卡（通用级）
   bone_warden: { name: '白骨守卫', atk: 2, hp: 4, cost: 3, costType: 'bone', sigils: ['armored'],        bloodValue: 1, color: '#d8d8d0', glyph: '卫' },
@@ -484,7 +486,7 @@ export const CARDS = {
   dread_knight: { name: '恐惧骑士', atk: 2, hp: 3, cost: 4, costType: 'bone', sigils: ['death_touch'], bloodValue: 1, color: '#4a3a5a', glyph: '怖' },
 
   // [daily 2026-09-08] 墓穴熊（补跑；2 费 2/3 素白硬骨，骸骨阵营少见的厚身挡位，补其偏弱胜率）
-  crypt_bear: { name: '墓穴熊', atk: 2, hp: 2, cost: 2, costType: 'bone', sigils: [], bloodValue: 1, color: '#8a8a7a', glyph: '穴' },
+  crypt_bear: { name: '墓穴熊', atk: 2, hp: 3, cost: 2, costType: 'bone', sigils: [], bloodValue: 1, color: '#8a8a7a', glyph: '穴' }, // [balance 2026-11-27] 2/2→2/3：骸骨前期被时砂压制，厚身挡位补 1 血
 
   // [daily 2026-09-10] 骨刃武士（补跑；3 费 3/3 素白，骸骨阵营同费最高攻，靠死亡经济补数量）
   bone_blade: { name: '骨刃武士', atk: 2, hp: 3, cost: 3, costType: 'bone', sigils: [], bloodValue: 1, color: '#bfb6a4', glyph: '刃' },
@@ -1401,6 +1403,19 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.16',
+    date: '2026-11-27',
+    title: '平衡收敛：军威折减 0.235→0.244 + 骸骨 2 费三卡 +1 血，极化标准双达标',
+    items: [
+      '背景：「极化设计标准」（v0.7.15 后引入）要求 ① 各阵营均胜率 50±6pt、② 任一单对阵偏离 50% ≤20pt。pairwise 口径实测当时①②双 FAIL：军威 42.7%（-7.3）、骸骨↔时砂 28.8/71.2（21.3pt）。',
+      '军威：MORALE_SCALE_RATE 0.235→0.244。仍在 0.22~0.245 平台区内（0.25 是跳到 58.6% 的断崖），把军威从 42.7% 抬回 44.6%（19200 局/阵营）。',
+      '骸骨：骷髅武士 2/1→2/2、骨蛇 2/1→2/2、墓穴熊 2/2→2/3。骸骨前期被时砂压制是 21.3pt 偏离的根源之一，2 费段 +1 血不加印记，骸骨 44.5→46.3%。',
+      '验收（balance_sim REPEAT=8 × perMatchup=200 = 19200 局/阵营）：① 六阵营 血53.8 / 骨46.3 / 能51.4 / 魔52.4 / 砂51.5 / 军44.6，spread 9.2pt ≤12 PASS；② 最差单对为骸骨↔时砂 70/30 = 20.0pt，恰好 ≤20 PASS（压线，后续加卡需复查此对位）。',
+      '方法论备注：balance_pairwise.mjs 不支持 REPEAT，单轮判定带 ±1.5pt 骰子噪声，曾造成 ②在 18.9/20.3 间反复翻转的假象；验收一律以 balance_sim REPEAT≥5 为准。',
+      '时砂 board 预算模式原型（O2）经三种参数组合实测均不达标（时砂 35~67% 两极跳变，无稳定中档），保持默认关闭（SAND_BUDGET_MODE=\'turn\'）。',
+    ],
+  },
   {
     version: 'v0.7.15',
     date: '2026-11-14',
