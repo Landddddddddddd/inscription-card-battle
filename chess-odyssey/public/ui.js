@@ -2,7 +2,8 @@
 // 不持有状态，只接收 ctx = { state, me, selected, onSelect, dispatch, mode }，
 // 并把玩家意图通过 dispatch(action) 上报（solo 时 main.js 直接调用引擎，
 // coop 时 main.js 转发给 WebSocket）。
-import { PIECES, SIGILS, RELICS, CHAPTERS } from './js/constants.js';
+import { PIECES, SIGILS, RELICS } from './js/constants.js';
+import { CHAPTERS } from './js/chapters.js';
 import { optionsFor, unitAt, livingUnits } from './js/engine.js';
 import {
   currentChapter, legalKingMoves, promoteOptions, restOptions,
