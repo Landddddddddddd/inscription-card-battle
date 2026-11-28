@@ -1035,11 +1035,14 @@ export const CARDS = {
   // 既推胜利又滚经济双重碾压），改交战伤害后才平衡。用户要求「最廉价单位、费用相对高」，
   // 故身材压到廉价端（同费比其它阵营略弱），靠「打敌方单位即回本」的正反馈滚雪球。
   // 0费×1 / 1费×3 / 2费×6 / 3费×3 / 4费×3 + 1 付费神话。
-  war_drummer:      { name: '战鼓手',   atk: 1, hp: 1, cost: 0, costType: 'morale', sigils: [],                bloodValue: 1, color: '#c89a6a', glyph: '鼓' },
-  war_piper:        { name: '战笛手',   atk: 1, hp: 1, cost: 1, costType: 'morale', sigils: ['brittle'],       bloodValue: 1, color: '#c09060', glyph: '笛' },
+  // [balance 2026-11-28] 战鼓手 1/1→1/2：开局必送的 0 费腿是军威 T1 唯一动作，+1 血提高首回合存活与士气启动率（v0.7.16 骸骨核心卡 +1 血先例：改高频旧卡有效、加新卡无效）
+  war_drummer:      { name: '战鼓手',   atk: 1, hp: 2, cost: 0, costType: 'morale', sigils: [],                bloodValue: 1, color: '#c89a6a', glyph: '鼓' },
+  // [balance 2026-11-28] 战笛手 1/1→2/1：brittle 位血量无意义，改攻提高单次冲击的伤害/士气收益
+  war_piper:        { name: '战笛手',   atk: 2, hp: 1, cost: 1, costType: 'morale', sigils: ['brittle'],       bloodValue: 1, color: '#c09060', glyph: '笛' },
   outrider:         { name: '游骑',     atk: 2, hp: 1, cost: 1, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b5754a', glyph: '骑' },
   scout_raven:      { name: '斥候鸦',   atk: 1, hp: 2, cost: 1, costType: 'morale', sigils: ['airborne'],      bloodValue: 1, color: '#9a8a6a', glyph: '鸦' },
-  spearman:         { name: '矛兵',     atk: 2, hp: 1, cost: 1, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b07040', glyph: '矛' },
+  // [balance 2026-11-28] 矛兵 2/1→2/2：军威 1 费高频白板 +1 血，直击冷启动瓶颈（前两回合可上场牌的存活率）
+  spearman:         { name: '矛兵',     atk: 2, hp: 2, cost: 1, costType: 'morale', sigils: [],                bloodValue: 1, color: '#b07040', glyph: '矛' },
   warhound:         { name: '战犬',     atk: 2, hp: 1, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#a85a2a', glyph: '犬' },
   pikeman:          { name: '长矛兵',   atk: 1, hp: 3, cost: 2, costType: 'morale', sigils: [],                bloodValue: 1, color: '#a05a30', glyph: '枪' },
   drummer_chief:    { name: '鼓长',     atk: 2, hp: 2, cost: 2, costType: 'morale', sigils: ['frenzy'],        bloodValue: 1, color: '#b06030', glyph: '帅' },
@@ -1094,7 +1097,8 @@ export const CARDS = {
   // void_phantom: 需2色宝石，飞行+致死，极难被地面单位处理。
   void_phantom:   { name: '虚空幻影', atk: 3, hp: 3, cost: 0, costType: 'gem', gemCost: ['orange','blue'],        sigils: ['airborne','death_touch'], bloodValue: 1, color: '#3a0a3a', glyph: '虚', premium: true },
   // [daily 2026-09-26] 炊烟兵（1 费 1/2 白板，军威阵营廉价铺场位）
-  cookfire_soldier: { name: '炊烟兵', atk: 1, hp: 2, cost: 1, costType: 'morale', sigils: [], bloodValue: 1, color: '#a85a2a', glyph: '炊' },
+  // [balance 2026-11-28] 炊烟兵 1/2→1/3：军威 1 费白板第二张 +1 血，与矛兵同批（均不配印记）
+  cookfire_soldier: { name: '炊烟兵', atk: 1, hp: 3, cost: 1, costType: 'morale', sigils: [], bloodValue: 1, color: '#a85a2a', glyph: '炊' },
   // [daily 2026-09-28] 旗枪手（2 费 2/2 白板，军威阵营中费均衡位）
   banner_pikeman: { name: '旗枪手', atk: 2, hp: 2, cost: 2, costType: 'morale', sigils: [], bloodValue: 1, color: '#b07040', glyph: '旌' },
   // [daily 2026-09-30] 云梯兵（3 费 1/3 飞行，军威阵营飞行骚扰位）
@@ -1421,6 +1425,19 @@ export const GEM_EXCHANGE = {
 // ===================== 更新日志（产品内可见，最新在前）=====================
 // 每日新增卡牌自动化会在头部追加当日条目；手动重大改动也写在这里。
 export const CHANGELOG = [
+  {
+    version: 'v0.7.17',
+    date: '2026-11-28',
+    title: '平衡收敛：军威四张 0-1 费核心卡贴线 +1，极化标准严格口径双达标',
+    items: [
+      '背景：每日加卡（11-26~11-28 六张）令血肉/魔石均胜率上行，零和挤压把军威压出「极化设计标准」① 门槛——balance_pairwise 严格口径 43.4%（-6.6pt）、balance_sim 日常口径 43.5%（-6.5pt），两口径罕见地同时 FAIL（此前两口径有 1~2pt 系统差）。',
+      '路线选择：v0.7.15 实测已证明「给军威加新卡」无效（5 张卡仅 +0.2pt，新卡稀释池子、出场率低）；v0.7.16 证明「改高频旧卡身材」有效（骸骨 3 张 2 费 +1 血 = +1.8pt）。本次沿用后者：只动出场率最高的 0-1 费卡，直击军威冷启动瓶颈（前两回合可上场牌的存活率），不稀释池子、不送资源、不违反「开局 0 士气」硬约束。',
+      '四张调整（均不配新印记）：战鼓手 0费 1/1→1/2（开局必送，T1 唯一动作）；战笛手 1费 1/1→2/1（brittle 位血量无意义，改攻提高单次冲击的士气收益）；矛兵 1费 2/1→2/2；炊烟兵 1费 1/2→1/3。',
+      '验收一（balance_pairwise 1000 局/对阵，严格口径）：血 54.3 / 魔 53.0 / 砂 50.6 / 能 50.4 / 军 46.3 / 骨 45.4，spread 8.9pt；最大单对阵骸骨↔时砂 31.8% = 18.3pt。①②双 PASS。',
+      '验收二（balance_sim REPEAT=5 × 200 = 12000 局/阵营，按 v0.7.16 确立的大样本方法论）：血 52.5 / 魔 53.1 / 军 47.8 / 骨 46.3 / 能 50.2 / 砂 50.2，spread 6.8pt（调整前 11.0）；最差单对阵时砂↔骸骨 67% = 17pt。①②双 PASS 且留有余量，无过冲（军威距 +6 上限很远）。',
+      '方法论沉淀：对弱阵营的数值修正，「改高频核心卡」远比「加新卡」高效——出场率是放大器。后续每日加卡若再触发零和挤压，优先回改强阵营出场率 top 卡，而非继续堆新卡。',
+    ],
+  },
   {
     version: 'v0.7.16',
     date: '2026-11-27',
